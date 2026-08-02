@@ -1,0 +1,13 @@
+diff --git a/clean/AndroidManifest.xml b/patched/AndroidManifest.xml
+index 2e851ce..2c61182 100644
+--- a/clean/AndroidManifest.xml
++++ b/patched/AndroidManifest.xml
+@@ -8,7 +8,7 @@
+     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+     <uses-permission android:name="com.android.vending.BILLING"/>
+     <supports-screens android:largeScreens="true" android:normalScreens="true" android:resizeable="true" android:smallScreens="false"/>
+-    <application android:debuggable="false" android:hardwareAccelerated="false" android:hasCode="true" android:icon="@drawable/icon" android:isGame="true" android:label="@string/app_name" android:largeHeap="true" android:name="com.apportable.app.VerdeApplication" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
++    <application android:allowAudioPlaybackCapture="true" android:debuggable="false" android:hardwareAccelerated="false" android:hasCode="true" android:hasFragileUserData="true" android:icon="@drawable/icon" android:isGame="true" android:label="@string/app_name" android:largeHeap="true" android:name="com.apportable.app.VerdeApplication" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+         <meta-data android:name="android.max_aspect" android:value="2.1"/>
+         <meta-data android:name="android.app.libs" android:value="v cxx System icu CoreFoundation xml2 CommonCrypto Security SystemConfiguration CFNetwork Foundation GraphicsServices CoreGraphics BridgeKit OpenAL gles_apportable pango CoreText CoreAudio AudioFile AudioUnit AudioToolbox NoodleFoundation NoodleCompatibility Application"/>
+         <meta-data android:name="android.app.lib_name" android:value="Application"/>
