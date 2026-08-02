@@ -12,7 +12,6 @@ List of patches and what they do:
 2. `webview-suspend-freeze-fix.patch`: Fixes freezes when suspending and resuming the game as well as opening pages through the WebView (welcome messages and the Help/Credits page).
 
 * Removes legacy `Thread.interrupt()` and infinite `wait()` loops in the Apportable engine's Java layer (`VerdeActivity` & `GLSurfaceView`).
-* Quarantines the game's webview into a separate `:webview` process, shielding the legacy 32-bit C++ engine from modern Google Chrome memory restrictions.
 * Adds `screenSize` to the manifest so rotating the device doesn't destroy and recreate the WebView UI.
 
 Steps on how to apply the patches:

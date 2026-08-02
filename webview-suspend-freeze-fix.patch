@@ -1,5 +1,5 @@
 diff --git a/AndroidManifest.xml b/AndroidManifest.xml
-index 2e851ce..4598c10 100644
+index 2e851ce..21f8b15 100644
 --- a/AndroidManifest.xml
 +++ b/AndroidManifest.xml
 @@ -114,6 +114,6 @@
@@ -7,11 +7,11 @@ index 2e851ce..4598c10 100644
          <activity android:name="com.apportable.ui.TextViewHaxActivity"/>
          <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
 -        <activity android:configChanges="keyboardHidden|orientation" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
-+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:process=":webview" android:theme="@style/NoActionBar"/>
++        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
      </application>
  </manifest>
 diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
-index 7c1afc4..3cdc641 100644
+index 7c1afc4..61e1853 100644
 --- a/smali/com/apportable/activity/VerdeActivity.smali
 +++ b/smali/com/apportable/activity/VerdeActivity.smali
 @@ -1626,35 +1626,20 @@
@@ -52,7 +52,7 @@ index 7c1afc4..3cdc641 100644
  
      .line 483
      const/4 v0, 0x0
-@@ -1662,12 +1647,12 @@
+@@ -1662,7 +1647,7 @@
      invoke-static {v0}, Ljava/lang/System;->exit(I)V
  
      .line 486
@@ -61,12 +61,6 @@ index 7c1afc4..3cdc641 100644
      iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
  
      new-instance v1, Lcom/apportable/activity/VerdeActivity$8;
- 
--    invoke-direct {v1, p0, p0}, Lcom/apportable/activity/VerdeActivity$8;-><init>(Lcom/apportable/activity/VerdeActivity;Lcom/apportable/activity/VerdeActivity;)V
-+    invoke-direct {v1, p0}, Lcom/apportable/activity/VerdeActivity$8;-><init>(Lcom/apportable/activity/VerdeActivity;)V
- 
-     invoke-virtual {v0, v1}, Lcom/apportable/activity/BackgroundLibraryLoader;->onPause(Ljava/lang/Runnable;)V
- 
 @@ -1952,15 +1937,6 @@
      .line 510
      invoke-super {p0}, Landroid/app/Activity;->onStop()V
