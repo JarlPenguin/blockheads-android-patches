@@ -1,7 +1,7 @@
-diff --git a/clean/AndroidManifest.xml b/patched/AndroidManifest.xml
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
 index 2e851ce..4598c10 100644
---- a/clean/AndroidManifest.xml
-+++ b/patched/AndroidManifest.xml
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
 @@ -114,6 +114,6 @@
          </receiver>
          <activity android:name="com.apportable.ui.TextViewHaxActivity"/>
@@ -10,10 +10,10 @@ index 2e851ce..4598c10 100644
 +        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:process=":webview" android:theme="@style/NoActionBar"/>
      </application>
  </manifest>
-diff --git a/clean/smali/com/apportable/activity/VerdeActivity.smali b/patched/smali/com/apportable/activity/VerdeActivity.smali
+diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
 index 7c1afc4..3cdc641 100644
---- a/clean/smali/com/apportable/activity/VerdeActivity.smali
-+++ b/patched/smali/com/apportable/activity/VerdeActivity.smali
+--- a/smali/com/apportable/activity/VerdeActivity.smali
++++ b/smali/com/apportable/activity/VerdeActivity.smali
 @@ -1626,35 +1626,20 @@
      .line 464
      invoke-super {p0}, Landroid/app/Activity;->onPause()V
@@ -83,10 +83,10 @@ index 7c1afc4..3cdc641 100644
      .line 535
      return-void
  .end method
-diff --git a/clean/smali/com/apportable/gl/GLSurfaceView.smali b/patched/smali/com/apportable/gl/GLSurfaceView.smali
+diff --git a/smali/com/apportable/gl/GLSurfaceView.smali b/smali/com/apportable/gl/GLSurfaceView.smali
 index 38c0a15..04094e8 100644
---- a/clean/smali/com/apportable/gl/GLSurfaceView.smali
-+++ b/patched/smali/com/apportable/gl/GLSurfaceView.smali
+--- a/smali/com/apportable/gl/GLSurfaceView.smali
++++ b/smali/com/apportable/gl/GLSurfaceView.smali
 @@ -600,7 +600,6 @@
      move v2, v4
  
