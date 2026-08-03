@@ -1,0 +1,64 @@
+diff --git a/smali/com/apportable/ui/AlertView.smali b/smali/com/apportable/ui/AlertView.smali
+index cd8fd70..fe95300 100644
+--- a/smali/com/apportable/ui/AlertView.smali
++++ b/smali/com/apportable/ui/AlertView.smali
+@@ -34,6 +34,9 @@
+ .field private mVisible:Z
+ 
+ 
++# static fields
++.field private static sLastClickedTitle:Ljava/lang/String;
++
+ # direct methods
+ .method protected constructor <init>(Landroid/content/Context;I)V
+     .locals 2
+@@ -344,6 +347,8 @@
+     .locals 5
+ 
+     .prologue
++    iget-object v2, p0, Lcom/apportable/ui/AlertView;->mTitle:Ljava/lang/String;
++    sput-object v2, Lcom/apportable/ui/AlertView;->sLastClickedTitle:Ljava/lang/String;
+     const/4 v1, 0x0
+ 
+     const/4 v0, 0x1
+@@ -491,10 +496,39 @@
+ .end method
+ 
+ .method public show()V
+-    .locals 2
++    .locals 3
+ 
+     .prologue
+     .line 91
++
++    iget-object v0, p0, Lcom/apportable/ui/AlertView;->mTitle:Ljava/lang/String;
++    if-eqz v0, :cond_allow_show
++
++    const-string v1, "Privacy Setting Changed"
++    invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
++    move-result v0
++
++    if-eqz v0, :cond_allow_show
++
++    sget-object v0, Lcom/apportable/ui/AlertView;->sLastClickedTitle:Ljava/lang/String;
++
++    if-eqz v0, :cond_block
++
++    const-string v1, "Enable multiplayer and free crystals?"
++    invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
++    move-result v0
++
++    if-eqz v0, :cond_block
++
++    goto :cond_allow_show
++
++    :cond_block
++    const/4 v0, 0x0
++    invoke-direct {p0, v0}, Lcom/apportable/ui/AlertView;->onClick(I)V
++    return-void
++
++    :cond_allow_show
++
+     iget-boolean v0, p0, Lcom/apportable/ui/AlertView;->mVisible:Z
+ 
+     if-nez v0, :cond_0

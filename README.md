@@ -10,12 +10,17 @@ Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.
 * `allowAudioPlaybackCapture` allows the game's audio to be captured when screen recording.
 * `hasFragileUserData` allows the player to keep the game's data when uninstalling it.
 
-### 2. `webview-rescue.patch`
+### 2. `privacy-popup-cleanup.patch`
+Fixes the "Privacy Setting Changed" popup appearing where irrelevant.
+
+* Now it only appears when you actually change the privacy settings through the "Privacy Options..." button.
+
+### 3. `webview-rescue.patch`
 Fixes random WebView crashes taking down the game with themselves.
 
 * When the WebView crashes, only it will, while the game itself will be unaffected.
 
-### 3. `webview-suspend-freeze-fix.patch`
+### 4. `webview-suspend-freeze-fix.patch`
 Fixes freezes when suspending and resuming the game as well as opening pages through the WebView (welcome messages and the Help/Credits page).
 
 > **Notes from Gemini:**
