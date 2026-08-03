@@ -1,0 +1,21 @@
+diff --git a/smali/com/apportable/media/AudioPlayer.smali b/smali/com/apportable/media/AudioPlayer.smali
+index 433a381..95be8b4 100644
+--- a/smali/com/apportable/media/AudioPlayer.smali
++++ b/smali/com/apportable/media/AudioPlayer.smali
+@@ -1630,6 +1630,16 @@
+ 
+     .line 254
+     :cond_1
++    iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
++    aget-object v0, v0, p2
++    if-eqz v0, :cond_skip_override
++    const-string v1, "mountainKingLoop"
++    invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
++    move-result v0
++    if-eqz v0, :cond_skip_override
++    move p1, v2
++    :cond_skip_override
++
+     iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+ 
+     aget-object v0, v0, p2
