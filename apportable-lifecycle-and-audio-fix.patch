@@ -1,0 +1,668 @@
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 2e851ce..21f8b15 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -114,6 +114,6 @@
+         </receiver>
+         <activity android:name="com.apportable.ui.TextViewHaxActivity"/>
+         <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
+-        <activity android:configChanges="keyboardHidden|orientation" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
++        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
+     </application>
+ </manifest>
+diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
+index 7c1afc4..99d88a8 100644
+--- a/smali/com/apportable/activity/VerdeActivity.smali
++++ b/smali/com/apportable/activity/VerdeActivity.smali
+@@ -1623,38 +1623,27 @@
+     .locals 2
+ 
+     .prologue
+-    .line 464
+-    invoke-super {p0}, Landroid/app/Activity;->onPause()V
+-
+-    .line 466
+-    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
+-
+-    const/16 v1, 0x13
+-
+-    if-lt v0, v1, :cond_0
+-
+-    .line 471
+-    invoke-static {}, Lcom/apportable/MainThread;->getThread()Ljava/lang/Thread;
++    const/4 v0, 0x1
+ 
+-    move-result-object v0
++    sput-boolean v0, Lcom/apportable/media/AudioPlayer;->sIsBackgrounded:Z
+ 
+-    invoke-virtual {v0}, Ljava/lang/Thread;->interrupt()V
++    .line 464
++    invoke-super {p0}, Landroid/app/Activity;->onPause()V
+ 
+     .line 474
+-    :cond_0
+     iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+ 
+     invoke-virtual {v0}, Lcom/apportable/activity/BackgroundLibraryLoader;->isLoaded()Z
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_1
++    if-eqz v0, :cond_0
+ 
+     invoke-static {}, Lcom/apportable/app/SplashScreen;->isShown()Z
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_1
++    if-eqz v0, :cond_0
+ 
+     .line 483
+     const/4 v0, 0x0
+@@ -1662,7 +1651,7 @@
+     invoke-static {v0}, Ljava/lang/System;->exit(I)V
+ 
+     .line 486
+-    :cond_1
++    :cond_0
+     iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+ 
+     new-instance v1, Lcom/apportable/activity/VerdeActivity$8;
+@@ -1774,6 +1763,10 @@
+     .locals 2
+ 
+     .prologue
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/media/AudioPlayer;->sIsBackgrounded:Z
++
+     .line 434
+     invoke-super {p0}, Landroid/app/Activity;->onResume()V
+ 
+@@ -1952,15 +1945,6 @@
+     .line 510
+     invoke-super {p0}, Landroid/app/Activity;->onStop()V
+ 
+-    .line 512
+-    iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+-
+-    new-instance v1, Lcom/apportable/activity/VerdeActivity$9;
+-
+-    invoke-direct {v1, p0, p0}, Lcom/apportable/activity/VerdeActivity$9;-><init>(Lcom/apportable/activity/VerdeActivity;Lcom/apportable/activity/VerdeActivity;)V
+-
+-    invoke-virtual {v0, v1}, Lcom/apportable/activity/BackgroundLibraryLoader;->onStop(Ljava/lang/Runnable;)V
+-
+     .line 535
+     return-void
+ .end method
+diff --git a/smali/com/apportable/gl/GLSurfaceView.smali b/smali/com/apportable/gl/GLSurfaceView.smali
+index 38c0a15..04094e8 100644
+--- a/smali/com/apportable/gl/GLSurfaceView.smali
++++ b/smali/com/apportable/gl/GLSurfaceView.smali
+@@ -600,7 +600,6 @@
+     move v2, v4
+ 
+     .line 585
+-    :goto_0
+     :try_start_0
+     iget-boolean v5, p0, Lcom/apportable/gl/GLSurfaceView;->mHasSurface:Z
+ 
+@@ -738,7 +737,7 @@
+     move v4, v0
+ 
+     .line 634
+-    :goto_1
++    :goto_0
+     iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
+ 
+     invoke-virtual {v0}, Ljava/lang/Object;->notifyAll()V
+@@ -773,7 +772,7 @@
+ 
+     .line 680
+     :cond_5
+-    :goto_2
++    :goto_1
+     return-void
+ 
+     .line 612
+@@ -797,21 +796,12 @@
+     .line 645
+     :cond_6
+     :try_start_4
+-    iget-object v5, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
++    monitor-exit v6
+ 
+-    invoke-virtual {v5}, Ljava/lang/Object;->wait()V
++    return-void
+     :try_end_4
+-    .catch Ljava/lang/InterruptedException; {:try_start_4 .. :try_end_4} :catch_1
+     .catchall {:try_start_4 .. :try_end_4} :catchall_0
+ 
+-    goto/16 :goto_0
+-
+-    .line 647
+-    :catch_1
+-    move-exception v5
+-
+-    goto/16 :goto_0
+-
+     .line 665
+     :cond_7
+     if-eqz v2, :cond_8
+@@ -838,14 +828,14 @@
+ 
+     invoke-interface {v0, v1, v5, v4}, Landroid/opengl/GLSurfaceView$Renderer;->onSurfaceChanged(Ljavax/microedition/khronos/opengles/GL10;II)V
+ 
+-    goto :goto_2
++    goto :goto_1
+ 
+     :cond_9
+     move v3, v0
+ 
+     move v5, v4
+ 
+-    goto :goto_1
++    goto :goto_0
+ .end method
+ 
+ .method public setFixedSize(II)V
+@@ -1086,61 +1076,20 @@
+ 
+     invoke-virtual {v0}, Ljava/lang/Object;->notifyAll()V
+ 
+-    .line 707
+-    :goto_0
+-    iget-boolean v0, p0, Lcom/apportable/gl/GLSurfaceView;->mWaitingForSurface:Z
+-
+-    if-nez v0, :cond_0
+-
+-    iget-boolean v0, p0, Lcom/apportable/gl/GLSurfaceView;->mExited:Z
+-    :try_end_0
+-    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+-
+-    if-nez v0, :cond_0
+-
+-    .line 709
+-    :try_start_1
+-    iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
+-
+-    invoke-virtual {v0}, Ljava/lang/Object;->wait()V
+-    :try_end_1
+-    .catch Ljava/lang/InterruptedException; {:try_start_1 .. :try_end_1} :catch_0
+-    .catchall {:try_start_1 .. :try_end_1} :catchall_0
+-
+-    goto :goto_0
+-
+-    .line 710
+-    :catch_0
+-    move-exception v0
+-
+-    .line 711
+-    :try_start_2
+-    invoke-static {}, Ljava/lang/Thread;->currentThread()Ljava/lang/Thread;
+-
+-    move-result-object v0
+-
+-    invoke-virtual {v0}, Ljava/lang/Thread;->interrupt()V
++    .line 715
++    monitor-exit v1
+ 
+-    goto :goto_0
++    return-void
+ 
+     .line 714
+     :catchall_0
+     move-exception v0
+ 
+     monitor-exit v1
+-    :try_end_2
+-    .catchall {:try_start_2 .. :try_end_2} :catchall_0
++    :try_end_0
++    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+ 
+     throw v0
+-
+-    :cond_0
+-    :try_start_3
+-    monitor-exit v1
+-    :try_end_3
+-    .catchall {:try_start_3 .. :try_end_3} :catchall_0
+-
+-    .line 715
+-    return-void
+ .end method
+ 
+ .method public surfaceDestroyed(Landroid/view/SurfaceHolder;)V
+diff --git a/smali/com/apportable/media/AudioPlayer.smali b/smali/com/apportable/media/AudioPlayer.smali
+index 433a381..9c02b23 100644
+--- a/smali/com/apportable/media/AudioPlayer.smali
++++ b/smali/com/apportable/media/AudioPlayer.smali
+@@ -6,6 +6,10 @@
+ # static fields
+ .field private static TAG:Ljava/lang/String;
+ 
++.field public static sInstances:Ljava/util/ArrayList;
++
++.field public static sIsBackgrounded:Z
++
+ 
+ # instance fields
+ .field MAX_SOURCES:I
+@@ -82,11 +86,26 @@
+ 
+     iput-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
+ 
++    sget-object v1, Lcom/apportable/media/AudioPlayer;->sInstances:Ljava/util/ArrayList;
++
++    if-nez v1, :cond_0
++
++    new-instance v1, Ljava/util/ArrayList;
++
++    invoke-direct {v1}, Ljava/util/ArrayList;-><init>()V
++
++    sput-object v1, Lcom/apportable/media/AudioPlayer;->sInstances:Ljava/util/ArrayList;
++
++    :cond_0
++    sget-object v1, Lcom/apportable/media/AudioPlayer;->sInstances:Ljava/util/ArrayList;
++
++    invoke-virtual {v1, p0}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
++
+     .line 93
+     :goto_0
+     iget v1, p0, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
+ 
+-    if-ge v0, v1, :cond_0
++    if-ge v0, v1, :cond_1
+ 
+     .line 94
+     iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+@@ -104,7 +123,7 @@
+     goto :goto_0
+ 
+     .line 97
+-    :cond_0
++    :cond_1
+     return-void
+ .end method
+ 
+@@ -1341,137 +1360,90 @@
+ .end method
+ 
+ .method public lifecycleResume()V
+-    .locals 3
++    .locals 4
+ 
+     .prologue
+-    const/4 v1, 0x0
+-
+-    .line 394
+-    move v0, v1
++    const/4 v0, 0x0
+ 
+-    .line 395
+     :goto_0
+-    iget v2, p0, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
+-
+-    if-ge v0, v2, :cond_1
+-
+-    .line 396
+-    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+-
+-    aget-object v2, v2, v0
+-
+-    if-eqz v2, :cond_0
+-
+-    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+-
+-    aget-object v2, v2, v0
++    iget v1, p0, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
+ 
+-    iget-object v2, v2, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
++    if-ge v0, v1, :cond_2
+ 
+-    if-eqz v2, :cond_0
++    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+ 
+-    .line 397
+-    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++    aget-object v1, v1, v0
+ 
+-    aget-object v2, v2, v0
++    if-nez v1, :cond_0
+ 
+-    iget-boolean v2, v2, Lcom/apportable/media/AudioPlayerItem;->suspended:Z
++    goto :goto_1
+ 
+-    if-eqz v2, :cond_0
++    :cond_0
++    iget-object v2, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+ 
+-    .line 398
+-    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++    if-nez v2, :cond_1
+ 
+-    aget-object v2, v2, v0
++    goto :goto_1
+ 
+-    iget-object v2, v2, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
++    :cond_1
++    iget-object v2, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+ 
+     invoke-virtual {v2}, Landroid/media/MediaPlayer;->start()V
+ 
+-    .line 399
+-    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+-
+-    aget-object v2, v2, v0
++    const/4 v2, 0x0
+ 
+-    iput-boolean v1, v2, Lcom/apportable/media/AudioPlayerItem;->suspended:Z
++    iput-boolean v2, v1, Lcom/apportable/media/AudioPlayerItem;->suspended:Z
+ 
+-    .line 395
+-    :cond_0
++    :goto_1
+     add-int/lit8 v0, v0, 0x1
+ 
+     goto :goto_0
+ 
+-    .line 404
+-    :cond_1
++    :cond_2
+     return-void
+ .end method
+ 
+ .method public lifecycleSuspend()V
+-    .locals 3
++    .locals 4
+ 
+     .prologue
+-    .line 383
+     const/4 v0, 0x0
+ 
+     :goto_0
+     iget v1, p0, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
+ 
+-    if-ge v0, v1, :cond_1
+-
+-    .line 384
+-    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+-
+-    aget-object v1, v1, v0
+-
+-    if-eqz v1, :cond_0
+-
+-    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+-
+-    aget-object v1, v1, v0
+-
+-    iget-object v1, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+-
+-    if-eqz v1, :cond_0
++    if-ge v0, v1, :cond_2
+ 
+-    .line 385
+     iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+ 
+     aget-object v1, v1, v0
+ 
+-    iget-object v1, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+-
+-    invoke-virtual {v1}, Landroid/media/MediaPlayer;->isPlaying()Z
+-
+-    move-result v1
+-
+-    if-eqz v1, :cond_0
++    if-nez v1, :cond_0
+ 
+-    .line 386
+-    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++    goto :goto_1
+ 
+-    aget-object v1, v1, v0
++    :cond_0
++    iget-object v2, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+ 
+-    iget-object v1, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
++    if-nez v2, :cond_1
+ 
+-    invoke-virtual {v1}, Landroid/media/MediaPlayer;->pause()V
++    goto :goto_1
+ 
+-    .line 387
+-    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++    :cond_1
++    iget-object v2, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+ 
+-    aget-object v1, v1, v0
++    invoke-virtual {v2}, Landroid/media/MediaPlayer;->pause()V
+ 
+     const/4 v2, 0x1
+ 
+     iput-boolean v2, v1, Lcom/apportable/media/AudioPlayerItem;->suspended:Z
+ 
+-    .line 383
+-    :cond_0
++    :goto_1
+     add-int/lit8 v0, v0, 0x1
+ 
+     goto :goto_0
+ 
+-    .line 391
+-    :cond_1
++    :cond_2
+     return-void
+ .end method
+ 
+@@ -1539,30 +1511,53 @@
+ .end method
+ 
+ .method public releaseAudio(I)V
+-    .locals 2
++    .locals 3
+ 
+     .prologue
+-    .line 295
+     const/4 v0, -0x1
+ 
+     if-ne p1, v0, :cond_0
+ 
+-    .line 301
+-    :goto_0
+     return-void
+ 
+-    .line 299
+     :cond_0
++    iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
++
++    aget-object v0, v0, p1
++
++    if-nez v0, :cond_1
++
++    goto :goto_0
++
++    :cond_1
++    const-string v1, "mountainKingLoop"
++
++    invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
++
++    move-result v0
++
++    if-eqz v0, :cond_2
++
++    goto :goto_0
++
++    :cond_2
++    sget-boolean v0, Lcom/apportable/media/AudioPlayer;->sIsBackgrounded:Z
++
++    if-eqz v0, :cond_3
++
++    return-void
++
++    :cond_3
++    :goto_0
+     invoke-direct {p0, p1}, Lcom/apportable/media/AudioPlayer;->_releaseAudio(I)V
+ 
+-    .line 300
+     iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
+ 
+     const/4 v1, 0x0
+ 
+     aput-object v1, v0, p1
+ 
+-    goto :goto_0
++    return-void
+ .end method
+ 
+ .method public seekTo(II)V
+@@ -1710,58 +1705,126 @@
+ .end method
+ 
+ .method public startAudio(I)V
+-    .locals 1
++    .locals 8
+ 
+     .prologue
+-    .line 271
+     const/4 v0, -0x1
+ 
+-    if-ne p1, v0, :cond_1
++    if-ne p1, v0, :cond_0
+ 
+-    .line 281
+-    :cond_0
+-    :goto_0
+-    return-void
++    goto/16 :goto_3
+ 
+-    .line 274
+-    :cond_1
++    :cond_0
+     iget-boolean v0, p0, Lcom/apportable/media/AudioPlayer;->onDemandLoading:Z
+ 
+-    if-eqz v0, :cond_2
++    if-eqz v0, :cond_1
+ 
+     iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+ 
+     aget-object v0, v0, p1
+ 
+-    if-nez v0, :cond_2
++    if-nez v0, :cond_1
+ 
+-    .line 275
+     invoke-direct {p0, p1}, Lcom/apportable/media/AudioPlayer;->initializeAudio(I)I
+ 
+-    .line 278
+-    :cond_2
++    :cond_1
+     iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
+ 
+     aget-object v0, v0, p1
+ 
+-    if-eqz v0, :cond_0
++    if-nez v0, :cond_2
+ 
+-    iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++    goto/16 :goto_3
+ 
+-    aget-object v0, v0, p1
++    :cond_2
++    iget-object v1, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+ 
+-    iget-object v0, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
++    if-nez v1, :cond_3
+ 
+-    if-eqz v0, :cond_0
++    goto/16 :goto_3
+ 
+-    .line 279
+-    iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++    :cond_3
++    invoke-virtual {v1}, Landroid/media/MediaPlayer;->start()V
+ 
+-    aget-object v0, v0, p1
++    sget-object v2, Lcom/apportable/media/AudioPlayer;->sInstances:Ljava/util/ArrayList;
+ 
+-    iget-object v0, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
++    if-nez v2, :cond_4
++
++    goto :goto_3
++
++    :cond_4
++    invoke-virtual {v2}, Ljava/util/ArrayList;->iterator()Ljava/util/Iterator;
+ 
+-    invoke-virtual {v0}, Landroid/media/MediaPlayer;->start()V
++    move-result-object v2
++
++    :goto_0
++    invoke-interface {v2}, Ljava/util/Iterator;->hasNext()Z
++
++    move-result v3
++
++    if-nez v3, :cond_5
++
++    goto :goto_3
++
++    :cond_5
++    invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
++
++    move-result-object v3
++
++    check-cast v3, Lcom/apportable/media/AudioPlayer;
++
++    const/4 v4, 0x0
++
++    :goto_1
++    iget v5, v3, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
++
++    if-ge v4, v5, :cond_9
++
++    if-ne v3, p0, :cond_6
++
++    if-ne v4, p1, :cond_6
++
++    goto :goto_2
++
++    :cond_6
++    iget-object v5, v3, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++
++    aget-object v5, v5, v4
++
++    if-nez v5, :cond_7
+ 
++    goto :goto_2
++
++    :cond_7
++    iget-object v6, v5, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
++
++    if-nez v6, :cond_8
++
++    goto :goto_2
++
++    :cond_8
++    invoke-virtual {v6}, Landroid/media/MediaPlayer;->stop()V
++
++    invoke-virtual {v6}, Landroid/media/MediaPlayer;->release()V
++
++    iget-object v5, v3, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++
++    const/4 v7, 0x0
++
++    aput-object v7, v5, v4
++
++    iget-object v5, v3, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
++
++    aput-object v7, v5, v4
++
++    :goto_2
++    add-int/lit8 v4, v4, 0x1
++
++    goto :goto_1
++
++    :cond_9
+     goto :goto_0
++
++    :goto_3
++    return-void
+ .end method

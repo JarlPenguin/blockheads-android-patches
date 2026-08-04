@@ -4,34 +4,37 @@ These patches were designed with the help of Google Gemini for v1.7.5 and were t
 
 ## List of patches and what they do
 
-### 1. `audio-record-keep-saves.patch`:
+### `apportable-lifecycle-and-audio-fix.patch`
+Fixes fatal Apportable engine freezes and audio bugs triggered by Android lifecycles, such as suspending/resuming the game, opening WebView pages (welcome messages, Help/Credits page), or launching the photo picker.
+
+> **Notes from Gemini:**
+> Because modern Android handles background lifecycles, WebView rendering, and hardware acceleration differently than older versions, the legacy Apportable cross-compiled engine frequently crashes, deadlocks, or loses memory pointers on newer devices. This patch natively modifies the Dalvik bytecode and Android Manifest to bypass these incompatibilities, forcing the Java layer to manually correct native JNI memory desyncs.
+
+* Fixes fatal ANR (Application Not Responding) freezes when suspending/resuming the game.
+* Removes legacy `Thread.interrupt()` and infinite GPU `wait()` loops in the Apportable engine's Java layer (`VerdeActivity` & `GLSurfaceView`).
+* Adds `screenSize` to the manifest `configChanges` so rotating the device doesn't destroy and recreate the WebView UI.
+* Implements a "Selective Shield" for the `MediaPlayer` that safely lets main menu music die during a suspend (avoiding native OpenSL ES audio blindspots), while intercepting native JNI kill orders to protect and keep in-game music alive.
+* Bypasses broken vanilla engine flags by injecting brute-force Java commands into `lifecycleSuspend` and `lifecycleResume`, guaranteeing that surviving shielded tracks properly pause and wake up without relying on native engine state polling.
+* Injects a cross-instance audio garbage collector into Dalvik to hunt down and violently execute orphaned tracks upon scene changes (e.g., exiting a world), preventing shielded in-game music from overlapping with the main menu music.
+
+### `audio-record-keep-saves.patch`:
 Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.
 
 * `allowAudioPlaybackCapture` allows the game's audio to be captured when screen recording.
 * `hasFragileUserData` allows the player to keep the game's data when uninstalling it.
 
-### 2. `main-menu-music-loop-fix.patch`:
+### `main-menu-music-loop-fix.patch`:
 Fixes the main menu music not looping.
 
-### 3. `privacy-popup-cleanup.patch`
+### `privacy-popup-cleanup.patch`
 Fixes the "Privacy Setting Changed" popup appearing where irrelevant.
 
 * Now it only appears when you actually change the privacy settings through the "Privacy Options..." button.
 
-### 4. `webview-rescue.patch`
+### `webview-rescue.patch`
 Fixes random WebView crashes taking down the game with themselves.
 
 * When the WebView crashes, only it will, while the game itself will be unaffected.
-
-### 5. `webview-suspend-freeze-fix.patch`
-Fixes freezes when suspending and resuming the game as well as opening pages through the WebView (welcome messages and the Help/Credits page).
-
-> **Notes from Gemini:**
-> Because modern Android handles background lifecycles, WebView rendering, and hardware acceleration differently than older versions, the legacy Apportable C++ engine frequently crashes or deadlocks on newer devices. This patch natively modifies the Dalvik bytecode and Android Manifest to bypass these incompatibilities.
-
-* Fixes fatal ANR (Application Not Responding) freezes when suspending/resuming the game.
-* Removes legacy `Thread.interrupt()` and infinite GPU `wait()` loops in the Apportable engine's Java layer (`VerdeActivity` & `GLSurfaceView`).
-* Adds `screenSize` to the manifest `configChanges` so rotating the device doesn't destroy and recreate the WebView UI.
 
 ---
 
