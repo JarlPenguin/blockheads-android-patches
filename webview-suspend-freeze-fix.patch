@@ -1,0 +1,217 @@
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 2e851ce..21f8b15 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -114,6 +114,6 @@
+         </receiver>
+         <activity android:name="com.apportable.ui.TextViewHaxActivity"/>
+         <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
+-        <activity android:configChanges="keyboardHidden|orientation" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
++        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
+     </application>
+ </manifest>
+diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
+index 7c1afc4..61e1853 100644
+--- a/smali/com/apportable/activity/VerdeActivity.smali
++++ b/smali/com/apportable/activity/VerdeActivity.smali
+@@ -1626,35 +1626,20 @@
+     .line 464
+     invoke-super {p0}, Landroid/app/Activity;->onPause()V
+ 
+-    .line 466
+-    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
+-
+-    const/16 v1, 0x13
+-
+-    if-lt v0, v1, :cond_0
+-
+-    .line 471
+-    invoke-static {}, Lcom/apportable/MainThread;->getThread()Ljava/lang/Thread;
+-
+-    move-result-object v0
+-
+-    invoke-virtual {v0}, Ljava/lang/Thread;->interrupt()V
+-
+     .line 474
+-    :cond_0
+     iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+ 
+     invoke-virtual {v0}, Lcom/apportable/activity/BackgroundLibraryLoader;->isLoaded()Z
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_1
++    if-eqz v0, :cond_0
+ 
+     invoke-static {}, Lcom/apportable/app/SplashScreen;->isShown()Z
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_1
++    if-eqz v0, :cond_0
+ 
+     .line 483
+     const/4 v0, 0x0
+@@ -1662,7 +1647,7 @@
+     invoke-static {v0}, Ljava/lang/System;->exit(I)V
+ 
+     .line 486
+-    :cond_1
++    :cond_0
+     iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+ 
+     new-instance v1, Lcom/apportable/activity/VerdeActivity$8;
+@@ -1952,15 +1937,6 @@
+     .line 510
+     invoke-super {p0}, Landroid/app/Activity;->onStop()V
+ 
+-    .line 512
+-    iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+-
+-    new-instance v1, Lcom/apportable/activity/VerdeActivity$9;
+-
+-    invoke-direct {v1, p0, p0}, Lcom/apportable/activity/VerdeActivity$9;-><init>(Lcom/apportable/activity/VerdeActivity;Lcom/apportable/activity/VerdeActivity;)V
+-
+-    invoke-virtual {v0, v1}, Lcom/apportable/activity/BackgroundLibraryLoader;->onStop(Ljava/lang/Runnable;)V
+-
+     .line 535
+     return-void
+ .end method
+diff --git a/smali/com/apportable/gl/GLSurfaceView.smali b/smali/com/apportable/gl/GLSurfaceView.smali
+index 38c0a15..04094e8 100644
+--- a/smali/com/apportable/gl/GLSurfaceView.smali
++++ b/smali/com/apportable/gl/GLSurfaceView.smali
+@@ -600,7 +600,6 @@
+     move v2, v4
+ 
+     .line 585
+-    :goto_0
+     :try_start_0
+     iget-boolean v5, p0, Lcom/apportable/gl/GLSurfaceView;->mHasSurface:Z
+ 
+@@ -738,7 +737,7 @@
+     move v4, v0
+ 
+     .line 634
+-    :goto_1
++    :goto_0
+     iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
+ 
+     invoke-virtual {v0}, Ljava/lang/Object;->notifyAll()V
+@@ -773,7 +772,7 @@
+ 
+     .line 680
+     :cond_5
+-    :goto_2
++    :goto_1
+     return-void
+ 
+     .line 612
+@@ -797,21 +796,12 @@
+     .line 645
+     :cond_6
+     :try_start_4
+-    iget-object v5, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
++    monitor-exit v6
+ 
+-    invoke-virtual {v5}, Ljava/lang/Object;->wait()V
++    return-void
+     :try_end_4
+-    .catch Ljava/lang/InterruptedException; {:try_start_4 .. :try_end_4} :catch_1
+     .catchall {:try_start_4 .. :try_end_4} :catchall_0
+ 
+-    goto/16 :goto_0
+-
+-    .line 647
+-    :catch_1
+-    move-exception v5
+-
+-    goto/16 :goto_0
+-
+     .line 665
+     :cond_7
+     if-eqz v2, :cond_8
+@@ -838,14 +828,14 @@
+ 
+     invoke-interface {v0, v1, v5, v4}, Landroid/opengl/GLSurfaceView$Renderer;->onSurfaceChanged(Ljavax/microedition/khronos/opengles/GL10;II)V
+ 
+-    goto :goto_2
++    goto :goto_1
+ 
+     :cond_9
+     move v3, v0
+ 
+     move v5, v4
+ 
+-    goto :goto_1
++    goto :goto_0
+ .end method
+ 
+ .method public setFixedSize(II)V
+@@ -1086,61 +1076,20 @@
+ 
+     invoke-virtual {v0}, Ljava/lang/Object;->notifyAll()V
+ 
+-    .line 707
+-    :goto_0
+-    iget-boolean v0, p0, Lcom/apportable/gl/GLSurfaceView;->mWaitingForSurface:Z
+-
+-    if-nez v0, :cond_0
+-
+-    iget-boolean v0, p0, Lcom/apportable/gl/GLSurfaceView;->mExited:Z
+-    :try_end_0
+-    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+-
+-    if-nez v0, :cond_0
+-
+-    .line 709
+-    :try_start_1
+-    iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
+-
+-    invoke-virtual {v0}, Ljava/lang/Object;->wait()V
+-    :try_end_1
+-    .catch Ljava/lang/InterruptedException; {:try_start_1 .. :try_end_1} :catch_0
+-    .catchall {:try_start_1 .. :try_end_1} :catchall_0
+-
+-    goto :goto_0
+-
+-    .line 710
+-    :catch_0
+-    move-exception v0
+-
+-    .line 711
+-    :try_start_2
+-    invoke-static {}, Ljava/lang/Thread;->currentThread()Ljava/lang/Thread;
+-
+-    move-result-object v0
+-
+-    invoke-virtual {v0}, Ljava/lang/Thread;->interrupt()V
++    .line 715
++    monitor-exit v1
+ 
+-    goto :goto_0
++    return-void
+ 
+     .line 714
+     :catchall_0
+     move-exception v0
+ 
+     monitor-exit v1
+-    :try_end_2
+-    .catchall {:try_start_2 .. :try_end_2} :catchall_0
++    :try_end_0
++    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+ 
+     throw v0
+-
+-    :cond_0
+-    :try_start_3
+-    monitor-exit v1
+-    :try_end_3
+-    .catchall {:try_start_3 .. :try_end_3} :catchall_0
+-
+-    .line 715
+-    return-void
+ .end method
+ 
+ .method public surfaceDestroyed(Landroid/view/SurfaceHolder;)V
