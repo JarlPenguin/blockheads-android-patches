@@ -1,6 +1,6 @@
 # Patch The Blockheads APK for modern Android devices
 
-These patches were designed with the help of Google Gemini for v1.7.5 and were tested on a device running Android 16.
+These patches were designed with the help of LLMs for v1.7.5 and were tested on a device running Android 16.
 
 ## List of patches and what they do
 
