@@ -11,7 +11,7 @@ index 2e851ce..21f8b15 100644
      </application>
  </manifest>
 diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
-index 7c1afc4..61e1853 100644
+index 7c1afc4..1d0a869 100644
 --- a/smali/com/apportable/activity/VerdeActivity.smali
 +++ b/smali/com/apportable/activity/VerdeActivity.smali
 @@ -1626,35 +1626,20 @@
@@ -61,22 +61,6 @@ index 7c1afc4..61e1853 100644
      iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
  
      new-instance v1, Lcom/apportable/activity/VerdeActivity$8;
-@@ -1952,15 +1937,6 @@
-     .line 510
-     invoke-super {p0}, Landroid/app/Activity;->onStop()V
- 
--    .line 512
--    iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
--
--    new-instance v1, Lcom/apportable/activity/VerdeActivity$9;
--
--    invoke-direct {v1, p0, p0}, Lcom/apportable/activity/VerdeActivity$9;-><init>(Lcom/apportable/activity/VerdeActivity;Lcom/apportable/activity/VerdeActivity;)V
--
--    invoke-virtual {v0, v1}, Lcom/apportable/activity/BackgroundLibraryLoader;->onStop(Ljava/lang/Runnable;)V
--
-     .line 535
-     return-void
- .end method
 diff --git a/smali/com/apportable/gl/GLSurfaceView.smali b/smali/com/apportable/gl/GLSurfaceView.smali
 index 38c0a15..04094e8 100644
 --- a/smali/com/apportable/gl/GLSurfaceView.smali
