@@ -1,21 +1,46 @@
 diff --git a/smali/com/apportable/media/AudioPlayer.smali b/smali/com/apportable/media/AudioPlayer.smali
-index 433a381..95be8b4 100644
+index 433a381..13d9f83 100644
 --- a/smali/com/apportable/media/AudioPlayer.smali
 +++ b/smali/com/apportable/media/AudioPlayer.smali
-@@ -1630,6 +1630,16 @@
+@@ -1630,6 +1630,23 @@
  
      .line 254
      :cond_1
 +    iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
-+    aget-object v0, v0, p2
-+    if-eqz v0, :cond_skip_override
-+    const-string v1, "mountainKingLoop"
-+    invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-+    move-result v0
-+    if-eqz v0, :cond_skip_override
-+    move p1, v2
-+    :cond_skip_override
 +
++    aget-object v0, v0, p2
++
++    if-eqz v0, :cond_2
++
++    const-string v1, "mountainKingLoop"
++
++    invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
++
++    move-result v0
++
++    if-eqz v0, :cond_2
++
++    move p1, v2
++
++    :cond_2
      iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
  
      aget-object v0, v0, p2
+@@ -1651,7 +1668,7 @@
+ 
+     iget-object v1, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+ 
+-    if-ne p1, v2, :cond_2
++    if-ne p1, v2, :cond_3
+ 
+     const/4 v0, 0x1
+ 
+@@ -1660,7 +1677,7 @@
+ 
+     goto :goto_0
+ 
+-    :cond_2
++    :cond_3
+     const/4 v0, 0x0
+ 
+     goto :goto_1
