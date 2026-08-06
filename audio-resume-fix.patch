@@ -1,7 +1,7 @@
-diff --git a/suspend-fix/smali/com/apportable/activity/VerdeActivity.smali b/clean-patched/smali/com/apportable/activity/VerdeActivity.smali
+diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
 index 61e1853..99d88a8 100644
---- a/suspend-fix/smali/com/apportable/activity/VerdeActivity.smali
-+++ b/clean-patched/smali/com/apportable/activity/VerdeActivity.smali
+--- a/smali/com/apportable/activity/VerdeActivity.smali
++++ b/smali/com/apportable/activity/VerdeActivity.smali
 @@ -1623,6 +1623,10 @@
      .locals 2
  
@@ -24,10 +24,10 @@ index 61e1853..99d88a8 100644
      .line 434
      invoke-super {p0}, Landroid/app/Activity;->onResume()V
  
-diff --git a/suspend-fix/smali/com/apportable/media/AudioPlayer.smali b/clean-patched/smali/com/apportable/media/AudioPlayer.smali
+diff --git a/smali/com/apportable/media/AudioPlayer.smali b/smali/com/apportable/media/AudioPlayer.smali
 index 433a381..9c02b23 100644
---- a/suspend-fix/smali/com/apportable/media/AudioPlayer.smali
-+++ b/clean-patched/smali/com/apportable/media/AudioPlayer.smali
+--- a/smali/com/apportable/media/AudioPlayer.smali
++++ b/smali/com/apportable/media/AudioPlayer.smali
 @@ -6,6 +6,10 @@
  # static fields
  .field private static TAG:Ljava/lang/String;
