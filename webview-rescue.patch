@@ -1,24 +1,24 @@
 diff --git a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali
-index 220c656..8981add 100644
+index 220c656..90eae36 100644
 --- a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali
 +++ b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali
-@@ -172,3 +172,19 @@
- 
-     goto :goto_0
+@@ -116,6 +116,19 @@
+     return-void
  .end method
-+
+ 
 +.method public onRenderProcessGone(Landroid/webkit/WebView;Landroid/webkit/RenderProcessGoneDetail;)Z
 +    .locals 2
 +
 +    .prologue
-+    # Grab the reference to the parent BlockheadsWebView Activity
 +    iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient;->this$0:Lcom/noodlecake/noodlewebview/BlockheadsWebView;
 +
-+    # Call finish() on the Activity to safely close the window
 +    invoke-virtual {v0}, Landroid/app/Activity;->finish()V
 +
-+    # Return true (1) to tell Android the crash was successfully handled
 +    const/4 v1, 0x1
 +
 +    return v1
 +.end method
++
+ .method public shouldOverrideUrlLoading(Landroid/webkit/WebView;Ljava/lang/String;)Z
+     .locals 3
+ 
