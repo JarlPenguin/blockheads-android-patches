@@ -27,10 +27,17 @@ Fixes the "Privacy Setting Changed" popup appearing where irrelevant.
 
 * Now it only appears when you actually change the privacy settings through the "Privacy Options..." button.
 
-### `webview-rescue.patch`
-Fixes random WebView crashes taking down the game with themselves.
+### `rotation-fix.patch`
+Fixes auto-rotation issues.
 
-* When the WebView crashes, only it will, while the game itself will be unaffected.
+* Fixes crash on rotating the game on Samsung devices.
+* Prevents the game from temporarily rotating to right-landscape on launch.
+* Allows the game to be launched directly in landscape mode.
+
+### `webview-rescue.patch`
+Fixes random WebDialog/WebView crashes taking down the game with themselves.
+
+* When the WebDialog/WebView crashes, only it will, while the game itself will be unaffected.
 
 ### `webview-suspend-freeze-fix.patch`
 Fixes fatal Apportable engine freezes triggered by Android lifecycles, such as suspending/resuming the game, opening WebView pages (welcome messages, Help/Credits page), or launching the photo picker.

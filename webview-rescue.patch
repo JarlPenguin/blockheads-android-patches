@@ -1,3 +1,23 @@
+diff --git a/smali/com/apportable/ui/WebDialog$1$1.smali b/smali/com/apportable/ui/WebDialog$1$1.smali
+index 9ec8090..dccead3 100644
+--- a/smali/com/apportable/ui/WebDialog$1$1.smali
++++ b/smali/com/apportable/ui/WebDialog$1$1.smali
+@@ -87,6 +87,15 @@
+     return-void
+ .end method
+ 
++.method public onRenderProcessGone(Landroid/webkit/WebView;Landroid/webkit/RenderProcessGoneDetail;)Z
++    .locals 1
++
++    .prologue
++    const/4 v0, 0x1
++
++    return v0
++.end method
++
+ .method public shouldOverrideUrlLoading(Landroid/webkit/WebView;Ljava/lang/String;)Z
+     .locals 4
+ 
 diff --git a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali
 index 220c656..90eae36 100644
 --- a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali
