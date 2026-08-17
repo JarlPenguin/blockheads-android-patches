@@ -19,6 +19,20 @@ Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.
 * `allowAudioPlaybackCapture` allows the game's audio to be captured when screen recording.
 * `hasFragileUserData` allows the player to keep the game's data when uninstalling it.
 
+### `join-link-fix.patch`
+Fixes join links (`blockheads://?ip=...` and `theblockheads.net/join.php?...`) not working. Even with the AndroidManifest patched they still wouldn't work on cold boot - the game would launch but stop at the main menu instead of importing the server details and opening the Join Server screen.
+
+> **Notes from Claude:**
+> The legacy Apportable bridge hands the launch URL to the native runtime long before the Objective-C application object exists, and never delivers the lifecycle callbacks the game relies on to act on it. This patch repairs the manifest intent filters and rewires the Java-side delivery path so the URL reaches the game's `handleOpenURL:` at a point where it can actually be used.
+
+* Rewrites the broken intent filters. The original declared `android:scheme="theblockheads.net/join"` - not a valid scheme, since schemes cannot contain `.` or `/` - so `blockheads://` links matched nothing, and this filter was duplicated verbatim. Web links instead fell through to a catch-all that claimed *every* `http` URL on `theblockheads.net` and `blockheads.noodlecake.com`, offering the game as a handler for unrelated pages, and which also contained a stray malformed literal (`&quot;\10`) sitting loose inside the element. All of it is replaced with a proper `blockheads` scheme filter and `http`/`https` filters scoped to the `/join.php` path.
+* Defers the cold-boot URL instead of dropping it. `VerdeActivity$3` passed the launch URL to `nativeHandleUri` on the Android UI thread roughly half a second before the native application started, and two seconds before the Objective-C runloop began pumping - the call silently no-opped. The URL is now stashed and replayed on the engine's main thread once the runtime is confirmed live, mirroring the working warm-start sequence exactly.
+* Repairs a vanilla Apportable lifecycle bug where `startNativeApplication` set its background flag directly instead of routing through `testInBackground()`, meaning `contextDidBecomeValid`, `applicationWillEnterForeground` and `applicationDidBecomeActive` were **never** delivered to the Objective-C app on a cold launch.
+* Synthesises a window-focus off/on cycle a few engine ticks after delivery. The game buffers incoming URLs in `delayedOpenURLIfNeeded` and only drains that buffer on a focus-gained event - which never arrives on cold boot, since the window already holds focus. Without this, the Join Server screen only appeared if the user triggered a focus-change event (such as pulling down and releasing the notification shade). Timings are expressed in runloop ticks rather than milliseconds so they self-adjust across hardware.
+* Also fixes links firing while the game is already in the foreground, which previously suffered the same stalled-buffer symptom, and supports repeated links without a restart.
+
+_Note: the game no longer registers as a handler for general `theblockheads.net` / `blockheads.noodlecake.com` URLs - only `/join.php` links. The old catch-all behaviour was almost certainly unintentional._
+
 ### `main-menu-music-loop-fix.patch`:
 Fixes the main menu music not looping.
 
