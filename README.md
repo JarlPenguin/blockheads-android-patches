@@ -7,11 +7,16 @@ These patches were designed with the help of LLMs for v1.7.5 and were tested on 
 ### `audio-resume-fix.patch`
 Fixes in-game music not resuming after suspending and resuming the game.
 
-* Implements a "Selective Shield" for the `MediaPlayer` that safely lets main menu music die during a suspend (avoiding native OpenSL ES audio blindspots), while intercepting native JNI kill orders to protect and keep in-game music alive.
-* Bypasses broken vanilla engine flags by injecting brute-force Java commands into `lifecycleSuspend` and `lifecycleResume`, guaranteeing that surviving shielded tracks properly pause and wake up without relying on native engine state polling.
-* Injects a cross-instance audio garbage collector into Dalvik to hunt down and violently execute orphaned tracks upon scene changes (e.g., exiting a world), preventing shielded in-game music from overlapping with the main menu music.
+> **Notes from Claude:**
+> The Apportable bridge releases the backing `MediaPlayer` via a native JNI call to `AudioPlayer.releaseAudio()` when the app is backgrounded, and never rebuilds it on foreground - so the slot `lifecycleResume()` would restart no longer exists. SFX are unaffected because OpenAL allocates a fresh source per effect.
 
-_Note: This patch may not apply properly without `webview-suspend-freeze-fix.patch` having been applied first._
+* Adds a guard to `releaseAudio()` that intercepts the native release while the activity is backgrounded (tracked by a new `sIsBackgrounded` flag set from `VerdeActivity`'s `onPause`/`onResume`), keeping the player alive and marking it `suspended` so `lifecycleResume()` restarts it from its pause position.
+* Excludes main menu music (`mountainKingLoop`) from the guard. Native manages that track correctly on its own - fading and releasing it on world entry - so shielding it would strand a player that native can no longer address for volume or playback control. Menu music is therefore silent after a resume, which is preferable to a ghost track, especially when combined with the main menu music loop fix.
+* Adds an `orphaned` flag to `AudioPlayerItem` and a per-instance `releaseOrphans()` sweep, called at the head of `initAudio()` / `initAudioWithBuffer()`. When the engine loads a new track, any shielded player still alive from a previous suspend is released first, preventing overlap (e.g. in-game music continuing over main menu music after quitting a world).
+
+**Known limitation:** a shielded track is invisible to the native engine, so the music volume slider does not affect it until the next track load sweeps it. Fully resolving this requires patching the native audio bridge.
+
+_Note: Requires `webview-suspend-freeze-fix.patch` to be applied first._
 
 ### `audio-record-keep-saves.patch`:
 Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.

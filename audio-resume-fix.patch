@@ -1,5 +1,5 @@
 diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
-index 61e1853..99d88a8 100644
+index 1d0a869..0bb11da 100644
 --- a/smali/com/apportable/activity/VerdeActivity.smali
 +++ b/smali/com/apportable/activity/VerdeActivity.smali
 @@ -1623,6 +1623,10 @@
@@ -25,435 +25,159 @@ index 61e1853..99d88a8 100644
      invoke-super {p0}, Landroid/app/Activity;->onResume()V
  
 diff --git a/smali/com/apportable/media/AudioPlayer.smali b/smali/com/apportable/media/AudioPlayer.smali
-index 433a381..9c02b23 100644
+index 433a381..9a239d1 100644
 --- a/smali/com/apportable/media/AudioPlayer.smali
 +++ b/smali/com/apportable/media/AudioPlayer.smali
-@@ -6,6 +6,10 @@
+@@ -6,6 +6,8 @@
  # static fields
  .field private static TAG:Ljava/lang/String;
  
-+.field public static sInstances:Ljava/util/ArrayList;
-+
 +.field public static sIsBackgrounded:Z
 +
  
  # instance fields
  .field MAX_SOURCES:I
-@@ -82,11 +86,26 @@
- 
-     iput-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
- 
-+    sget-object v1, Lcom/apportable/media/AudioPlayer;->sInstances:Ljava/util/ArrayList;
-+
-+    if-nez v1, :cond_0
-+
-+    new-instance v1, Ljava/util/ArrayList;
-+
-+    invoke-direct {v1}, Ljava/util/ArrayList;-><init>()V
-+
-+    sput-object v1, Lcom/apportable/media/AudioPlayer;->sInstances:Ljava/util/ArrayList;
-+
-+    :cond_0
-+    sget-object v1, Lcom/apportable/media/AudioPlayer;->sInstances:Ljava/util/ArrayList;
-+
-+    invoke-virtual {v1, p0}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
-+
-     .line 93
-     :goto_0
-     iget v1, p0, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
- 
--    if-ge v0, v1, :cond_0
-+    if-ge v0, v1, :cond_1
- 
-     .line 94
-     iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
-@@ -104,7 +123,7 @@
-     goto :goto_0
- 
-     .line 97
--    :cond_0
-+    :cond_1
-     return-void
+@@ -877,6 +879,47 @@
+     goto/16 :goto_5
  .end method
  
-@@ -1341,137 +1360,90 @@
- .end method
- 
- .method public lifecycleResume()V
--    .locals 3
++.method private releaseOrphans()V
 +    .locals 4
- 
-     .prologue
--    const/4 v1, 0x0
--
--    .line 394
--    move v0, v1
++
 +    const/4 v0, 0x0
- 
--    .line 395
-     :goto_0
--    iget v2, p0, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
--
--    if-ge v0, v2, :cond_1
--
--    .line 396
--    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
--
--    aget-object v2, v2, v0
--
--    if-eqz v2, :cond_0
--
--    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
--
--    aget-object v2, v2, v0
++
++    :goto_0
 +    iget v1, p0, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
- 
--    iget-object v2, v2, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
-+    if-ge v0, v1, :cond_2
- 
--    if-eqz v2, :cond_0
++
++    if-ge v0, v1, :cond_1
++
 +    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
- 
--    .line 397
--    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++
 +    aget-object v1, v1, v0
- 
--    aget-object v2, v2, v0
-+    if-nez v1, :cond_0
- 
--    iget-boolean v2, v2, Lcom/apportable/media/AudioPlayerItem;->suspended:Z
-+    goto :goto_1
- 
--    if-eqz v2, :cond_0
-+    :cond_0
-+    iget-object v2, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
- 
--    .line 398
--    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
-+    if-nez v2, :cond_1
- 
--    aget-object v2, v2, v0
-+    goto :goto_1
- 
--    iget-object v2, v2, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
-+    :cond_1
-+    iget-object v2, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
- 
-     invoke-virtual {v2}, Landroid/media/MediaPlayer;->start()V
- 
--    .line 399
--    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
--
--    aget-object v2, v2, v0
++
++    if-eqz v1, :cond_0
++
++    iget-boolean v2, v1, Lcom/apportable/media/AudioPlayerItem;->orphaned:Z
++
++    if-eqz v2, :cond_0
++
 +    const/4 v2, 0x0
++
++    iput-boolean v2, v1, Lcom/apportable/media/AudioPlayerItem;->orphaned:Z
++
++    invoke-direct {p0, v0}, Lcom/apportable/media/AudioPlayer;->_releaseAudio(I)V
++
++    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
++
++    const/4 v2, 0x0
++
++    aput-object v2, v1, v0
++
++    :cond_0
++    add-int/lit8 v0, v0, 0x1
++
++    goto :goto_0
++
++    :cond_1
++    return-void
++.end method
++
  
--    iput-boolean v1, v2, Lcom/apportable/media/AudioPlayerItem;->suspended:Z
-+    iput-boolean v2, v1, Lcom/apportable/media/AudioPlayerItem;->suspended:Z
- 
--    .line 395
--    :cond_0
-+    :goto_1
-     add-int/lit8 v0, v0, 0x1
- 
-     goto :goto_0
- 
--    .line 404
--    :cond_1
-+    :cond_2
-     return-void
- .end method
- 
- .method public lifecycleSuspend()V
--    .locals 3
-+    .locals 4
+ # virtual methods
+ .method public getCurrentPosition(I)I
+@@ -975,6 +1018,8 @@
+     .locals 2
  
      .prologue
--    .line 383
++    invoke-direct {p0}, Lcom/apportable/media/AudioPlayer;->releaseOrphans()V
++
+     .line 106
      const/4 v0, 0x0
  
-     :goto_0
-     iget v1, p0, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
+@@ -1032,6 +1077,8 @@
+     .locals 9
  
--    if-ge v0, v1, :cond_1
--
--    .line 384
--    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
--
--    aget-object v1, v1, v0
--
--    if-eqz v1, :cond_0
--
--    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
--
--    aget-object v1, v1, v0
--
--    iget-object v1, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
--
--    if-eqz v1, :cond_0
-+    if-ge v0, v1, :cond_2
+     .prologue
++    invoke-direct {p0}, Lcom/apportable/media/AudioPlayer;->releaseOrphans()V
++
+     const/4 v8, 0x1
  
--    .line 385
-     iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
- 
-     aget-object v1, v1, v0
- 
--    iget-object v1, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
--
--    invoke-virtual {v1}, Landroid/media/MediaPlayer;->isPlaying()Z
--
--    move-result v1
--
--    if-eqz v1, :cond_0
-+    if-nez v1, :cond_0
- 
--    .line 386
--    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
-+    goto :goto_1
- 
--    aget-object v1, v1, v0
-+    :cond_0
-+    iget-object v2, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
- 
--    iget-object v1, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
-+    if-nez v2, :cond_1
- 
--    invoke-virtual {v1}, Landroid/media/MediaPlayer;->pause()V
-+    goto :goto_1
- 
--    .line 387
--    iget-object v1, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
-+    :cond_1
-+    iget-object v2, v1, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
- 
--    aget-object v1, v1, v0
-+    invoke-virtual {v2}, Landroid/media/MediaPlayer;->pause()V
- 
-     const/4 v2, 0x1
- 
-     iput-boolean v2, v1, Lcom/apportable/media/AudioPlayerItem;->suspended:Z
- 
--    .line 383
--    :cond_0
-+    :goto_1
-     add-int/lit8 v0, v0, 0x1
- 
-     goto :goto_0
- 
--    .line 391
--    :cond_1
-+    :cond_2
-     return-void
- .end method
- 
-@@ -1539,30 +1511,53 @@
+     const/4 v1, 0x0
+@@ -1539,20 +1586,61 @@
  .end method
  
  .method public releaseAudio(I)V
 -    .locals 2
-+    .locals 3
++    .locals 4
  
      .prologue
--    .line 295
++    const/4 v2, -0x1
++
++    if-eq p1, v2, :cond_0
++
++    sget-boolean v2, Lcom/apportable/media/AudioPlayer;->sIsBackgrounded:Z
++
++    if-eqz v2, :cond_0
++
++    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
++
++    aget-object v2, v2, p1
++
++    if-eqz v2, :cond_0
++
++    const-string v3, "mountainKingLoop"
++
++    invoke-virtual {v2, v3}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
++
++    move-result v2
++
++    if-nez v2, :cond_0
++
++    iget-object v2, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
++
++    aget-object v2, v2, p1
++
++    if-eqz v2, :cond_0
++
++    iget-object v3, v2, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
++
++    if-eqz v3, :cond_0
++
++    const/4 v3, 0x1
++
++    iput-boolean v3, v2, Lcom/apportable/media/AudioPlayerItem;->suspended:Z
++
++    iput-boolean v3, v2, Lcom/apportable/media/AudioPlayerItem;->orphaned:Z
++
++    return-void
++
+     .line 295
++    :cond_0
      const/4 v0, -0x1
  
-     if-ne p1, v0, :cond_0
+-    if-ne p1, v0, :cond_0
++    if-ne p1, v0, :cond_1
  
--    .line 301
--    :goto_0
+     .line 301
+     :goto_0
      return-void
  
--    .line 299
-     :cond_0
-+    iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
-+
-+    aget-object v0, v0, p1
-+
-+    if-nez v0, :cond_1
-+
-+    goto :goto_0
-+
+     .line 299
+-    :cond_0
 +    :cond_1
-+    const-string v1, "mountainKingLoop"
-+
-+    invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-+
-+    move-result v0
-+
-+    if-eqz v0, :cond_2
-+
-+    goto :goto_0
-+
-+    :cond_2
-+    sget-boolean v0, Lcom/apportable/media/AudioPlayer;->sIsBackgrounded:Z
-+
-+    if-eqz v0, :cond_3
-+
-+    return-void
-+
-+    :cond_3
-+    :goto_0
      invoke-direct {p0, p1}, Lcom/apportable/media/AudioPlayer;->_releaseAudio(I)V
  
--    .line 300
-     iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
+     .line 300
+diff --git a/smali/com/apportable/media/AudioPlayerItem.smali b/smali/com/apportable/media/AudioPlayerItem.smali
+index 4664921..2e7888a 100644
+--- a/smali/com/apportable/media/AudioPlayerItem.smali
++++ b/smali/com/apportable/media/AudioPlayerItem.smali
+@@ -18,6 +18,8 @@
  
-     const/4 v1, 0x0
+ .field loops:I
  
-     aput-object v1, v0, p1
++.field orphaned:Z
++
+ .field player:Landroid/media/MediaPlayer;
  
--    goto :goto_0
-+    return-void
- .end method
- 
- .method public seekTo(II)V
-@@ -1710,58 +1705,126 @@
- .end method
- 
- .method public startAudio(I)V
--    .locals 1
-+    .locals 8
- 
-     .prologue
--    .line 271
-     const/4 v0, -0x1
- 
--    if-ne p1, v0, :cond_1
-+    if-ne p1, v0, :cond_0
- 
--    .line 281
--    :cond_0
--    :goto_0
--    return-void
-+    goto/16 :goto_3
- 
--    .line 274
--    :cond_1
-+    :cond_0
-     iget-boolean v0, p0, Lcom/apportable/media/AudioPlayer;->onDemandLoading:Z
- 
--    if-eqz v0, :cond_2
-+    if-eqz v0, :cond_1
- 
-     iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
- 
-     aget-object v0, v0, p1
- 
--    if-nez v0, :cond_2
-+    if-nez v0, :cond_1
- 
--    .line 275
-     invoke-direct {p0, p1}, Lcom/apportable/media/AudioPlayer;->initializeAudio(I)I
- 
--    .line 278
--    :cond_2
-+    :cond_1
-     iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
- 
-     aget-object v0, v0, p1
- 
--    if-eqz v0, :cond_0
-+    if-nez v0, :cond_2
- 
--    iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
-+    goto/16 :goto_3
- 
--    aget-object v0, v0, p1
-+    :cond_2
-+    iget-object v1, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
- 
--    iget-object v0, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
-+    if-nez v1, :cond_3
- 
--    if-eqz v0, :cond_0
-+    goto/16 :goto_3
- 
--    .line 279
--    iget-object v0, p0, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
-+    :cond_3
-+    invoke-virtual {v1}, Landroid/media/MediaPlayer;->start()V
- 
--    aget-object v0, v0, p1
-+    sget-object v2, Lcom/apportable/media/AudioPlayer;->sInstances:Ljava/util/ArrayList;
- 
--    iget-object v0, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
-+    if-nez v2, :cond_4
-+
-+    goto :goto_3
-+
-+    :cond_4
-+    invoke-virtual {v2}, Ljava/util/ArrayList;->iterator()Ljava/util/Iterator;
- 
--    invoke-virtual {v0}, Landroid/media/MediaPlayer;->start()V
-+    move-result-object v2
-+
-+    :goto_0
-+    invoke-interface {v2}, Ljava/util/Iterator;->hasNext()Z
-+
-+    move-result v3
-+
-+    if-nez v3, :cond_5
-+
-+    goto :goto_3
-+
-+    :cond_5
-+    invoke-interface {v2}, Ljava/util/Iterator;->next()Ljava/lang/Object;
-+
-+    move-result-object v3
-+
-+    check-cast v3, Lcom/apportable/media/AudioPlayer;
-+
-+    const/4 v4, 0x0
-+
-+    :goto_1
-+    iget v5, v3, Lcom/apportable/media/AudioPlayer;->MAX_SOURCES:I
-+
-+    if-ge v4, v5, :cond_9
-+
-+    if-ne v3, p0, :cond_6
-+
-+    if-ne v4, p1, :cond_6
-+
-+    goto :goto_2
-+
-+    :cond_6
-+    iget-object v5, v3, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
-+
-+    aget-object v5, v5, v4
-+
-+    if-nez v5, :cond_7
- 
-+    goto :goto_2
-+
-+    :cond_7
-+    iget-object v6, v5, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
-+
-+    if-nez v6, :cond_8
-+
-+    goto :goto_2
-+
-+    :cond_8
-+    invoke-virtual {v6}, Landroid/media/MediaPlayer;->stop()V
-+
-+    invoke-virtual {v6}, Landroid/media/MediaPlayer;->release()V
-+
-+    iget-object v5, v3, Lcom/apportable/media/AudioPlayer;->mSources:[Lcom/apportable/media/AudioPlayerItem;
-+
-+    const/4 v7, 0x0
-+
-+    aput-object v7, v5, v4
-+
-+    iget-object v5, v3, Lcom/apportable/media/AudioPlayer;->mSourcePaths:[Ljava/lang/String;
-+
-+    aput-object v7, v5, v4
-+
-+    :goto_2
-+    add-int/lit8 v4, v4, 0x1
-+
-+    goto :goto_1
-+
-+    :cond_9
-     goto :goto_0
-+
-+    :goto_3
-+    return-void
- .end method
+ .field seekTarget:I
