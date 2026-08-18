@@ -4,8 +4,20 @@ These patches were designed with the help of LLMs for v1.7.5 and were tested on 
 
 ## List of patches and what they do
 
-### `audio-resume-fix.patch`
-Fixes in-game music not resuming after suspending and resuming the game.
+### `audio-fix-native.patch`
+Fixes several audio bugs by loading a small native library (`libaudiofix.so`) that swizzles Apportable's Objective-C runtime at startup, plus one smali change:
+
+- **Music never resumes after backgrounding.** The game's own `-[MJSoundManager restartMusicAfterActiveEvent:]` is an empty stub — on iOS the audio-session interruption path handled resume, and that path never fires on Android. The library fills the stub in, restoring the track at its previous playback position.
+- **Main menu music doesn't loop.** Apportable's `AudioPlayer.setNumberOfLoops` only treats `-1` as "loop forever", so the game's request for 999 repetitions silently meant "play once".
+- **No music at all when launched while another app is playing audio.** The game caches `otherAudioWasPaying` once at startup and never recomputes it, muting music for the rest of the session.
+- **Use-after-free on the music player.** Nothing nils `MJSoundManager.mp3Player` after the player is deallocated, so volume and playback-state queries read freed memory after every suspend.
+
+**Known limitations:** sound-effect suspend/resume is still inert, and Android audio focus changes are never delivered to the game, so it won't duck or pause for calls or other apps.
+
+_Note: Requires `webview-suspend-freeze-fix.patch` to be applied first._
+
+### `audio-resume-fix-smali.patch`
+Smali patch to fix in-game music not resuming after suspending and resuming the game.
 
 > **Notes from Claude:**
 > The Apportable bridge releases the backing `MediaPlayer` via a native JNI call to `AudioPlayer.releaseAudio()` when the app is backgrounded, and never rebuilds it on foreground - so the slot `lifecycleResume()` would restart no longer exists. SFX are unaffected because OpenAL allocates a fresh source per effect.
@@ -14,7 +26,7 @@ Fixes in-game music not resuming after suspending and resuming the game.
 * Excludes main menu music (`mountainKingLoop`) from the guard. Native manages that track correctly on its own - fading and releasing it on world entry - so shielding it would strand a player that native can no longer address for volume or playback control. Menu music is therefore silent after a resume, which is preferable to a ghost track, especially when combined with the main menu music loop fix.
 * Adds an `orphaned` flag to `AudioPlayerItem` and a per-instance `releaseOrphans()` sweep, called at the head of `initAudio()` / `initAudioWithBuffer()`. When the engine loads a new track, any shielded player still alive from a previous suspend is released first, preventing overlap (e.g. in-game music continuing over main menu music after quitting a world).
 
-**Known limitation:** a shielded track is invisible to the native engine, so the music volume slider does not affect it until the next track load sweeps it. Fully resolving this requires patching the native audio bridge.
+**Known limitations:** a shielded track is invisible to the native engine, so the music volume slider does not affect it until the next track load sweeps it. Fully resolving this requires patching the native audio bridge.
 
 _Note: Requires `webview-suspend-freeze-fix.patch` to be applied first._
 

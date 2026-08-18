@@ -1,0 +1,43 @@
+diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+index 468f98c..d6c7a75 100644
+--- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
++++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+@@ -50,7 +50,7 @@
+ 
+ # virtual methods
+ .method public run()V
+-    .locals 3
++    .locals 4
+ 
+     .prologue
+     .line 35
+@@ -61,6 +61,16 @@
+     iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
+ 
+     invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
++
++    const-string v1, "audiofix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "AUDIOFIX"
++
++    const-string v2, "loaded from BackgroundLibraryLoader"
++
++    invoke-static {v1, v2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+     :try_end_0
+     .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
+ 
+diff --git a/smali/com/apportable/media/AudioPlayer.smali b/smali/com/apportable/media/AudioPlayer.smali
+index 433a381..1076342 100644
+--- a/smali/com/apportable/media/AudioPlayer.smali
++++ b/smali/com/apportable/media/AudioPlayer.smali
+@@ -1651,7 +1651,7 @@
+ 
+     iget-object v1, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+ 
+-    if-ne p1, v2, :cond_2
++    if-eqz p1, :cond_2
+ 
+     const/4 v0, 0x1
+ 
