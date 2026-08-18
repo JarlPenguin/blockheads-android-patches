@@ -25,7 +25,7 @@ index 1d0a869..0bb11da 100644
      invoke-super {p0}, Landroid/app/Activity;->onResume()V
  
 diff --git a/smali/com/apportable/media/AudioPlayer.smali b/smali/com/apportable/media/AudioPlayer.smali
-index 433a381..9a239d1 100644
+index 433a381..2d9b6bd 100644
 --- a/smali/com/apportable/media/AudioPlayer.smali
 +++ b/smali/com/apportable/media/AudioPlayer.smali
 @@ -6,6 +6,8 @@
@@ -168,6 +168,15 @@ index 433a381..9a239d1 100644
      invoke-direct {p0, p1}, Lcom/apportable/media/AudioPlayer;->_releaseAudio(I)V
  
      .line 300
+@@ -1651,7 +1739,7 @@
+ 
+     iget-object v1, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+ 
+-    if-ne p1, v2, :cond_2
++    if-eqz p1, :cond_2
+ 
+     const/4 v0, 0x1
+ 
 diff --git a/smali/com/apportable/media/AudioPlayerItem.smali b/smali/com/apportable/media/AudioPlayerItem.smali
 index 4664921..2e7888a 100644
 --- a/smali/com/apportable/media/AudioPlayerItem.smali
