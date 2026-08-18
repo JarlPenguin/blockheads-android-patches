@@ -4,30 +4,15 @@ These patches were designed with the help of LLMs for v1.7.5 and were tested on 
 
 ## List of patches and what they do
 
-### `audio-fix-native.patch`
+### `audio-fix.patch`
 Fixes several audio bugs by loading a small native library (`libaudiofix.so`) that swizzles Apportable's Objective-C runtime at startup, plus one smali change:
 
-* Music never resumes after backgrounding. The game's own `-[MJSoundManager restartMusicAfterActiveEvent:]` is an empty stub — on iOS the audio-session interruption path handled resume, and that path never fires on Android. The library fills the stub in, restoring the track at its previous playback position.
+* Music never resumes after backgrounding. The game's own `-[MJSoundManager restartMusicAfterActiveEvent:]` is an empty stub - on iOS the audio-session interruption path handled resume, and that path never fires on Android. The library fills the stub in, restoring the track at its previous playback position.
 * Main menu music doesn't loop. Apportable's `AudioPlayer.setNumberOfLoops` only treats `-1` as "loop forever", so the game's request for 999 repetitions silently meant "play once".
 * No music at all when launched while another app is playing audio. The game caches `otherAudioWasPaying` once at startup and never recomputes it, muting music for the rest of the session.
 * Use-after-free on the music player. Nothing nils `MJSoundManager.mp3Player` after the player is deallocated, so volume and playback-state queries read freed memory after every suspend.
 
-**Known limitations:** sound-effect suspend/resume is still inert, and Android audio focus changes are never delivered to the game, so it won't duck or pause for calls or other apps.
-
-_Note: Requires `webview-suspend-freeze-fix.patch` to be applied first._
-
-### `audio-fix-smali.patch`
-Fixes several audio bugs by only patching the Java side of things.
-
-> **Notes from Claude:**
-> The Apportable bridge releases the backing `MediaPlayer` via a native JNI call to `AudioPlayer.releaseAudio()` when the app is backgrounded, and never rebuilds it on foreground - so the slot `lifecycleResume()` would restart no longer exists. SFX are unaffected because OpenAL allocates a fresh source per effect.
-
-* Adds a guard to `releaseAudio()` that intercepts the native release while the activity is backgrounded (tracked by a new `sIsBackgrounded` flag set from `VerdeActivity`'s `onPause`/`onResume`), keeping the player alive and marking it `suspended` so `lifecycleResume()` restarts it from its pause position.
-* Excludes main menu music (`mountainKingLoop`) from the guard. Native manages that track correctly on its own - fading and releasing it on world entry - so shielding it would strand a player that native can no longer address for volume or playback control. Menu music is therefore silent after a resume, which is preferable to a ghost track, especially when combined with the main menu music loop fix.
-* Adds an `orphaned` flag to `AudioPlayerItem` and a per-instance `releaseOrphans()` sweep, called at the head of `initAudio()` / `initAudioWithBuffer()`. When the engine loads a new track, any shielded player still alive from a previous suspend is released first, preventing overlap (e.g. in-game music continuing over main menu music after quitting a world).
-* Main menu music doesn't loop. Apportable's `AudioPlayer.setNumberOfLoops` only treats `-1` as "loop forever", so the game's request for 999 repetitions silently meant "play once".
-
-**Known limitations:** a shielded track is invisible to the native engine, so the music volume slider does not affect it until the next track load sweeps it. Fully resolving this requires patching the native audio bridge.
+**Known limitations:** see https://github.com/JarlPenguin/blockheads-android-patches/issues/1.
 
 _Note: Requires `webview-suspend-freeze-fix.patch` to be applied first._
 
@@ -69,13 +54,15 @@ Fixes random WebDialog/WebView crashes taking down the game with themselves.
 * When the WebDialog/WebView crashes, only it will, while the game itself will be unaffected.
 
 ### `webview-suspend-freeze-fix.patch`
-Fixes fatal Apportable engine freezes triggered by Android lifecycles, such as suspending/resuming the game, opening WebView pages (welcome messages, Help/Credits page), or launching the photo picker.
+Fixes fatal ANR freezes triggered by Android lifecycle transitions, such as suspending/resuming the game, opening WebView pages (welcome messages, Help/Credits page), or launching the photo picker.
 
-> **Notes from Gemini:**
-> Because modern Android handles background lifecycles, WebView rendering, and hardware acceleration differently than older versions, the legacy Apportable cross-compiled engine frequently crashes and deadlocks. This patch natively modifies the Dalvik bytecode and Android Manifest to bypass these incompatibilities.
+> **Notes from Claude:**
+> Apportable runs the Objective-C main runloop on a dedicated `MainThread` and creates its views there, so that thread's Looper is the one `ViewRootImpl` posts to. On pause, `MainThread` blocks in `GLSurfaceView.readySurface()` waiting on `mLock` for a surface change only the UI thread can deliver, while the UI thread blocks in `Activity.performStop()` -> `WindowManagerGlobal.setStoppedState()` -> `Handler.runWithScissors()` waiting for `MainThread`'s Looper to dispatch. Neither can proceed and Android raises an ANR after 5 seconds.
 
-* Fixes fatal ANR (Application Not Responding) freezes when suspending/resuming the game.
-* Removes legacy `Thread.interrupt()` and infinite GPU `wait()` loops in the Apportable engine's Java layer (`VerdeActivity` & `GLSurfaceView`).
+* Bounds the `mLock` wait in `readySurface()` to 16 ms, breaking the lock cycle; the tick action re-runs on the next tick.
+* Bounds the waits in `surfaceCreated()` and `surfaceDestroyed()` to 250 ms, preserving the surface handshake while capping UI-thread exposure.
+* Removes the `SDK_INT >= 19` `MainThread.getThread().interrupt()` call in `VerdeActivity.onPause()`. `MessageQueue.next()` retries on `EINTR` and never checks the Java interrupt flag, so it never woke `MainThread` and only left the flag set for later blocking calls to trip over.
+* Removes the re-interrupt handlers in the `InterruptedException` catch blocks of `surfaceCreated()` / `surfaceDestroyed()`.
 * Adds `screenSize` to the manifest `configChanges` so rotating the device doesn't destroy and recreate the WebView UI.
 
 ---
