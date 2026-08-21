@@ -5,16 +5,21 @@ These patches were designed with the help of LLMs for v1.7.5 and were tested on 
 ## List of patches and what they do
 
 ### `audio-fix.patch`
-Fixes several audio bugs by loading a small native library (`libaudiofix.so`) that swizzles Apportable's Objective-C runtime at startup, plus one smali change:
+Fixes music not resuming after backgrounding, music not looping, and music never starting when the game is launched while another app is playing audio. Includes a native library (`libaudiofix.so`) that swizzles Apportable's Objective-C runtime at startup, plus a smali change.
 
-* Music never resumes after backgrounding. The game's own `-[MJSoundManager restartMusicAfterActiveEvent:]` is an empty stub - on iOS the audio-session interruption path handled resume, and that path never fires on Android. The library fills the stub in, restoring the track at its previous playback position.
-* Main menu music doesn't loop. Apportable's `AudioPlayer.setNumberOfLoops` only treats `-1` as "loop forever", so the game's request for 999 repetitions silently meant "play once".
-* No music at all when launched while another app is playing audio. The game caches `otherAudioWasPaying` once at startup and never recomputes it, muting music for the rest of the session.
-* Use-after-free on the music player. Nothing nils `MJSoundManager.mp3Player` after the player is deallocated, so volume and playback-state queries read freed memory after every suspend.
+> **Notes from Claude:**
+> `-[MJSoundManager restartMusicAfterActiveEvent:]` - the only music call `-[GameView didBecomeActive]` makes on resume - is an empty stub: a compiled prologue and epilogue with no body. It is empty because on iOS the audio-session interruption path handled resume. That path is intact on both sides here and never connects. `-[AVAudioPlayer(Platform) _platform_focus_changed:]` correctly maps Android focus constants onto `_beginInterruption`/`_endInterruption`, and `-[MJSoundManager reinitialize]` (reached from `initWithMasterVolume:`) does register for `AVAudioSessionInterruptionNotification`, but `-[AndroidAudioManager audioFocusChange:]` never fires and its `delegate` is nil, so nothing propagates. Apportable also sends the deprecated `AVAudioSessionDelegate` method `beginInterruption` where the game listens for the modern notification, so the two ends would not have met even with focus working. Meanwhile `-[AVAudioPlayer dealloc]` is the sole sender of `_platform_unload:`, which is what releases the Java `MediaPlayer` slot - so the player dies on background with nothing to restart it.
+
+* Fills in the empty `restartMusicAfterActiveEvent:` with a call to the game's own `playMP3IfSafe:withTimeOffset:`, using the path retained from `lastPlayedMP3Path` and the position captured at teardown. Routing through the game's own loader means native retains ownership of the new `AVAudioPlayer`, so the in-game music volume slider continues to affect it - the defect in the earlier Java-side workaround, where the retained player was invisible to native.
+* Captures the playback position in `-[AVAudioPlayer stop]`, which fires ~1 ms before `dealloc` on the same player. This is the only moment it is readable: `-[AVAudioPlayer currentTime]` returns the cached seek target from `setCurrentTime:` whenever `_platform_isPlaying:` is false, and by `dealloc` the Java `MediaPlayer` has already been stopped. The `isPlaying` check at capture time also distinguishes a genuine suspend from a track that ended naturally, in which case no restore is issued.
+* Declines to restore when the game is mid-transition, keyed to `MJSoundManager.fadingOut` and to a dealloc occurring inside `loadMP3IfSafe:withTimeOffset:`. A dealloc in either window is the game replacing a track, not a suspend, and the position is meaningless. Any game-initiated load also drops a pending restore outright, since the game has decided what should be playing.
+* Nils `MJSoundManager.mp3Player` after the player is deallocated. Nothing else does - the only writer that nils it is `stopMP3Playback`, which has no callers - so `setMusicVolume`, `isPlayingMP3`, `currentMP3time`, and `setLoopMP3s:` all read freed memory after every suspend in the unpatched game.
+* Replaces `-[MJSoundManager safeToPlayMP3s]` with an unconditional true. The method is a one-line read of `otherAudioWasPaying`, which `reinitialize` latches once at startup from `isOtherAudioPlaying` and never recomputes, because the only path that would (`attemptToReinitializeAudio`) is unreachable. Launching while another app plays audio therefore muted game music for the entire session. The session category is `Ambient`, so mixing is the expected behaviour; the user's volume slider remains the control.
+* Treats any nonzero loop count as infinite in `AudioPlayer.setNumberOfLoops`, which previously mapped only `-1` to `setLooping(true)`. The game requests 999 repetitions for looping tracks, so every looping track silently played once. `loadMP3IfSafe:withTimeOffset:` and `setLoopMP3s:` are the only senders of `setNumberOfLoops:` in the binary and pass only 999 or 0, so the mapping is complete for this app; a faithful finite count is not reachable through `MediaPlayer.setLooping(boolean)` anyway.
 
 **Known limitations:** see https://github.com/JarlPenguin/blockheads-android-patches/issues/1.
 
-_Note: Requires `webview-suspend-freeze-fix.patch` to be applied first, currently temporarily conflicts with `rotation-fix.patch`._
+_Note: Requires `webview-suspend-freeze-fix.patch` to be applied first, currently temporarily conflicts with other native patches._
 
 ### `audio-record-keep-saves.patch`:
 Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.
@@ -37,9 +42,16 @@ Fixes join links (`blockheads://?ip=...` and `theblockheads.net/join.php?...`) n
 _Note: the game no longer registers as a handler for general `theblockheads.net` / `blockheads.noodlecake.com` URLs - only `/join.php` links. The old catch-all behaviour was almost certainly unintentional._
 
 ### `privacy-popup-cleanup.patch`
-Fixes the "Privacy Setting Changed" popup appearing where irrelevant.
+Fixes the spurious "Privacy Setting Changed" dialog that appears during gameplay and menu navigation rather than only after an explicit privacy change. Includes a native library (`libprivacypopupfix.so`) that swizzles Apportable's Objective-C runtime at startup, plus a smali change to load it.
 
-* Now it only appears when you actually change the privacy settings through the "Privacy Options..." button.
+> **Notes from Claude:**
+> `-[GameView alertView:clickedButtonAtIndex:]` guards its `gdprStatus` write with `if (alertView == self->gdprPrompt)`, but the guard's closing brace falls before the alert construction, so `[[UIAlertView alloc] initWithTitle:@"Privacy Setting Changed" ...]` and `show` run unconditionally on every invocation. `UIAlertView` calls both `alertView:clickedButtonAtIndex:` and `alertView:didDismissWithButtonIndex:` on dismissal, and `GameView` is the delegate for roughly fifteen other alerts - disconnect, join-world, searching, tutorial, death confirmation, Game Center, server rejection - all of which are serviced by `didDismissWithButtonIndex:` and all of which fall through the mis-scoped guard in `clickedButtonAtIndex:`. The sibling handler disambiguates senders correctly for every alert it owns, comparing against a dedicated per-alert ivar and nilling it afterwards, so the GDPR addition breaks a convention the rest of the class follows. `-[EvolutionAppDelegate alertView:clickedButtonAtIndex:]` handles the first-launch consent prompt, writes the same `gdprStatus` key and calls `startThirdPartySDKs:`; it constructs no alert and needs no change.
+
+* Swizzles `-[GameView alertView:clickedButtonAtIndex:]` to compare the incoming `alertView` against the `gdprPrompt` ivar and return early on a mismatch, restoring the guard the original code scopes too narrowly. Matching dismissals are forwarded to the original implementation unchanged, so both `gdprStatus` values and the restart notice behave exactly as intended on the real path.
+* Nils `gdprPrompt` after a matched dismissal. `showGDPRAlert` assigns an autoreleased alert and never clears the ivar, so it dangles once the alert deallocates and a later `UIAlertView` allocated at the same address would compare equal and re-trigger the popup. Every branch of `alertView:didDismissWithButtonIndex:` already does this; the GDPR path does not.
+* Resolves the `gdprPrompt` offset through `class_getInstanceVariable` and `ivar_getOffset` rather than a constant, reading the post-fixup value in case libobjc2 rewrites the non-fragile ivar offset at load time. Falls back to the statically derived `0x204` only if runtime introspection is unavailable, rejects implausible offsets, and logs an error if the runtime value disagrees with static analysis, which would indicate the binary differs from the one analysed. `OBJC_IVAR_$_GameView.gdprPrompt` is present in `.symtab` but not `.dynsym`, so `dlsym` is not a usable source.
+
+_Note: Currently temporarily conflicts with other native patches._
 
 ### `rotation-fix.patch`
 Fixes crashes and orientation bugs triggered by device rotation, and restores tilt controls when the system rotation lock is on. Includes a native library (`liborientationfix.so`) that swizzles Apportable's Objective-C runtime at startup, plus manifest and smali changes.
@@ -53,6 +65,8 @@ Fixes crashes and orientation bugs triggered by device rotation, and restores ti
 * Substitutes the locked orientation for `statusBarOrientation`, but only inside `-[World acceleration:]`, so the layout path still sees the real value and doesn't reconfigure the render surface for a window that never rotated. The value is pushed from `SplashScreen$1`, where the locked orientation is already computed in `UIInterfaceOrientation` encoding.
 * Removes `screenOrientation="portrait"` from `VerdeActivity` so the game can launch directly in landscape.
 * Adds `screenOrientation="behind"` and `screenSize` to the `BlockheadsWebView` activity's manifest entry. `behind` makes it inherit `VerdeActivity`'s current orientation instead of resolving `unspecified` to the device's rotation lock. `screenSize` is defensive: the activity declares `orientation` in `configChanges` but not `screenSize`, which at `targetSdk` 27 should mean rotation destroys and recreates it - but it observably doesn't, and the reason hasn't been established. Declaring `screenSize` makes the intended behaviour explicit rather than relying on whatever is currently absorbing the change.
+
+_Note: Currently temporarily conflicts with other native patches._
 
 ### `webview-rescue.patch`
 Fixes random WebDialog/WebView crashes taking down the game with themselves.
