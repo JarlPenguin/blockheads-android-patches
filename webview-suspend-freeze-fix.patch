@@ -1,15 +1,3 @@
-diff --git a/AndroidManifest.xml b/AndroidManifest.xml
-index 2e851ce..21f8b15 100644
---- a/AndroidManifest.xml
-+++ b/AndroidManifest.xml
-@@ -114,6 +114,6 @@
-         </receiver>
-         <activity android:name="com.apportable.ui.TextViewHaxActivity"/>
-         <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
--        <activity android:configChanges="keyboardHidden|orientation" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
-+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
-     </application>
- </manifest>
 diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
 index 7c1afc4..1d0a869 100644
 --- a/smali/com/apportable/activity/VerdeActivity.smali
