@@ -1,5 +1,5 @@
 diff --git a/AndroidManifest.xml b/AndroidManifest.xml
-index 2e851ce..4ef6119 100644
+index 2e851ce..c48fefc 100644
 --- a/AndroidManifest.xml
 +++ b/AndroidManifest.xml
 @@ -30,7 +30,7 @@
@@ -11,18 +11,34 @@ index 2e851ce..4ef6119 100644
              <intent-filter>
                  <action android:name="android.intent.action.VIEW"/>
                  <category android:name="android.intent.category.DEFAULT"/>
-diff --git a/smali/com/apportable/CrashSwallower.smali b/smali/com/apportable/CrashSwallower.smali
+@@ -114,6 +114,6 @@
+         </receiver>
+         <activity android:name="com.apportable.ui.TextViewHaxActivity"/>
+         <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
+-        <activity android:configChanges="keyboardHidden|orientation" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
++        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:screenOrientation="behind" android:theme="@style/NoActionBar"/>
+     </application>
+ </manifest>
+diff --git a/smali/com/apportable/RotationFix.smali b/smali/com/apportable/RotationFix.smali
 new file mode 100644
-index 0000000..0b49a2d
+index 0000000..39e34fe
 --- /dev/null
-+++ b/smali/com/apportable/CrashSwallower.smali
-@@ -0,0 +1,61 @@
-+.class public Lcom/apportable/CrashSwallower;
++++ b/smali/com/apportable/RotationFix.smali
+@@ -0,0 +1,265 @@
++.class public Lcom/apportable/RotationFix;
 +.super Ljava/lang/Object;
-+.source "CrashSwallower.java"
++.source "RotationFix.java"
 +
 +# interfaces
 +.implements Ljava/lang/Runnable;
++
++
++# static fields
++.field private static count:I
++
++.field private static hits:I
++
++.field private static windowStart:J
 +
 +
 +# direct methods
@@ -45,13 +61,192 @@ index 0000000..0b49a2d
 +
 +    invoke-direct {v0, v1}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
 +
-+    new-instance v1, Lcom/apportable/CrashSwallower;
++    new-instance v1, Lcom/apportable/RotationFix;
 +
-+    invoke-direct {v1}, Lcom/apportable/CrashSwallower;-><init>()V
++    invoke-direct {v1}, Lcom/apportable/RotationFix;-><init>()V
 +
 +    invoke-virtual {v0, v1}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z
 +
 +    return-void
++.end method
++
++.method public static isEngineCaller()Z
++    .locals 4
++
++    invoke-static {}, Ljava/lang/Thread;->currentThread()Ljava/lang/Thread;
++
++    move-result-object v0
++
++    invoke-virtual {v0}, Ljava/lang/Thread;->getStackTrace()[Ljava/lang/StackTraceElement;
++
++    move-result-object v0
++
++    const-string v1, "com.apportable.MainThread"
++
++    const/4 v2, 0x0
++
++    invoke-static {v0, v1, v2}, Lcom/apportable/RotationFix;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
++
++    move-result v3
++
++    return v3
++.end method
++
++.method public static matches(Ljava/lang/Throwable;)Z
++    .locals 8
++
++    const/4 v0, 0x0
++
++    if-nez p0, :cond_0
++
++    return v0
++
++    :cond_0
++    invoke-virtual {p0}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
++
++    move-result-object v1
++
++    invoke-virtual {v1}, Ljava/lang/Class;->getName()Ljava/lang/String;
++
++    move-result-object v1
++
++    const-string v2, "android.view.ViewRootImpl$CalledFromWrongThreadException"
++
++    invoke-virtual {v2, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
++
++    move-result v1
++
++    if-nez v1, :cond_1
++
++    return v0
++
++    :cond_1
++    invoke-virtual {p0}, Ljava/lang/Throwable;->getStackTrace()[Ljava/lang/StackTraceElement;
++
++    move-result-object v1
++
++    const-string v2, "android.view.ViewRootImpl"
++
++    const-string v3, "checkThread"
++
++    invoke-static {v1, v2, v3}, Lcom/apportable/RotationFix;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
++
++    move-result v2
++
++    if-nez v2, :cond_2
++
++    return v0
++
++    :cond_2
++    const-string v2, "android.app.ActivityThread"
++
++    const-string v3, "handleActivityConfigurationChanged"
++
++    invoke-static {v1, v2, v3}, Lcom/apportable/RotationFix;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
++
++    move-result v2
++
++    if-nez v2, :cond_3
++
++    return v0
++
++    :cond_3
++    invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
++
++    move-result-wide v1
++
++    sget-wide v3, Lcom/apportable/RotationFix;->windowStart:J
++
++    sub-long v3, v1, v3
++
++    const-wide/16 v5, 0x7d0
++
++    cmp-long v7, v3, v5
++
++    if-lez v7, :cond_4
++
++    sput-wide v1, Lcom/apportable/RotationFix;->windowStart:J
++
++    sput v0, Lcom/apportable/RotationFix;->count:I
++
++    :cond_4
++    sget v1, Lcom/apportable/RotationFix;->count:I
++
++    add-int/lit8 v1, v1, 0x1
++
++    sput v1, Lcom/apportable/RotationFix;->count:I
++
++    const/16 v2, 0x8
++
++    if-le v1, v2, :cond_5
++
++    return v0
++
++    :cond_5
++    const/4 v0, 0x1
++
++    return v0
++.end method
++
++.method private static scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
++    .locals 6
++
++    const/4 v0, 0x0
++
++    if-nez p0, :cond_0
++
++    return v0
++
++    :cond_0
++    array-length v1, p0
++
++    const/4 v2, 0x0
++
++    :goto_0
++    if-lt v2, v1, :cond_1
++
++    return v0
++
++    :cond_1
++    aget-object v3, p0, v2
++
++    if-eqz v3, :cond_3
++
++    invoke-virtual {v3}, Ljava/lang/StackTraceElement;->getClassName()Ljava/lang/String;
++
++    move-result-object v4
++
++    invoke-virtual {p1, v4}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
++
++    move-result v5
++
++    if-eqz v5, :cond_3
++
++    if-nez p2, :cond_2
++
++    const/4 v0, 0x1
++
++    return v0
++
++    :cond_2
++    invoke-virtual {v3}, Ljava/lang/StackTraceElement;->getMethodName()Ljava/lang/String;
++
++    move-result-object v4
++
++    invoke-virtual {v4, p2}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
++
++    move-result v5
++
++    if-eqz v5, :cond_3
++
++    const/4 v0, 0x1
++
++    return v0
++
++    :cond_3
++    add-int/lit8 v2, v2, 0x1
++
++    goto :goto_0
 +.end method
 +
 +
@@ -70,180 +265,293 @@ index 0000000..0b49a2d
 +    :catch_0
 +    move-exception v0
 +
-+    const-string v1, "CrashSwallower"
++    invoke-static {v0}, Lcom/apportable/RotationFix;->matches(Ljava/lang/Throwable;)Z
 +
-+    const-string v2, "Swallowed fatal UI thread crash (likely Samsung WindowManager):"
++    move-result v1
 +
-+    invoke-static {v1, v2, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
++    if-nez v1, :cond_0
++
++    throw v0
++
++    :cond_0
++    sget v1, Lcom/apportable/RotationFix;->hits:I
++
++    add-int/lit8 v1, v1, 0x1
++
++    sput v1, Lcom/apportable/RotationFix;->hits:I
++
++    const-string v2, "RotationFix"
++
++    invoke-static {v1}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
++
++    move-result-object v1
++
++    invoke-static {v2, v1}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 +
 +    goto :goto_0
 +.end method
+diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+index 468f98c..1ed75f8 100644
+--- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
++++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+@@ -61,6 +61,16 @@
+     iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
+ 
+     invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
++
++    const-string v1, "orientationfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "ORIFIX"
++
++    const-string v2, "loaded from BackgroundLibraryLoader"
++
++    invoke-static {v1, v2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+     :try_end_0
+     .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
+ 
 diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
-index 7c1afc4..ef9e923 100644
+index 7c1afc4..16bc93a 100644
 --- a/smali/com/apportable/activity/VerdeActivity.smali
 +++ b/smali/com/apportable/activity/VerdeActivity.smali
-@@ -18,6 +18,12 @@
+@@ -18,6 +18,8 @@
  
  .field private static mOnCreateRestartAttempted:Z
  
 +.field private static sGlitchFixed:Z
 +
-+.field private static sSplashOrientation:I
-+
-+.field private static sSplashOrientationSet:Z
-+
  .field private static theVerdeActivity:Lcom/apportable/activity/VerdeActivity;
  
  
-@@ -584,7 +590,7 @@
- .end method
- 
- .method public _setRequestedOrientation(I)V
--    .locals 4
-+    .locals 6
- 
-     .prologue
-     const/4 v3, 0x1
-@@ -593,11 +599,72 @@
+@@ -593,6 +595,35 @@
  
      const/16 v1, 0x8
  
-+    invoke-static {}, Ljava/lang/Thread;->currentThread()Ljava/lang/Thread;
-+
-+    move-result-object v4
-+
-+    invoke-virtual {v4}, Ljava/lang/Thread;->getStackTrace()[Ljava/lang/StackTraceElement;
-+
-+    move-result-object v4
-+
-+    const/4 v0, 0x3
-+
-+    aget-object v4, v4, v0
-+
-+    invoke-virtual {v4}, Ljava/lang/StackTraceElement;->getClassName()Ljava/lang/String;
-+
-+    move-result-object v4
-+
-+    sget-boolean v0, Lcom/apportable/activity/VerdeActivity;->sSplashOrientationSet:Z
-+
-+    if-nez v0, :cond_0
-+
-+    sput p1, Lcom/apportable/activity/VerdeActivity;->sSplashOrientation:I
-+
-+    sput-boolean v3, Lcom/apportable/activity/VerdeActivity;->sSplashOrientationSet:Z
-+
-+    :cond_0
-+    const-string v5, "com.apportable.MainThread"
-+
-+    invoke-virtual {v4, v5}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
++    invoke-static {}, Lcom/apportable/app/SplashScreen;->isShown()Z
 +
 +    move-result v0
 +
-+    if-eqz v0, :cond_3
++    if-eqz v0, :cond_0
++
++    invoke-static {}, Lcom/apportable/RotationFix;->isEngineCaller()Z
++
++    move-result v0
++
++    if-eqz v0, :cond_0
 +
 +    const/4 v0, 0x4
 +
-+    if-ne p1, v0, :cond_3
++    if-ne p1, v0, :cond_0
 +
-+    sget v0, Lcom/apportable/activity/VerdeActivity;->sSplashOrientation:I
-+
-+    const/4 v1, 0x4
-+
-+    if-ne v0, v1, :cond_1
-+
-+    goto :goto_0
-+
-+    :cond_1
 +    sget-boolean v0, Lcom/apportable/activity/VerdeActivity;->sGlitchFixed:Z
 +
-+    if-eqz v0, :cond_2
++    if-nez v0, :cond_0
 +
-+    goto :goto_0
++    const/4 v0, 0x1
 +
-+    :cond_2
-+    sput-boolean v3, Lcom/apportable/activity/VerdeActivity;->sGlitchFixed:Z
++    sput-boolean v0, Lcom/apportable/activity/VerdeActivity;->sGlitchFixed:Z
 +
 +    return-void
 +
-+    :cond_3
-+    :goto_0
++    :cond_0
 +    const/16 v1, 0x8
 +
      .line 703
      packed-switch p1, :pswitch_data_0
  
-     .line 723
--    :goto_0
-+    :goto_1
-     iget v0, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
- 
-     invoke-virtual {p0, v0}, Lcom/apportable/activity/VerdeActivity;->setRequestedOrientation(I)V
-@@ -609,49 +676,49 @@
-     :pswitch_0
-     iput v3, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
- 
--    goto :goto_0
-+    goto :goto_1
- 
-     .line 708
+@@ -615,7 +646,7 @@
      :pswitch_1
      sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
  
 -    if-le v0, v1, :cond_0
-+    if-le v0, v1, :cond_4
++    if-le v0, v1, :cond_1
  
      .line 709
      const/16 v0, 0x9
- 
-     iput v0, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
- 
--    goto :goto_0
-+    goto :goto_1
+@@ -625,7 +656,7 @@
+     goto :goto_0
  
      .line 711
 -    :cond_0
-+    :cond_4
++    :cond_1
      iput v3, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
  
--    goto :goto_0
-+    goto :goto_1
- 
-     .line 714
-     :pswitch_2
-     iput v2, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
- 
--    goto :goto_0
-+    goto :goto_1
- 
-     .line 717
+     goto :goto_0
+@@ -640,7 +671,7 @@
      :pswitch_3
      sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
  
 -    if-le v0, v1, :cond_1
-+    if-le v0, v1, :cond_5
++    if-le v0, v1, :cond_2
  
      .line 718
      iput v1, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
- 
--    goto :goto_0
-+    goto :goto_1
+@@ -648,14 +679,12 @@
+     goto :goto_0
  
      .line 720
 -    :cond_1
-+    :cond_5
++    :cond_2
      iput v2, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
  
--    goto :goto_0
-+    goto :goto_1
+     goto :goto_0
  
      .line 703
-     nop
-@@ -1365,6 +1432,8 @@
+-    nop
+-
+     :pswitch_data_0
+     .packed-switch 0x1
+         :pswitch_0
+@@ -1365,6 +1394,8 @@
      .locals 3
  
      .prologue
-+    invoke-static {}, Lcom/apportable/CrashSwallower;->install()V
++    invoke-static {}, Lcom/apportable/RotationFix;->install()V
 +
      const/16 v1, 0x400
  
      const/4 v2, 0x1
+diff --git a/smali/com/apportable/app/SplashScreen$1.smali b/smali/com/apportable/app/SplashScreen$1.smali
+index 754e6f3..d3b26b2 100644
+--- a/smali/com/apportable/app/SplashScreen$1.smali
++++ b/smali/com/apportable/app/SplashScreen$1.smali
+@@ -17,6 +17,8 @@
+ # instance fields
+ .field private currentOrientation:I
+ 
++.field private dispatched:Z
++
+ .field private lastEvent:J
+ 
+ .field private mCurrentOrientation:I
+@@ -70,7 +72,7 @@
+     .line 166
+     iget v2, p0, Lcom/apportable/app/SplashScreen$1;->mCurrentOrientation:I
+ 
+-    if-eq p1, v2, :cond_4
++    if-eq p1, v2, :cond_5
+ 
+     iget-wide v2, p0, Lcom/apportable/app/SplashScreen$1;->lastEvent:J
+ 
+@@ -80,7 +82,7 @@
+ 
+     cmp-long v2, v2, v4
+ 
+-    if-lez v2, :cond_4
++    if-lez v2, :cond_5
+ 
+     .line 167
+     iput-wide v0, p0, Lcom/apportable/app/SplashScreen$1;->lastEvent:J
+@@ -93,7 +95,7 @@
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_8
++    if-eqz v0, :cond_9
+ 
+     .line 172
+     add-int/lit8 v0, p1, -0x5a
+@@ -121,7 +123,7 @@
+     .line 183
+     if-le v9, v0, :cond_2
+ 
+-    if-gt v0, v6, :cond_5
++    if-gt v0, v6, :cond_6
+ 
+     .line 185
+     :cond_2
+@@ -143,7 +145,22 @@
+     :goto_1
+     iget v0, p0, Lcom/apportable/app/SplashScreen$1;->currentOrientation:I
+ 
+-    if-eq v1, v0, :cond_4
++    if-eq v1, v0, :cond_5
++
++    iget-boolean v2, p0, Lcom/apportable/app/SplashScreen$1;->dispatched:Z
++
++    if-eqz v2, :cond_4
++
++    invoke-static {}, Lcom/apportable/app/SplashScreen;->isShown()Z
++
++    move-result v2
++
++    if-nez v2, :cond_5
++
++    :cond_4
++    const/4 v2, 0x1
++
++    iput-boolean v2, p0, Lcom/apportable/app/SplashScreen$1;->dispatched:Z
+ 
+     .line 207
+     invoke-static {}, Lcom/apportable/activity/VerdeActivity;->getActivity()Lcom/apportable/activity/VerdeActivity;
+@@ -152,17 +169,19 @@
+ 
+     iget v1, p0, Lcom/apportable/app/SplashScreen$1;->currentOrientation:I
+ 
++    invoke-static {v1}, Lcom/apportable/ui/Device;->nativeSetLockedOrientation(I)V
++
+     invoke-virtual {v0, v1}, Lcom/apportable/activity/VerdeActivity;->_setRequestedOrientation(I)V
+ 
+     .line 210
+-    :cond_4
++    :cond_5
+     return-void
+ 
+     .line 188
+-    :cond_5
+-    if-ge v6, v0, :cond_6
++    :cond_6
++    if-ge v6, v0, :cond_7
+ 
+-    if-ge v0, v7, :cond_6
++    if-ge v0, v7, :cond_7
+ 
+     .line 190
+     invoke-static {}, Lcom/apportable/app/SplashScreen;->access$100()I
+@@ -181,10 +200,10 @@
+     goto :goto_1
+ 
+     .line 193
+-    :cond_6
+-    if-gt v7, v0, :cond_7
++    :cond_7
++    if-gt v7, v0, :cond_8
+ 
+-    if-gt v0, v8, :cond_7
++    if-gt v0, v8, :cond_8
+ 
+     .line 195
+     invoke-static {}, Lcom/apportable/app/SplashScreen;->access$100()I
+@@ -203,7 +222,7 @@
+     goto :goto_1
+ 
+     .line 198
+-    :cond_7
++    :cond_8
+     if-ge v8, v0, :cond_3
+ 
+     if-ge v0, v9, :cond_3
+@@ -224,7 +243,7 @@
+ 
+     goto :goto_1
+ 
+-    :cond_8
++    :cond_9
+     move v0, p1
+ 
+     goto :goto_0
+diff --git a/smali/com/apportable/ui/Device.smali b/smali/com/apportable/ui/Device.smali
+index b6f1ed9..1200ede 100644
+--- a/smali/com/apportable/ui/Device.smali
++++ b/smali/com/apportable/ui/Device.smali
+@@ -393,6 +393,9 @@
+ .method private native nativeOnOrientationChanged(II)V
+ .end method
+ 
++.method public static native nativeSetLockedOrientation(I)V
++.end method
++
+ 
+ # virtual methods
+ .method public disable()V

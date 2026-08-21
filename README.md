@@ -14,7 +14,7 @@ Fixes several audio bugs by loading a small native library (`libaudiofix.so`) th
 
 **Known limitations:** see https://github.com/JarlPenguin/blockheads-android-patches/issues/1.
 
-_Note: Requires `webview-suspend-freeze-fix.patch` to be applied first._
+_Note: Requires `webview-suspend-freeze-fix.patch` to be applied first, currently temporarily conflicts with `rotation-fix.patch`._
 
 ### `audio-record-keep-saves.patch`:
 Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.
@@ -42,11 +42,17 @@ Fixes the "Privacy Setting Changed" popup appearing where irrelevant.
 * Now it only appears when you actually change the privacy settings through the "Privacy Options..." button.
 
 ### `rotation-fix.patch`
-Fixes auto-rotation issues.
+Fixes crashes and orientation bugs triggered by device rotation, and restores tilt controls when the system rotation lock is on. Includes a native library (`liborientationfix.so`) that swizzles Apportable's Objective-C runtime at startup, plus manifest and smali changes.
 
-* Fixes crash on rotating the game on Samsung devices.
-* Prevents the game from temporarily rotating to right-landscape on launch.
-* Allows the game to be launched directly in landscape mode.
+> **Notes from Claude:**
+> Apportable creates its view hierarchy on a dedicated `MainThread`, but Android delivers configuration changes on `main`. On rotation, `ActivityThread.handleActivityConfigurationChanged` → `ViewRootImpl.updateConfiguration` → `requestLayout` → `checkThread` compares the two and throws `CalledFromWrongThreadException`. The mechanism is device-independent; One UI appears to force a layout pass where AOSP returns early, so it only manifests on Samsung. Separately, `-[EvolutionViewController shouldAutorotate]` returns `NO` whenever Android's `accelerometer_rotation` setting is `0`. That gates `-[UIDevice _setOrientation:changed:]`, the only path that calls `_platform_setOrientation:`, the only writer of the global behind `-[UIApplication statusBarOrientation]`. `-[World acceleration:]` reads that global every accelerometer sample and applies its axis transforms only for orientations 2 and 4, so with rotation locked it stays `0`, both transforms are skipped, and tilt is stuck in the LandscapeLeft frame regardless of what the display shows.
+
+* Catches the `CalledFromWrongThreadException` on a nested `Looper.loop()` and resumes, keyed to the exact exception class, `ViewRootImpl.checkThread` as frame 0, and an `ActivityThread.handleActivityConfigurationChanged*` frame, with a rate limit of 8 per 2000 ms. `checkThread` is the first statement in `requestLayout`, so nothing has mutated when it throws; the aborted work is one layout pass on a hierarchy that is a single GL surface the engine draws into itself. This suppresses one known-benign manifestation of views being owned by the wrong thread, not the ownership problem itself.
+* Swallows the engine's transient right-landscape request during splash, gated on `SplashScreen.isShown()` so a real rotation afterwards is never affected. The engine emits `_setOrientation:4` from its app delegate at startup and corrects it ~150 ms later; the intermediate value is visible as a flip.
+* Limits `SplashScreen$1` to one orientation dispatch while the splash is up. The engine cannot absorb an orientation change mid-initialization and lays out for one orientation in a window sized for another.
+* Substitutes the locked orientation for `statusBarOrientation`, but only inside `-[World acceleration:]`, so the layout path still sees the real value and doesn't reconfigure the render surface for a window that never rotated. The value is pushed from `SplashScreen$1`, where the locked orientation is already computed in `UIInterfaceOrientation` encoding.
+* Removes `screenOrientation="portrait"` from `VerdeActivity` so the game can launch directly in landscape.
+* Adds `screenOrientation="behind"` and `screenSize` to the `BlockheadsWebView` activity's manifest entry. `behind` makes it inherit `VerdeActivity`'s current orientation instead of resolving `unspecified` to the device's rotation lock. `screenSize` is defensive: the activity declares `orientation` in `configChanges` but not `screenSize`, which at `targetSdk` 27 should mean rotation destroys and recreates it - but it observably doesn't, and the reason hasn't been established. Declaring `screenSize` makes the intended behaviour explicit rather than relying on whatever is currently absorbing the change.
 
 ### `webview-rescue.patch`
 Fixes random WebDialog/WebView crashes taking down the game with themselves.
@@ -63,7 +69,6 @@ Fixes fatal ANR freezes triggered by Android lifecycle transitions, such as susp
 * Bounds the waits in `surfaceCreated()` and `surfaceDestroyed()` to 250 ms, preserving the surface handshake while capping UI-thread exposure.
 * Removes the `SDK_INT >= 19` `MainThread.getThread().interrupt()` call in `VerdeActivity.onPause()`. `MessageQueue.next()` retries on `EINTR` and never checks the Java interrupt flag, so it never woke `MainThread` and only left the flag set for later blocking calls to trip over.
 * Removes the re-interrupt handlers in the `InterruptedException` catch blocks of `surfaceCreated()` / `surfaceDestroyed()`.
-* Adds `screenSize` to the manifest `configChanges` so rotating the device doesn't destroy and recreate the WebView UI.
 
 ---
 

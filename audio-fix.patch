@@ -2,15 +2,6 @@ diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/sma
 index 468f98c..d6c7a75 100644
 --- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
 +++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
-@@ -50,7 +50,7 @@
- 
- # virtual methods
- .method public run()V
--    .locals 3
-+    .locals 4
- 
-     .prologue
-     .line 35
 @@ -61,6 +61,16 @@
      iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
  
