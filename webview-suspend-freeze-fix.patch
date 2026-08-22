@@ -1,3 +1,18 @@
+diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+index 468f98c..689f4d7 100644
+--- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
++++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+@@ -61,6 +61,10 @@
+     iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
+ 
+     invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
++
++    const-string v1, "paintmixfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
+     :try_end_0
+     .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
+ 
 diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
 index 7c1afc4..1d0a869 100644
 --- a/smali/com/apportable/activity/VerdeActivity.smali
@@ -50,7 +65,7 @@ index 7c1afc4..1d0a869 100644
  
      new-instance v1, Lcom/apportable/activity/VerdeActivity$8;
 diff --git a/smali/com/apportable/gl/GLSurfaceView.smali b/smali/com/apportable/gl/GLSurfaceView.smali
-index 38c0a15..7867d95 100644
+index 38c0a15..b4c7afc 100644
 --- a/smali/com/apportable/gl/GLSurfaceView.smali
 +++ b/smali/com/apportable/gl/GLSurfaceView.smali
 @@ -580,7 +580,7 @@
@@ -58,7 +73,7 @@ index 38c0a15..7867d95 100644
  
  .method public readySurface()V
 -    .locals 7
-+    .locals 11
++    .locals 13
  
      .prologue
      const/4 v3, 0x1
@@ -104,7 +119,7 @@ index 38c0a15..7867d95 100644
  
      .line 680
      :cond_5
-@@ -797,15 +805,33 @@
+@@ -797,15 +805,37 @@
      .line 645
      :cond_6
      :try_start_4
@@ -130,6 +145,10 @@ index 38c0a15..7867d95 100644
  
 +    :cond_7
 +    :try_start_5
++    iget-object v5, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
++
++    invoke-virtual {v5}, Ljava/lang/Object;->notifyAll()V
++
 +    monitor-exit v6
 +    :try_end_5
 +    .catchall {:try_start_5 .. :try_end_5} :catchall_0
@@ -139,7 +158,7 @@ index 38c0a15..7867d95 100644
      .line 647
      :catch_1
      move-exception v5
-@@ -813,8 +839,8 @@
+@@ -813,8 +843,8 @@
      goto/16 :goto_0
  
      .line 665
@@ -150,7 +169,7 @@ index 38c0a15..7867d95 100644
  
      .line 669
      iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mRenderer:Landroid/opengl/GLSurfaceView$Renderer;
-@@ -828,7 +854,7 @@
+@@ -828,7 +858,7 @@
      invoke-interface {v0, v1, v2}, Landroid/opengl/GLSurfaceView$Renderer;->onSurfaceCreated(Ljavax/microedition/khronos/opengles/GL10;Ljavax/microedition/khronos/egl/EGLConfig;)V
  
      .line 673
@@ -159,7 +178,7 @@ index 38c0a15..7867d95 100644
      if-eqz v3, :cond_5
  
      .line 677
-@@ -840,7 +866,7 @@
+@@ -840,7 +870,7 @@
  
      goto :goto_2
  
@@ -168,7 +187,7 @@ index 38c0a15..7867d95 100644
      move v3, v0
  
      move v5, v4
-@@ -922,7 +948,7 @@
+@@ -922,7 +952,7 @@
  .end method
  
  .method public surfaceCreated()V
@@ -177,7 +196,7 @@ index 38c0a15..7867d95 100644
  
      .prologue
      .line 683
-@@ -930,6 +956,14 @@
+@@ -930,6 +960,14 @@
  
      monitor-enter v1
  
@@ -192,7 +211,7 @@ index 38c0a15..7867d95 100644
      .line 687
      const/4 v0, 0x1
  
-@@ -955,9 +989,19 @@
+@@ -955,9 +993,19 @@
  
      .line 691
      :try_start_1
@@ -213,7 +232,7 @@ index 38c0a15..7867d95 100644
      :try_end_1
      .catch Ljava/lang/InterruptedException; {:try_start_1 .. :try_end_1} :catch_0
      .catchall {:try_start_1 .. :try_end_1} :catchall_0
-@@ -968,20 +1012,13 @@
+@@ -968,20 +1016,13 @@
      :catch_0
      move-exception v0
  
@@ -236,7 +255,7 @@ index 38c0a15..7867d95 100644
      monitor-exit v1
      :try_end_2
      .catchall {:try_start_2 .. :try_end_2} :catchall_0
-@@ -989,6 +1026,7 @@
+@@ -989,6 +1030,7 @@
      throw v0
  
      :cond_0
@@ -244,7 +263,7 @@ index 38c0a15..7867d95 100644
      :try_start_3
      monitor-exit v1
      :try_end_3
-@@ -1067,7 +1105,7 @@
+@@ -1067,7 +1109,7 @@
  .end method
  
  .method public surfaceDestroyed()V
@@ -253,7 +272,7 @@ index 38c0a15..7867d95 100644
  
      .prologue
      .line 700
-@@ -1075,6 +1113,14 @@
+@@ -1075,6 +1117,14 @@
  
      monitor-enter v1
  
@@ -268,7 +287,7 @@ index 38c0a15..7867d95 100644
      .line 704
      const/4 v0, 0x0
  
-@@ -1100,9 +1146,19 @@
+@@ -1100,9 +1150,19 @@
  
      .line 709
      :try_start_1
@@ -289,7 +308,7 @@ index 38c0a15..7867d95 100644
      :try_end_1
      .catch Ljava/lang/InterruptedException; {:try_start_1 .. :try_end_1} :catch_0
      .catchall {:try_start_1 .. :try_end_1} :catchall_0
-@@ -1113,20 +1169,13 @@
+@@ -1113,20 +1173,13 @@
      :catch_0
      move-exception v0
  
@@ -312,7 +331,7 @@ index 38c0a15..7867d95 100644
      monitor-exit v1
      :try_end_2
      .catchall {:try_start_2 .. :try_end_2} :catchall_0
-@@ -1134,6 +1183,7 @@
+@@ -1134,6 +1187,7 @@
      throw v0
  
      :cond_0

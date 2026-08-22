@@ -94,15 +94,20 @@ Fixes random WebDialog/WebView crashes taking down the game with themselves.
 * When the WebDialog/WebView crashes, only it will, while the game itself will be unaffected.
 
 ### `webview-suspend-freeze-fix.patch`
-Fixes fatal ANR freezes triggered by Android lifecycle transitions, such as suspending/resuming the game, opening WebView pages (welcome messages, Help/Credits page), or launching the photo picker.
+Fixes fatal ANR freezes triggered by Android lifecycle transitions, such as suspending/resuming the game, opening WebView pages (welcome messages, Help/Credits page), or launching the photo picker. Also fixes black textures in the Easel paint-mixing UI after returning from the photo picker.
 
 > **Notes from Claude:**
 > Apportable runs the Objective-C main runloop on a dedicated `MainThread` and creates its views there, so that thread's Looper is the one `ViewRootImpl` posts to. On pause, `MainThread` blocks in `GLSurfaceView.readySurface()` waiting on `mLock` for a surface change only the UI thread can deliver, while the UI thread blocks in `Activity.performStop()` -> `WindowManagerGlobal.setStoppedState()` -> `Handler.runWithScissors()` waiting for `MainThread`'s Looper to dispatch. Neither can proceed and Android raises an ANR after 5 seconds.
+>
+> The same transition causes a second, unrelated failure. Tearing down the EGL surface unbinds the context (`eglMakeCurrent` with `EGL_NO_SURFACE`), and the game constructs `PaintMixUI` in response to the picked image, so `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` runs `loadResources` and `updateMix` while `eglGetCurrentContext()` is `EGL_NO_CONTEXT`. `glGenTextures` silently yields 0, and neither `CPTexture2D` initialiser checks it, so the panel keeps texture objects with dead GL names for the rest of the session. The context recovers on its own about half a second later, but nothing rebuilds the textures. `itemsTexture` is unaffected because `Items.png` is a cache hit from world load.
 
 * Bounds the `mLock` wait in `readySurface()` to 16 ms, breaking the lock cycle; the tick action re-runs on the next tick.
 * Bounds the waits in `surfaceCreated()` and `surfaceDestroyed()` to 250 ms, preserving the surface handshake while capping UI-thread exposure.
 * Removes the `SDK_INT >= 19` `MainThread.getThread().interrupt()` call in `VerdeActivity.onPause()`. `MessageQueue.next()` retries on `EINTR` and never checks the Java interrupt flag, so it never woke `MainThread` and only left the flag set for later blocking calls to trip over.
 * Removes the re-interrupt handlers in the `InterruptedException` catch blocks of `surfaceCreated()` / `surfaceDestroyed()`.
+* Adds `libpaintmixfix.so`, loaded from `BackgroundLibraryLoader` after `LibraryManager.loadLibraries()`. It swizzles `-[PaintMixUI render:translation:pinchScale:]` to repair any texture with a GL name of 0 once a context is current: file-backed textures are reloaded via `-[CPTexture2D updateForChangeToTexturePack]`, and the two painting textures, which have no `basePath`, are rebuilt via `-[PaintMixUI updateMix]`. `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` is also swizzled to clear the repair latch when a new photo is picked, so a second pick in the same session is covered.
+
+_Note: The texture repair happens after the fact rather than preventing creation in a contextless window; avoiding that would require changes beyond swizzling. The in-world easel (`Workbench.paintingTexture`) uses the same construction pattern but did not reproduce in testing and is left alone._
 
 ---
 
