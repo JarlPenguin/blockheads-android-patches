@@ -19,15 +19,15 @@ index 2e851ce..c48fefc 100644
 +        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:screenOrientation="behind" android:theme="@style/NoActionBar"/>
      </application>
  </manifest>
-diff --git a/smali/com/apportable/RotationFix.smali b/smali/com/apportable/RotationFix.smali
+diff --git a/smali/com/apportable/RotationCrashFilter.smali b/smali/com/apportable/RotationCrashFilter.smali
 new file mode 100644
-index 0000000..39e34fe
+index 0000000..65ec1f6
 --- /dev/null
-+++ b/smali/com/apportable/RotationFix.smali
-@@ -0,0 +1,265 @@
-+.class public Lcom/apportable/RotationFix;
++++ b/smali/com/apportable/RotationCrashFilter.smali
+@@ -0,0 +1,243 @@
++.class public Lcom/apportable/RotationCrashFilter;
 +.super Ljava/lang/Object;
-+.source "RotationFix.java"
++.source "RotationCrashFilter.java"
 +
 +# interfaces
 +.implements Ljava/lang/Runnable;
@@ -61,35 +61,13 @@ index 0000000..39e34fe
 +
 +    invoke-direct {v0, v1}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
 +
-+    new-instance v1, Lcom/apportable/RotationFix;
++    new-instance v1, Lcom/apportable/RotationCrashFilter;
 +
-+    invoke-direct {v1}, Lcom/apportable/RotationFix;-><init>()V
++    invoke-direct {v1}, Lcom/apportable/RotationCrashFilter;-><init>()V
 +
 +    invoke-virtual {v0, v1}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z
 +
 +    return-void
-+.end method
-+
-+.method public static isEngineCaller()Z
-+    .locals 4
-+
-+    invoke-static {}, Ljava/lang/Thread;->currentThread()Ljava/lang/Thread;
-+
-+    move-result-object v0
-+
-+    invoke-virtual {v0}, Ljava/lang/Thread;->getStackTrace()[Ljava/lang/StackTraceElement;
-+
-+    move-result-object v0
-+
-+    const-string v1, "com.apportable.MainThread"
-+
-+    const/4 v2, 0x0
-+
-+    invoke-static {v0, v1, v2}, Lcom/apportable/RotationFix;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
-+
-+    move-result v3
-+
-+    return v3
 +.end method
 +
 +.method public static matches(Ljava/lang/Throwable;)Z
@@ -129,7 +107,7 @@ index 0000000..39e34fe
 +
 +    const-string v3, "checkThread"
 +
-+    invoke-static {v1, v2, v3}, Lcom/apportable/RotationFix;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
++    invoke-static {v1, v2, v3}, Lcom/apportable/RotationCrashFilter;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
 +
 +    move-result v2
 +
@@ -142,7 +120,7 @@ index 0000000..39e34fe
 +
 +    const-string v3, "handleActivityConfigurationChanged"
 +
-+    invoke-static {v1, v2, v3}, Lcom/apportable/RotationFix;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
++    invoke-static {v1, v2, v3}, Lcom/apportable/RotationCrashFilter;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
 +
 +    move-result v2
 +
@@ -155,7 +133,7 @@ index 0000000..39e34fe
 +
 +    move-result-wide v1
 +
-+    sget-wide v3, Lcom/apportable/RotationFix;->windowStart:J
++    sget-wide v3, Lcom/apportable/RotationCrashFilter;->windowStart:J
 +
 +    sub-long v3, v1, v3
 +
@@ -165,16 +143,16 @@ index 0000000..39e34fe
 +
 +    if-lez v7, :cond_4
 +
-+    sput-wide v1, Lcom/apportable/RotationFix;->windowStart:J
++    sput-wide v1, Lcom/apportable/RotationCrashFilter;->windowStart:J
 +
-+    sput v0, Lcom/apportable/RotationFix;->count:I
++    sput v0, Lcom/apportable/RotationCrashFilter;->count:I
 +
 +    :cond_4
-+    sget v1, Lcom/apportable/RotationFix;->count:I
++    sget v1, Lcom/apportable/RotationCrashFilter;->count:I
 +
 +    add-int/lit8 v1, v1, 0x1
 +
-+    sput v1, Lcom/apportable/RotationFix;->count:I
++    sput v1, Lcom/apportable/RotationCrashFilter;->count:I
 +
 +    const/16 v2, 0x8
 +
@@ -265,7 +243,7 @@ index 0000000..39e34fe
 +    :catch_0
 +    move-exception v0
 +
-+    invoke-static {v0}, Lcom/apportable/RotationFix;->matches(Ljava/lang/Throwable;)Z
++    invoke-static {v0}, Lcom/apportable/RotationCrashFilter;->matches(Ljava/lang/Throwable;)Z
 +
 +    move-result v1
 +
@@ -274,13 +252,13 @@ index 0000000..39e34fe
 +    throw v0
 +
 +    :cond_0
-+    sget v1, Lcom/apportable/RotationFix;->hits:I
++    sget v1, Lcom/apportable/RotationCrashFilter;->hits:I
 +
 +    add-int/lit8 v1, v1, 0x1
 +
-+    sput v1, Lcom/apportable/RotationFix;->hits:I
++    sput v1, Lcom/apportable/RotationCrashFilter;->hits:I
 +
-+    const-string v2, "RotationFix"
++    const-string v2, "RotationCrashFilter"
 +
 +    invoke-static {v1}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
 +
@@ -291,123 +269,41 @@ index 0000000..39e34fe
 +    goto :goto_0
 +.end method
 diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
-index 468f98c..1ed75f8 100644
+index 468f98c..437b704 100644
 --- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
 +++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
-@@ -61,6 +61,16 @@
+@@ -61,6 +61,22 @@
      iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
  
      invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
 +
-+    const-string v1, "orientationfix"
++    const-string v1, "rotationfix"
 +
 +    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 +
-+    const-string v1, "ORIFIX"
++    const-string v1, "ROTFIX"
 +
 +    const-string v2, "loaded from BackgroundLibraryLoader"
 +
 +    invoke-static {v1, v2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
++
++    invoke-static {}, Lcom/apportable/app/SplashScreen;->getWindowOrientation()I
++
++    move-result v1
++
++    invoke-static {v1}, Lcom/apportable/ui/Device;->nativeSetLockedOrientation(I)V
      :try_end_0
      .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
  
 diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
-index 7c1afc4..16bc93a 100644
+index 7c1afc4..b0ca296 100644
 --- a/smali/com/apportable/activity/VerdeActivity.smali
 +++ b/smali/com/apportable/activity/VerdeActivity.smali
-@@ -18,6 +18,8 @@
- 
- .field private static mOnCreateRestartAttempted:Z
- 
-+.field private static sGlitchFixed:Z
-+
- .field private static theVerdeActivity:Lcom/apportable/activity/VerdeActivity;
- 
- 
-@@ -593,6 +595,35 @@
- 
-     const/16 v1, 0x8
- 
-+    invoke-static {}, Lcom/apportable/app/SplashScreen;->isShown()Z
-+
-+    move-result v0
-+
-+    if-eqz v0, :cond_0
-+
-+    invoke-static {}, Lcom/apportable/RotationFix;->isEngineCaller()Z
-+
-+    move-result v0
-+
-+    if-eqz v0, :cond_0
-+
-+    const/4 v0, 0x4
-+
-+    if-ne p1, v0, :cond_0
-+
-+    sget-boolean v0, Lcom/apportable/activity/VerdeActivity;->sGlitchFixed:Z
-+
-+    if-nez v0, :cond_0
-+
-+    const/4 v0, 0x1
-+
-+    sput-boolean v0, Lcom/apportable/activity/VerdeActivity;->sGlitchFixed:Z
-+
-+    return-void
-+
-+    :cond_0
-+    const/16 v1, 0x8
-+
-     .line 703
-     packed-switch p1, :pswitch_data_0
- 
-@@ -615,7 +646,7 @@
-     :pswitch_1
-     sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
- 
--    if-le v0, v1, :cond_0
-+    if-le v0, v1, :cond_1
- 
-     .line 709
-     const/16 v0, 0x9
-@@ -625,7 +656,7 @@
-     goto :goto_0
- 
-     .line 711
--    :cond_0
-+    :cond_1
-     iput v3, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
- 
-     goto :goto_0
-@@ -640,7 +671,7 @@
-     :pswitch_3
-     sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
- 
--    if-le v0, v1, :cond_1
-+    if-le v0, v1, :cond_2
- 
-     .line 718
-     iput v1, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
-@@ -648,14 +679,12 @@
-     goto :goto_0
- 
-     .line 720
--    :cond_1
-+    :cond_2
-     iput v2, p0, Lcom/apportable/activity/VerdeActivity;->mRequestedOrientation:I
- 
-     goto :goto_0
- 
-     .line 703
--    nop
--
-     :pswitch_data_0
-     .packed-switch 0x1
-         :pswitch_0
-@@ -1365,6 +1394,8 @@
+@@ -1365,6 +1365,8 @@
      .locals 3
  
      .prologue
-+    invoke-static {}, Lcom/apportable/RotationFix;->install()V
++    invoke-static {}, Lcom/apportable/RotationCrashFilter;->install()V
 +
      const/16 v1, 0x400
  
@@ -541,6 +437,186 @@ index 754e6f3..d3b26b2 100644
      move v0, p1
  
      goto :goto_0
+diff --git a/smali/com/apportable/app/SplashScreen.smali b/smali/com/apportable/app/SplashScreen.smali
+index 304affe..e580036 100644
+--- a/smali/com/apportable/app/SplashScreen.smali
++++ b/smali/com/apportable/app/SplashScreen.smali
+@@ -14,6 +14,8 @@
+ 
+ .field private static sSplashLayout:Landroid/widget/FrameLayout;
+ 
++.field private static sWindowOrientation:I
++
+ 
+ # direct methods
+ .method static constructor <clinit>()V
+@@ -181,6 +183,14 @@
+     goto :goto_0
+ .end method
+ 
++.method public static getWindowOrientation()I
++    .locals 1
++
++    sget v0, Lcom/apportable/app/SplashScreen;->sWindowOrientation:I
++
++    return v0
++.end method
++
+ .method public static hide(Landroid/widget/FrameLayout;)V
+     .locals 1
+ 
+@@ -245,6 +255,142 @@
+     goto :goto_0
+ .end method
+ 
++.method private static pushWindowOrientation(Landroid/content/Context;)V
++    .locals 5
++
++    .prologue
++    const-string v0, "window"
++
++    invoke-virtual {p0, v0}, Landroid/content/Context;->getSystemService(Ljava/lang/String;)Ljava/lang/Object;
++
++    move-result-object v0
++
++    check-cast v0, Landroid/view/WindowManager;
++
++    invoke-interface {v0}, Landroid/view/WindowManager;->getDefaultDisplay()Landroid/view/Display;
++
++    move-result-object v0
++
++    invoke-virtual {v0}, Landroid/view/Display;->getRotation()I
++
++    move-result v0
++
++    invoke-virtual {p0}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
++
++    move-result-object v1
++
++    invoke-virtual {v1}, Landroid/content/res/Resources;->getConfiguration()Landroid/content/res/Configuration;
++
++    move-result-object v1
++
++    iget v1, v1, Landroid/content/res/Configuration;->orientation:I
++
++    const/4 v2, 0x1
++
++    const/4 v3, 0x2
++
++    if-eq v0, v3, :cond_0
++
++    if-eqz v0, :cond_0
++
++    const/4 v4, 0x0
++
++    goto :goto_0
++
++    :cond_0
++    const/4 v4, 0x1
++
++    :goto_0
++    const/4 v3, 0x1
++
++    if-ne v1, v3, :cond_1
++
++    const/4 v3, 0x1
++
++    goto :goto_1
++
++    :cond_1
++    const/4 v3, 0x0
++
++    :goto_1
++    if-ne v4, v3, :cond_5
++
++    if-nez v0, :cond_2
++
++    const/4 v0, 0x1
++
++    goto :goto_2
++
++    :cond_2
++    if-ne v0, v2, :cond_3
++
++    const/4 v0, 0x3
++
++    goto :goto_2
++
++    :cond_3
++    const/4 v1, 0x2
++
++    if-ne v0, v1, :cond_4
++
++    const/4 v0, 0x2
++
++    goto :goto_2
++
++    :cond_4
++    const/4 v0, 0x4
++
++    goto :goto_2
++
++    :cond_5
++    if-nez v0, :cond_6
++
++    const/4 v0, 0x3
++
++    goto :goto_2
++
++    :cond_6
++    if-ne v0, v2, :cond_7
++
++    const/4 v0, 0x2
++
++    goto :goto_2
++
++    :cond_7
++    const/4 v1, 0x2
++
++    if-ne v0, v1, :cond_8
++
++    const/4 v0, 0x4
++
++    goto :goto_2
++
++    :cond_8
++    const/4 v0, 0x1
++
++    :goto_2
++    sput v0, Lcom/apportable/app/SplashScreen;->sWindowOrientation:I
++
++    invoke-static {}, Lcom/apportable/activity/VerdeActivity;->getActivity()Lcom/apportable/activity/VerdeActivity;
++
++    move-result-object v1
++
++    if-nez v1, :cond_9
++
++    const-string v1, "ROTFIX"
++
++    const-string v2, "no activity at splash - orientation not pinned"
++
++    invoke-static {v1, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
++
++    return-void
++
++    :cond_9
++    invoke-virtual {v1, v0}, Lcom/apportable/activity/VerdeActivity;->_setRequestedOrientation(I)V
++
++    return-void
++.end method
++
+ .method public static show(Landroid/widget/FrameLayout;)V
+     .locals 15
+ 
+@@ -641,6 +787,8 @@
+ 
+     .line 215
+     :cond_e
++    invoke-static {v3}, Lcom/apportable/app/SplashScreen;->pushWindowOrientation(Landroid/content/Context;)V
++
+     new-instance v0, Landroid/widget/FrameLayout;
+ 
+     invoke-direct {v0, v3}, Landroid/widget/FrameLayout;-><init>(Landroid/content/Context;)V
 diff --git a/smali/com/apportable/ui/Device.smali b/smali/com/apportable/ui/Device.smali
 index b6f1ed9..1200ede 100644
 --- a/smali/com/apportable/ui/Device.smali

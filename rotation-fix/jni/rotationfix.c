@@ -3,15 +3,15 @@
 #include <jni.h>
 #include <android/log.h>
 
-/* Set to 1 to re-enable per-event diagnostics. Off by default: the
-   substitution path runs on every accelerometer sample (~30Hz). */
-#define ORIFIX_VERBOSE 0
+/* Set to 1 to re-enable diagnostics. Off by default: the statusBarOrientation
+   hook runs at accelerometer rate (~30Hz), so its LOGV would flood logcat. */
+#define ROTFIX_VERBOSE 0
 
-#define TAG "ORIFIX"
+#define TAG "ROTFIX"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 
-#if ORIFIX_VERBOSE
+#if ROTFIX_VERBOSE
 #define LOGV(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #else
 #define LOGV(...) ((void)0)
@@ -31,6 +31,7 @@ static IMP          (*getImp)(Method);
 static const char * (*getTypeEnc)(Method);
 
 static IMP g_origAcceleration = 0;
+static IMP g_origSetOrientationChanged = 0;
 static IMP g_origStatusBarOri = 0;
 
 /* Locked orientation, pushed from Java at the single splash-time dispatch.
@@ -45,6 +46,11 @@ static volatile int g_lockedOrientation = 0;
    thread querying statusBarOrientation concurrently must see the real value.
    A counter rather than a flag so a nested call can't clear it early. */
 static __thread int g_accelDepth = 0;
+
+/* One-shot for the engine's hardcoded startup LandscapeRight. Process-wide,
+   not thread-local: it marks a single event in the process lifetime, and a
+   per-thread copy would let a second interception through. */
+static int g_startupFlipHandled = 0;
 
 /* -[UIApplication statusBarOrientation] is a plain getter returning a global
    that is only ever written by _platform_setOrientation:. That call is gated
@@ -74,6 +80,31 @@ static void my_acceleration(id self, SEL _cmd, void *a, void *b, void *c, void *
     ((void (*)(id, SEL, void *, void *, void *, void *))g_origAcceleration)
         (self, _cmd, a, b, c, d);
     g_accelDepth--;
+}
+
+/* -[UIDevice _setOrientation:changed:] is the sole caller of
+   _platform_setOrientation:, which sets statusBarOrientation, asks Android to
+   rotate, and then runs [UIScreen _applyMode]. The engine's app delegate calls
+   this with a hardcoded LandscapeRight at startup and normally corrects it from
+   the sensor path ~150ms later. With the device held flat that path never fires
+   (ORIENTATION_UNKNOWN), so the correction never arrives and the engine renders
+   landscape in a portrait window for the whole session. Substituting here — the
+   only point upstream of all three effects — keeps them consistent.
+   One-shot: only the engine's startup request is intercepted, never a later
+   user rotation. Fires unconditionally at startup; when Android's rotation lock
+   is on the call is discarded downstream by shouldAutorotate, so the
+   substitution is inert there. The one-shot is consumed either way, so a later
+   user rotation to LandscapeRight always passes through untouched. */
+static void my_setOrientationChanged(id self, SEL _cmd, int orientation, char changed) {
+    if (orientation == 4 && __sync_val_compare_and_swap(&g_startupFlipHandled, 0, 1) == 0) {
+        if (g_lockedOrientation != 0 && g_lockedOrientation != 4) {
+            LOGI("substituting %d for startup LandscapeRight", g_lockedOrientation);
+            orientation = g_lockedOrientation;
+            changed = 1;
+        }
+    }
+    ((void (*)(id, SEL, int, char))g_origSetOrientationChanged)
+        (self, _cmd, orientation, changed);
 }
 
 /* Called from SplashScreen$1 at the single allowed splash-time dispatch,
@@ -106,11 +137,16 @@ static int install(void) {
     if (!m) { LOGE("acceleration: not found"); return 0; }
     if (getImp(m) == (IMP)my_acceleration) { LOGI("already installed"); return 1; }
 
-    if (getTypeEnc) LOGI("acceleration: encoding = %s", getTypeEnc(m));
+    if (getTypeEnc) LOGV("acceleration: encoding = %s", getTypeEnc(m));
 
     if (!hook(world, "acceleration:", (IMP)my_acceleration, &g_origAcceleration)) return 0;
     if (!hook(app, "statusBarOrientation",
               (IMP)my_statusBarOrientation, &g_origStatusBarOri)) return 0;
+
+    id device = getClass("UIDevice");
+    if (!device) { LOGE("UIDevice not present - load point too early"); return 0; }
+    if (!hook(device, "_setOrientation:changed:",
+              (IMP)my_setOrientationChanged, &g_origSetOrientationChanged)) return 0;
 
     LOGI("installed");
     return 1;
