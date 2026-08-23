@@ -1,8 +1,11 @@
 # Patch The Blockheads APK for modern Android devices
 
-These patches were designed with the help of LLMs for v1.7.5 and were tested on a device running Android 16.
+These patches were designed mostly with the help of LLMs for v1.7.5 and were tested on devices running Android 16.
 
 ## List of patches and what they do
+
+### `adaptive-icon.patch`
+Adds support for adaptive icons.
 
 ### `audio-fix.patch`
 Fixes music not resuming after backgrounding, music not looping, and music never starting when the game is launched while another app is playing audio. Includes a native library (`libaudiofix.so`) that swizzles Apportable's Objective-C runtime at startup, plus a smali change.
@@ -55,6 +58,17 @@ Fixes join links (`blockheads://?ip=...` and `theblockheads.net/join.php?...`) n
 * Also fixes links firing while the game is already in the foreground, which previously suffered the same stalled-buffer symptom, and supports repeated links without a restart.
 
 _Note: the game no longer registers as a handler for general `theblockheads.net` / `blockheads.noodlecake.com` URLs - only `/join.php` links. The old catch-all behaviour was almost certainly unintentional._
+
+### `permissions-fix.patch`
+Fixes the storage-permission request never being shown on Android 7.1 and later, which silently breaks the camera item (saves screenshots to `Pictures/The Blockheads`) on effectively every device still receiving updates.
+
+> **Notes from Claude:**
+> `VerdeActivity.onCreate(Bundle)` guards `ActivityCompat.requestPermissions(..., WRITE_EXTERNAL_STORAGE, ...)` behind `ContextCompat.checkSelfPermission(...) == GRANTED || (!Build.VERSION.RELEASE.startsWith("6") && !Build.VERSION.RELEASE.startsWith("7.0"))`. The second disjunct was written to work around a specific device complaint circa the runtime-permissions rollout and hardcodes the two OS releases current at the time - it was never a check for "does this OS require a runtime request," which is what the condition needed to express. Every release outside `6.x`/exactly `7.0` satisfies the disjunct and takes the `startGame` branch without ever calling `requestPermissions`, so the permission stays in its install-time `not granted` state (confirmed via `dumpsys package`: `granted=false` with no `USER_SET`/`USER_FIXED` flag, i.e. never presented, not denied) and every write under `WRITE_EXTERNAL_STORAGE` fails silently. This includes Android 7.1 - one point release outside the intended window - through the current SDK 27 target and beyond. `onRequestPermissionsResult` already handles both grant and deny correctly and calls `startGame` in either case, so the handler was never the problem; the request simply never reached it on almost any real device.
+
+* Removes the `Build.VERSION.RELEASE` string-prefix branch from the `checkSelfPermission` guard in `onCreate`. Once the permission is confirmed not granted, control now goes unconditionally to the existing `requestPermissions` call (`:cond_3`) instead of falling through to `startGame`; the dead version-check instructions are deleted rather than left unreachable, since unreachable smali has inconsistent verifier behavior across ART versions and a `VerifyError` in `onCreate` would be a boot failure.
+* Leaves `onRequestPermissionsResult`, the request code (`133747173`), and the deny-path toast untouched - `startGame` is already called on both outcomes, so a denial does not block boot, it only leaves screenshots unavailable for that session.
+
+_Note: The deny-path `Toast` message is long enough to clip at the two-line limit Android has enforced on `Toast` since API 26._
 
 ### `privacy-popup-cleanup.patch`
 Fixes the spurious "Privacy Setting Changed" dialog that appears during gameplay and menu navigation rather than only after an explicit privacy change. Includes a native library (`libprivacypopupfix.so`) that swizzles Apportable's Objective-C runtime at startup, plus a smali change to load it.

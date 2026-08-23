@@ -1,0 +1,41 @@
+diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
+index 7c1afc4..2366604 100644
+--- a/smali/com/apportable/activity/VerdeActivity.smali
++++ b/smali/com/apportable/activity/VerdeActivity.smali
+@@ -1494,26 +1494,7 @@
+ 
+     if-eqz v0, :cond_2
+ 
+-    sget-object v0, Landroid/os/Build$VERSION;->RELEASE:Ljava/lang/String;
+-
+-    const-string v1, "6"
+-
+-    .line 209
+-    invoke-virtual {v0, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+-
+-    move-result v0
+-
+-    if-nez v0, :cond_3
+-
+-    sget-object v0, Landroid/os/Build$VERSION;->RELEASE:Ljava/lang/String;
+-
+-    const-string v1, "7.0"
+-
+-    invoke-virtual {v0, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+-
+-    move-result v0
+-
+-    if-nez v0, :cond_3
++    goto :goto_2
+ 
+     .line 210
+     :cond_2
+@@ -1535,7 +1516,7 @@
+     goto :goto_0
+ 
+     .line 213
+-    :cond_3
++    :goto_2
+     new-array v0, v2, [Ljava/lang/String;
+ 
+     const/4 v1, 0x0
