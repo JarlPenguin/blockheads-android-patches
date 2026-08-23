@@ -1,0 +1,15 @@
+diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+index 468f98c..fc25b8c 100644
+--- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
++++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+@@ -61,6 +61,10 @@
+     iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
+ 
+     invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
++
++    const-string v1, "worldselectionfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
+     :try_end_0
+     .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
+ 

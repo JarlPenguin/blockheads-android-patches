@@ -40,10 +40,13 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 * Prevents the game from crashing when the WebView crashes
 
 ### `webview-suspend-freeze-fix.patch`
-* Fixes freezes when suspending and resuming the game, opening WebView pages and the photo picker.
+* Fixes freezes when suspending and resuming the game, opening WebView pages and the photo picker
 
 ### `wm-fix.patch`
 * Fixes newlines and non-ASCII characters being deleted from welcome messages
+
+### `world-selection-fix.patch`
+* Fixes the main menu resetting to the most recently played world whenever the game is suspended and resumed
 
 ## Technical details
 
@@ -170,6 +173,17 @@ Includes a native library (`libwmfix.so`) that swizzles Apportable's Objective-C
 * Applies the same wrapping in the DONE handler, whose second assignment to `content` previously rebuilt the `<div>` by hand without conversion. The raw editor text still reaches `nativeSetWelcomeMessage` unchanged - that is the send path and was never at fault - so only the post-save re-render is affected. The handler never re-seeds the `EditText`, so a second save transmits the same bytes as the first.
 * Keeps the game's own `"<"` gate on the conversion, applied in `wmWrapForDisplay` to the message alone. A message containing any tag is treated as hand-authored HTML where newlines are insignificant whitespace and `<br>` is the author's responsibility; without the gate, a message written with explicit `<br>` tags and newlines for source readability renders double-spaced on Android and single-spaced everywhere else. Rendering therefore matches vanilla; what the patch changes is what gets stored.
 * Restores non-ASCII to welcome messages as a consequence of removing the filter. Every character outside 32..126 was previously deleted from any Android-viewed message, so accented text could not survive a view, let alone an edit. Non-BMP characters (emoji) still appear as `\UD83D`-style escapes, but that is the server escaping them before any client sees them, and is identical on iOS.
+
+### `world-selection-fix.patch`
+Includes a native library (`libworldselectionfix.so`) that swizzles Apportable's Objective-C runtime at startup.
+
+> **Notes from Claude:**
+> The resume path into game code is a linear chain with no branches: `Java_com_apportable_Lifecycle_applicationDidBecomeActive` schedules a global block on the main run loop, which posts `VerdeLifecycleApplicationDidBecomeActive`; `-[UIApplication _lifecycleEvent:]` is the sole observer and forwards to `-[EvolutionAppDelegate applicationDidBecomeActive:]`, which calls `[[self viewController] didBecomeActive]` on `GameView`. Nothing in the game observes either that notification or `UIApplicationDidBecomeActiveNotification` - every registration for the latter belongs to Apportable's own `CADisplayLink`, `UIAccelerometer`, and `GKLocalPlayer` code - so the delegate chain is the only entry. `-[GameView didBecomeActive]` then calls `-[MainMenuUI selectMostRecentlyPlayedWorld]` behind `totalGamePlayTimePassed >= 1.0 && mainMenuUI != nil`. The first term is a persisted lifetime counter loaded from `NSUserDefaults` in `-[GameView init]`, so for any returning player the only effective condition is that the menu object exists - true on every foreground transition. Whether iOS 1.7.5 shows the same reset is unverified; `applicationDidBecomeActive:` fires on every resume there too and the guard contains no platform check, so this is plausibly an original bug rather than an Apportable artifact.
+
+* Suppresses `-[MainMenuUI selectMostRecentlyPlayedWorld]` outright. Despite the name it selects nothing: it writes `currentWorldIndex = -2`, `currentMainMenuSelection = 1`, `scrollTargetIndex = -3`, `activePreviewTextureIndex = -1`, and a `currentScroll` derived only from whether `gameSaves` is empty - byte for byte the same values `-[MainMenuUI initWithDelegate:windowInfo:cache:cloudInterface:]` already writes at construction. It is a reset-to-initial-state routine whose name reflects only that the default scroll position happens to land on the most recent world given the list ordering. Cold start therefore loses nothing, and `-[GameView didBecomeActive]` is its only sender in the binary.
+* Leaves `-[MainMenuUI gameSavesChanged]`, which runs immediately before it on the same path, untouched. That method performs the genuinely necessary resume work - `updateWorldTitles`, releasing `activePreviewTexture` and resetting `activePreviewTextureIndex` to `-1`, and raising the `gameListChanged` flag - and only reads `currentWorldIndex`, never writes it. Suppressing the reset costs no cleanup.
+* Guards nothing on `currentWorldIndex`, deliberately. The ivar is not stored state: `-[MainMenuUI render:projectionMatrix:]` recomputes it from `currentScroll` every frame, clamps it to `[-2, count-1]`, and drives `currentMainMenuSelection` from it, where `-1` and `-2` are the virtual Join and Create World slots below index 0. `-2` is thus both "freshly constructed" and "Create World is selected", so an index-based guard cannot tell a cold start from a resume on that screen - an earlier revision of this patch broke exactly there. The durable state is `currentScroll`; protecting it lets the next frame re-derive the same index and selection.
+* Keeps `startSearchForCloudInfoFromWorldIndex:` unmodified. `gameSavesChanged` calls it as `currentWorldIndex - 10`, which under stock was always `-12` because the reset had just run, and the callee clamps negatives to 0. With the reset suppressed the argument becomes the user's real position - but the two call sites in `render:projectionMatrix:` already pass `currentWorldIndex - 10` and `currentWorldIndex + i - 10`, so position-relative cloud discovery is the existing mechanism, not something this patch introduces. Pinning the argument to 0 would have made one caller behave unlike the other three.
 
 ---
 
