@@ -1,0 +1,231 @@
+diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+index 468f98c..5d85762 100644
+--- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
++++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+@@ -61,6 +61,10 @@
+     iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
+ 
+     invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
++
++    const-string v1, "wmfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
+     :try_end_0
+     .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
+ 
+diff --git a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$4.smali b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$4.smali
+index a933779..d577556 100644
+--- a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$4.smali
++++ b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$4.smali
+@@ -96,41 +96,21 @@
+     .line 157
+     iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView$4;->this$0:Lcom/noodlecake/noodlewebview/BlockheadsWebView;
+ 
+-    new-instance v1, Ljava/lang/StringBuilder;
+-
+-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+-
+-    const-string v2, "<div id=\"messageContent\">"
++    iget-object v1, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView$4;->this$0:Lcom/noodlecake/noodlewebview/BlockheadsWebView;
+ 
+-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    invoke-static {v1}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->access$600(Lcom/noodlecake/noodlewebview/BlockheadsWebView;)Landroid/widget/EditText;
+ 
+     move-result-object v1
+ 
+-    iget-object v2, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView$4;->this$0:Lcom/noodlecake/noodlewebview/BlockheadsWebView;
+-
+-    invoke-static {v2}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->access$600(Lcom/noodlecake/noodlewebview/BlockheadsWebView;)Landroid/widget/EditText;
+-
+-    move-result-object v2
+-
+-    invoke-virtual {v2}, Landroid/widget/EditText;->getText()Landroid/text/Editable;
+-
+-    move-result-object v2
+-
+-    invoke-virtual {v2}, Ljava/lang/Object;->toString()Ljava/lang/String;
+-
+-    move-result-object v2
+-
+-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    invoke-virtual {v1}, Landroid/widget/EditText;->getText()Landroid/text/Editable;
+ 
+     move-result-object v1
+ 
+-    const-string v2, "</div>"
+-
+-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    invoke-virtual {v1}, Ljava/lang/Object;->toString()Ljava/lang/String;
+ 
+     move-result-object v1
+ 
+-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
++    invoke-static {v1}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->wmWrapForDisplay(Ljava/lang/String;)Ljava/lang/String;
+ 
+     move-result-object v1
+ 
+diff --git a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView.smali b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView.smali
+index 69e7672..1ccfe39 100644
+--- a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView.smali
++++ b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView.smali
+@@ -177,6 +177,92 @@
+ .method public static native nativeSetWelcomeMessage(Ljava/lang/String;J)V
+ .end method
+ 
++.method public static wmExtractMessage(Ljava/lang/String;)Ljava/lang/String;
++    .locals 3
++
++    if-nez p0, :cond_0
++
++    const/4 v0, 0x0
++
++    return-object v0
++
++    :cond_0
++    invoke-virtual {p0}, Ljava/lang/String;->length()I
++
++    move-result v0
++
++    const/16 v1, 0x21
++
++    if-gt v0, v1, :cond_1
++
++    const/4 v0, 0x0
++
++    return-object v0
++
++    :cond_1
++    const/16 v1, 0x1a
++
++    add-int/lit8 v2, v0, -0x7
++
++    invoke-virtual {p0, v1, v2}, Ljava/lang/String;->substring(II)Ljava/lang/String;
++
++    move-result-object v0
++
++    return-object v0
++.end method
++
++.method public static wmWrapForDisplay(Ljava/lang/String;)Ljava/lang/String;
++    .locals 3
++
++    const-string v1, "<"
++
++    invoke-virtual {p0, v1}, Ljava/lang/String;->indexOf(Ljava/lang/String;)I
++
++    move-result v1
++
++    if-ltz v1, :cond_0
++
++    move-object v1, p0
++
++    goto :goto_0
++
++    :cond_0
++    const-string v1, "\n"
++
++    const-string v2, "<br/>"
++
++    invoke-virtual {p0, v1, v2}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
++
++    move-result-object v1
++
++    :goto_0
++    new-instance v0, Ljava/lang/StringBuilder;
++
++    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
++
++    const-string v2, "<div id=\"messageContent\">"
++
++    invoke-virtual {v0, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++
++    move-result-object v0
++
++    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++
++    move-result-object v0
++
++    const-string v2, "</div>"
++
++    invoke-virtual {v0, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++
++    move-result-object v0
++
++    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
++
++    move-result-object v0
++
++    return-object v0
++.end method
++
+ 
+ # virtual methods
+ .method public onCreate(Landroid/os/Bundle;)V
+@@ -681,7 +767,26 @@
+ 
+     iput-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->footer:Ljava/lang/String;
+ 
++    iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
++
++    invoke-static {v0}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->wmExtractMessage(Ljava/lang/String;)Ljava/lang/String;
++
++    move-result-object v0
++
++    if-eqz v0, :cond_3
++
++    iget-object v1, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->editView:Landroid/widget/EditText;
++
++    invoke-virtual {v1, v0}, Landroid/widget/EditText;->setText(Ljava/lang/CharSequence;)V
++
++    invoke-static {v0}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->wmWrapForDisplay(Ljava/lang/String;)Ljava/lang/String;
++
++    move-result-object v0
++
++    iput-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
++
+     .line 225
++    :cond_3
+     iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->webView:Landroid/webkit/WebView;
+ 
+     const-string v1, "file:///android_asset/GameResources/instructions/"
+@@ -720,40 +825,7 @@
+ 
+     invoke-virtual/range {v0 .. v5}, Landroid/webkit/WebView;->loadDataWithBaseURL(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ 
+-    .line 227
+-    iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
+-
+-    invoke-virtual {v0}, Ljava/lang/String;->length()I
+-
+-    move-result v0
+-
+-    const/16 v1, 0x21
+-
+-    if-le v0, v1, :cond_3
+-
+-    .line 228
+-    iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->editView:Landroid/widget/EditText;
+-
+-    iget-object v1, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
+-
+-    const/16 v2, 0x1a
+-
+-    iget-object v3, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
+-
+-    invoke-virtual {v3}, Ljava/lang/String;->length()I
+-
+-    move-result v3
+-
+-    add-int/lit8 v3, v3, -0x7
+-
+-    invoke-virtual {v1, v2, v3}, Ljava/lang/String;->substring(II)Ljava/lang/String;
+-
+-    move-result-object v1
+-
+-    invoke-virtual {v0, v1}, Landroid/widget/EditText;->setText(Ljava/lang/CharSequence;)V
+-
+     .line 233
+-    :cond_3
+     :goto_2
+     return-void
+ 
