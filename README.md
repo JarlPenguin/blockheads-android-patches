@@ -1,14 +1,54 @@
 # Patch The Blockheads APK for modern Android devices
 
-These patches were designed mostly with the help of LLMs for v1.7.5 and were tested on devices running Android 16.
+These patches were designed mostly with the help of LLMs for v1.7.5 and were tested on devices running Android 8.1 and 16.
 
 ## List of patches and what they do
 
 ### `adaptive-icon.patch`
-Adds support for adaptive icons.
+* Adds support for adaptive icons
 
 ### `audio-fix.patch`
-Fixes music not resuming after backgrounding, music not looping, and music never starting when the game is launched while another app is playing audio. Includes a native library (`libaudiofix.so`) that swizzles Apportable's Objective-C runtime at startup, plus a smali change.
+* Fixes music not resuming after backgrounding
+* Fixes main menu music not looping
+* Fixes music never starting when the game is launched while another app is playing audio
+
+### `audio-record-keep-saves.patch`:
+* Allows the game's audio to be captured when screen recording
+* Allows players to retain game data when uninstalling the game
+
+### `dpi-fix.patch`
+* Fixes UI scaling on tablets
+* Splash screen is now selected dynamically based on the device's type, resolution and orientation
+
+### `join-link-fix.patch`
+* Fixes join links (`blockheads://` and `theblockheads.net/join.php`) not working
+
+### `permissions-fix.patch`
+* Fixes the storage-permission request never being shown on Android 7.1 and later
+
+### `privacy-popup-cleanup.patch`
+* Prevents the "Privacy Setting Changed" dialog from appearing where uncalled for
+
+### `rotation-fix.patch`
+* Allows the game to natively launch in landscape mode
+* Fixes crashes on rotation on various devices
+* Fixes temporary rotation to right-landscape on startup when auto-rotation is enabled
+* Fixes tilt controls when auto-rotation is disabled
+* Fixes tilt controls when the device is lying flat at launch
+
+### `webview-rescue.patch`
+* Prevents the game from crashing when the WebView crashes
+
+### `webview-suspend-freeze-fix.patch`
+* Fixes freezes when suspending and resuming the game, opening WebView pages and the photo picker.
+
+### `wm-fix.patch`
+* Fixes newlines and non-ASCII characters being deleted from welcome messages
+
+## Technical details
+
+### `audio-fix.patch`
+Includes a native library (`libaudiofix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
 > `-[MJSoundManager restartMusicAfterActiveEvent:]` - the only music call `-[GameView didBecomeActive]` makes on resume - is an empty stub: a compiled prologue and epilogue with no body. It is empty because on iOS the audio-session interruption path handled resume. That path is intact on both sides here and never connects. `-[AVAudioPlayer(Platform) _platform_focus_changed:]` correctly maps Android focus constants onto `_beginInterruption`/`_endInterruption`, and `-[MJSoundManager reinitialize]` (reached from `initWithMasterVolume:`) does register for `AVAudioSessionInterruptionNotification`, but `-[AndroidAudioManager audioFocusChange:]` never fires and its `delegate` is nil, so nothing propagates. Apportable also sends the deprecated `AVAudioSessionDelegate` method `beginInterruption` where the game listens for the modern notification, so the two ends would not have met even with focus working. Meanwhile `-[AVAudioPlayer dealloc]` is the sole sender of `_platform_unload:`, which is what releases the Java `MediaPlayer` slot - so the player dies on background with nothing to restart it.
@@ -22,16 +62,11 @@ Fixes music not resuming after backgrounding, music not looping, and music never
 
 **Known limitations:** see https://github.com/JarlPenguin/blockheads-android-patches/issues/1.
 
-_Note: Requires `webview-suspend-freeze-fix.patch` to be applied first, currently temporarily conflicts with other native patches._
-
 ### `audio-record-keep-saves.patch`:
-Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.
-
-* `allowAudioPlaybackCapture` allows the game's audio to be captured when screen recording.
-* `hasFragileUserData` allows the player to keep the game's data when uninstalling it.
+* Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.
 
 ### `dpi-fix.patch`
-Fixes UI that renders at phone scale on tablets, and world-select art that overflows the screen on large phones. Includes a native library (`libdpifix.so`) that swizzles Apportable's Objective-C runtime at startup, plus smali changes to export the real display metrics and load it. Also replaces the splash screen's asset selection, which ignored device class, resolution and orientation entirely.
+Includes a native library (`libdpifix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
 > Three independent defects stack here. `-[UIDevice userInterfaceIdiom]` resolves through a `dispatch_once` block to `getenv("TABLET")`, matched case-insensitively against `yes`/`true`/`1` - there is no device detection at all, and nothing in the shipped APK ever sets the variable, so every Android device reports `UIUserInterfaceIdiomPhone`. That single accessor gates both `NSMainNibFile~ipad` and UIKit's whole `~ipad`/`@2x` resource-suffix resolver, so `MainWindow-iPad.nib` and the iPad launch images ship in the APK and are never once consulted. Separately, `-[UIScreen preferredMode]` requests `+[UIScreenMode emulatedMode:12]`, which forwards to `+[UINativeScreenMode nativeMode:]` - and that method discards its argument and computes `scale = VerdePluginNativeWidth() / 600.0`, a magic constant with no relation to display density. `-[UIScreen bounds]` is `currentMode.size / currentMode.scale` and `PIXEL_SCALE` is a copy of `UIScreen.scale` cached in `-[EAGLView initWithCoder:]`, so one bad mode poisons layout, framebuffer sizing and touch coordinate mapping together; on a 2560×1600 tablet the result was a hardcoded 414×736 @3.0 iPhone 6 Plus profile. Finally the game itself branches on a literal `415.0`-point width at every layout site in `MainMenuUI` and the `render:translation:pinchScale:` family to choose phone versus tablet layout, so correcting the geometry is not sufficient on its own - a large phone lands just over the line and gets inventory-on-the-right and a D-pad in portrait.
@@ -46,7 +81,7 @@ Fixes UI that renders at phone scale on tablets, and world-select art that overf
 * Factors the letterbox draw out of `show()` into `applyLetterbox` and calls it again from a new `reselect()`, hooked to `VerdeActivity.onConfigurationChanged`. The original selected once during `onCreate` and never revisited, so a device held sideways under rotation lock, or rotated while the splash was up, kept the launch-orientation image for the whole splash. `reselect()` is a no-op when the pick is unchanged and is wrapped so a failure leaves the existing splash rather than aborting launch.
 
 ### `join-link-fix.patch`
-Fixes join links (`blockheads://?ip=...` and `theblockheads.net/join.php?...`) not working. Even with the AndroidManifest patched they still wouldn't work on cold boot - the game would launch but stop at the main menu instead of importing the server details and opening the Join Server screen.
+Includes smali changes.
 
 > **Notes from Claude:**
 > The legacy Apportable bridge hands the launch URL to the native runtime long before the Objective-C application object exists, and never delivers the lifecycle callbacks the game relies on to act on it. This patch repairs the manifest intent filters and rewires the Java-side delivery path so the URL reaches the game's `handleOpenURL:` at a point where it can actually be used.
@@ -60,7 +95,7 @@ Fixes join links (`blockheads://?ip=...` and `theblockheads.net/join.php?...`) n
 _Note: the game no longer registers as a handler for general `theblockheads.net` / `blockheads.noodlecake.com` URLs - only `/join.php` links. The old catch-all behaviour was almost certainly unintentional._
 
 ### `permissions-fix.patch`
-Fixes the storage-permission request never being shown on Android 7.1 and later, which silently breaks the camera item (saves screenshots to `Pictures/The Blockheads`) on effectively every device still receiving updates.
+Includes smali changes.
 
 > **Notes from Claude:**
 > `VerdeActivity.onCreate(Bundle)` guards `ActivityCompat.requestPermissions(..., WRITE_EXTERNAL_STORAGE, ...)` behind `ContextCompat.checkSelfPermission(...) == GRANTED || (!Build.VERSION.RELEASE.startsWith("6") && !Build.VERSION.RELEASE.startsWith("7.0"))`. The second disjunct was written to work around a specific device complaint circa the runtime-permissions rollout and hardcodes the two OS releases current at the time - it was never a check for "does this OS require a runtime request," which is what the condition needed to express. Every release outside `6.x`/exactly `7.0` satisfies the disjunct and takes the `startGame` branch without ever calling `requestPermissions`, so the permission stays in its install-time `not granted` state (confirmed via `dumpsys package`: `granted=false` with no `USER_SET`/`USER_FIXED` flag, i.e. never presented, not denied) and every write under `WRITE_EXTERNAL_STORAGE` fails silently. This includes Android 7.1 - one point release outside the intended window - through the current SDK 27 target and beyond. `onRequestPermissionsResult` already handles both grant and deny correctly and calls `startGame` in either case, so the handler was never the problem; the request simply never reached it on almost any real device.
@@ -71,7 +106,7 @@ Fixes the storage-permission request never being shown on Android 7.1 and later,
 _Note: The deny-path `Toast` message is long enough to clip at the two-line limit Android has enforced on `Toast` since API 26._
 
 ### `privacy-popup-cleanup.patch`
-Fixes the spurious "Privacy Setting Changed" dialog that appears during gameplay and menu navigation rather than only after an explicit privacy change. Includes a native library (`libprivacypopupfix.so`) that swizzles Apportable's Objective-C runtime at startup, plus a smali change to load it.
+Includes a native library (`libprivacypopupfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
 > `-[GameView alertView:clickedButtonAtIndex:]` guards its `gdprStatus` write with `if (alertView == self->gdprPrompt)`, but the guard's closing brace falls before the alert construction, so `[[UIAlertView alloc] initWithTitle:@"Privacy Setting Changed" ...]` and `show` run unconditionally on every invocation. `UIAlertView` calls both `alertView:clickedButtonAtIndex:` and `alertView:didDismissWithButtonIndex:` on dismissal, and `GameView` is the delegate for roughly fifteen other alerts - disconnect, join-world, searching, tutorial, death confirmation, Game Center, server rejection - all of which are serviced by `didDismissWithButtonIndex:` and all of which fall through the mis-scoped guard in `clickedButtonAtIndex:`. The sibling handler disambiguates senders correctly for every alert it owns, comparing against a dedicated per-alert ivar and nilling it afterwards, so the GDPR addition breaks a convention the rest of the class follows. `-[EvolutionAppDelegate alertView:clickedButtonAtIndex:]` handles the first-launch consent prompt, writes the same `gdprStatus` key and calls `startThirdPartySDKs:`; it constructs no alert and needs no change.
@@ -83,7 +118,7 @@ Fixes the spurious "Privacy Setting Changed" dialog that appears during gameplay
 _Note: Currently temporarily conflicts with other native patches._
 
 ### `rotation-fix.patch`
-Fixes crashes and orientation bugs triggered by device rotation, and restores tilt controls when the system rotation lock is on or the device is held flat at launch. Includes a native library (`librotationfix.so`) that swizzles Apportable's Objective-C runtime at startup, plus manifest and smali changes.
+Includes a native library (`librotationfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
 > Apportable creates its view hierarchy on a dedicated `MainThread`, but Android delivers configuration changes on `main`. On rotation, `ActivityThread.handleActivityConfigurationChanged` → `ViewRootImpl.updateConfiguration` → `requestLayout` → `checkThread` compares the two and throws `CalledFromWrongThreadException`. The mechanism is device-independent; One UI appears to force a layout pass where AOSP returns early, so it only manifests on Samsung.
@@ -100,15 +135,13 @@ Fixes crashes and orientation bugs triggered by device rotation, and restores ti
 * Removes `screenOrientation="portrait"` from `VerdeActivity` so the game can launch directly in landscape.
 * Adds `screenOrientation="behind"` and `screenSize` to the `BlockheadsWebView` activity's manifest entry. `behind` makes it inherit `VerdeActivity`'s current orientation instead of resolving `unspecified` to the device's rotation lock. `screenSize` is defensive: the activity declares `orientation` in `configChanges` but not `screenSize`, which at `targetSdk` 27 should mean rotation destroys and recreates it - but it observably doesn't, and the reason hasn't been established. Declaring `screenSize` makes the intended behaviour explicit rather than relying on whatever is currently absorbing the change.
 
-_Note: Currently temporarily conflicts with other native patches._
-
 ### `webview-rescue.patch`
-Fixes random WebDialog/WebView crashes taking down the game with themselves.
+Includes smali changes.
 
-* When the WebDialog/WebView crashes, only it will, while the game itself will be unaffected.
+* Adds `onRenderProcessGone` callbacks to `WebDialog` and `BlockheadsWebView`.
 
 ### `webview-suspend-freeze-fix.patch`
-Fixes fatal ANR freezes triggered by Android lifecycle transitions, such as suspending/resuming the game, opening WebView pages (welcome messages, Help/Credits page), or launching the photo picker. Also fixes black textures in the Easel paint-mixing UI after returning from the photo picker.
+Includes a native library (`libpaintmixfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
 > Apportable runs the Objective-C main runloop on a dedicated `MainThread` and creates its views there, so that thread's Looper is the one `ViewRootImpl` posts to. On pause, `MainThread` blocks in `GLSurfaceView.readySurface()` waiting on `mLock` for a surface change only the UI thread can deliver, while the UI thread blocks in `Activity.performStop()` -> `WindowManagerGlobal.setStoppedState()` -> `Handler.runWithScissors()` waiting for `MainThread`'s Looper to dispatch. Neither can proceed and Android raises an ANR after 5 seconds.
@@ -119,12 +152,12 @@ Fixes fatal ANR freezes triggered by Android lifecycle transitions, such as susp
 * Bounds the waits in `surfaceCreated()` and `surfaceDestroyed()` to 250 ms, preserving the surface handshake while capping UI-thread exposure.
 * Removes the `SDK_INT >= 19` `MainThread.getThread().interrupt()` call in `VerdeActivity.onPause()`. `MessageQueue.next()` retries on `EINTR` and never checks the Java interrupt flag, so it never woke `MainThread` and only left the flag set for later blocking calls to trip over.
 * Removes the re-interrupt handlers in the `InterruptedException` catch blocks of `surfaceCreated()` / `surfaceDestroyed()`.
-* Adds `libpaintmixfix.so`, loaded from `BackgroundLibraryLoader` after `LibraryManager.loadLibraries()`. It swizzles `-[PaintMixUI render:translation:pinchScale:]` to repair any texture with a GL name of 0 once a context is current: file-backed textures are reloaded via `-[CPTexture2D updateForChangeToTexturePack]`, and the two painting textures, which have no `basePath`, are rebuilt via `-[PaintMixUI updateMix]`. `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` is also swizzled to clear the repair latch when a new photo is picked, so a second pick in the same session is covered.
+* `libpaintmixfix.so` swizzles `-[PaintMixUI render:translation:pinchScale:]` to repair any texture with a GL name of 0 once a context is current: file-backed textures are reloaded via `-[CPTexture2D updateForChangeToTexturePack]`, and the two painting textures, which have no `basePath`, are rebuilt via `-[PaintMixUI updateMix]`. `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` is also swizzled to clear the repair latch when a new photo is picked, so a second pick in the same session is covered.
 
 _Note: The texture repair happens after the fact rather than preventing creation in a contextless window; avoiding that would require changes beyond swizzling. The in-world easel (`Workbench.paintingTexture`) uses the same construction pattern but did not reproduce in testing and is left alone._
 
 ### `wm-fix.patch`
-Fixes newlines being lost from server welcome messages, and non-ASCII characters being deleted from them. Includes a native library (`libwelcomefix.so`) that swizzles Apportable's Objective-C runtime at startup, plus smali changes to `BlockheadsWebView` and `BlockheadsWebView$4`.
+Includes a native library (`libwmfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
 > There is no sanitizer anywhere on the send path. `nativeSetWelcomeMessage` takes the `EditText` contents through `GetStringUTFChars` (modified UTF-8, newline-transparent) into `+[NSString stringWithUTF8String:]`, and `-[World setNewWelcomeMessage:]` forwards to `-[BHClient sendNewWelcomeMessageToServer:]`, which packs a dictionary into a binary property list (`dataWithPropertyList:format:` with format 100) and gzips it. None of those stages touch the string, and reading the stored value back with server-side tools confirms a message saved from Android arrives with its newlines intact. The corruption is entirely on the display side: `-[GameView viewServerWelcomeMessage:customRules:allowEdit:]` composes an HTML page from `GameResources/instructions/server.html`, converting `"\n"` to `"<br/>"` (gated on the message containing no `"<"`) and then splitting the result on the inverse of an inline printable-ASCII 32..126 character set and rejoining with `@""` - which deletes every surviving newline along with all non-ASCII. `BlockheadsWebView.onCreate` then seeds the `EditText` from that composed page with `content.substring(26, length - 7)`, so the editor is populated with the *rendered* message rather than the stored one. Pressing DONE transmits whatever the editor holds, which is how `<br/>` literals reach the server and how newlines are destroyed there permanently. The bug is a round-trip degradation through the editor, not a transmission filter; iOS is unaffected because its editor is never seeded from rendered HTML.
