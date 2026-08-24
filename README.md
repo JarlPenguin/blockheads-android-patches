@@ -50,6 +50,10 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 
 ## Technical details
 
+### `adaptive-icon.patch`
+* Adds a copy of `res/drawable/icon.png` with transparent padding, located at `res/drawable/icon_adaptive.png`.
+* Adds `res/drawable-anydpi-v26/icon.xml` to enable adaptive icon support.
+
 ### `audio-fix.patch`
 Includes a native library (`libaudiofix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
@@ -198,14 +202,16 @@ You'll need [apktool](https://apktool.org) and [apksigner](https://developer.and
 
 1. Grab the 1.7.5 APK from APKMirror or any other reputable source.
 2. Decompile the APK using apktool: `apktool d <path/to/1.7.5.apk> -o patched_apk`
-3. Navigate into `patched_apk` and download the `.patch` files there: `cd patched_apk && wget https://raw.githubusercontent.com/JarlPenguin/blockheads-android-patches/refs/heads/main/<patch1.patch> && wget https://raw.githubusercontent.com/JarlPenguin/blockheads-android-patches/refs/heads/main/<patch2.patch> && ...`
-4. Apply the patches: `patch -p1 < <patch1.patch> && patch -p1 < <patch2.patch> && ...`
-5. Re-compile the APK: `cd .. && apktool b patched_apk -o patched-bh.apk`
-6. Use `apksigner` or any other utility to sign the APK.
-7. Install the APK on your device and enjoy!
+3. Navigate into `patched_apk` and download the `.patch` files there: `cd patched_apk && wget https://raw.githubusercontent.com/JarlPenguin/blockheads-android-patches/refs/heads/main/<patch.patch>`
+4. Apply each of the patches: `patch -p1 < <patch.patch>`
+5. Copy any required native libraries: `cp <patch>/libs/armeabi-v7a/<library.so> patched_apk/lib/armeabi-v7a`
+6. Re-compile the APK: `cd .. && apktool b patched_apk -o patched-bh.apk`
+7. Use `apksigner` or any other utility to sign the APK.
+8. Install the APK on your device and enjoy!
 
 ---
 
 ## Disclaimer
 
 Because applying these patches requires recompiling and signing the APK with a custom key, Google Play Games login will no longer work.
+
