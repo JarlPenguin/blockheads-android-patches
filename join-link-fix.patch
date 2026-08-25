@@ -1,7 +1,7 @@
-diff --git a/clean/AndroidManifest.xml b/join-link-decomp/AndroidManifest.xml
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
 index 2e851ce..65c8005 100644
---- a/clean/AndroidManifest.xml
-+++ b/join-link-decomp/AndroidManifest.xml
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
 @@ -35,13 +35,14 @@
                  <action android:name="android.intent.action.VIEW"/>
                  <category android:name="android.intent.category.DEFAULT"/>
@@ -33,10 +33,10 @@ index 2e851ce..65c8005 100644
          </activity>
          <service android:exported="false" android:name="com.apportable.media.AudioManagerService"/>
          <service android:name="com.apportable.iap.BillingService"/>
-diff --git a/clean/smali/com/apportable/Lifecycle.smali b/join-link-decomp/smali/com/apportable/Lifecycle.smali
+diff --git a/smali/com/apportable/Lifecycle.smali b/smali/com/apportable/Lifecycle.smali
 index c104ed8..0a299f4 100644
---- a/clean/smali/com/apportable/Lifecycle.smali
-+++ b/join-link-decomp/smali/com/apportable/Lifecycle.smali
+--- a/smali/com/apportable/Lifecycle.smali
++++ b/smali/com/apportable/Lifecycle.smali
 @@ -1311,10 +1311,12 @@
      if-eqz v0, :cond_1
  
@@ -51,10 +51,10 @@ index c104ed8..0a299f4 100644
      .line 386
      :cond_0
      :goto_0
-diff --git a/clean/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/join-link-decomp/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
 index 468f98c..e4dfd36 100644
---- a/clean/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
-+++ b/join-link-decomp/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+--- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
++++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
 @@ -61,6 +61,10 @@
      iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
  
