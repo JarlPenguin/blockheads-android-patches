@@ -359,28 +359,27 @@ static int install(void) {
        absent is fatal here even though resolve_ivar can manage without it. */
     if (!g_app) { LOGE("libApplication not loaded"); return 0; }
 
-    /* Files that use MSG_* add this here rather than in init(), so the
-       requirement is stated where it is actually used. */
+    /* 2 - only in files that use MSG_*; the requirement is stated where it
+       is actually used rather than in init(). Files with no MSG_* skip this
+       step entirely and go from 1 to 3. */
     if (!g_msgSend) { LOGE("objc_msgSend missing"); return 0; }
 
-    /* 2 - already installed */
+    /* 3 - already installed */
     m = getInstMethod(cls, selReg("delayedOpenURLIfNeeded"));
     if (!m) { LOGE("delayedOpenURLIfNeeded not found"); return 0; }
     if (getImp(m) == (IMP)my_delayedOpenURLIfNeeded) { LOGI("already installed"); return 1; }
 
-    /* 3 - ivar offsets */
+    /* 4 - ivar offsets */
     if (!resolve_ivar("GameView", "mainMenuUI", &g_ivarMainMenuUI, 0, &how)) return 0;
 
-    /* 4 - selectors, resolved before any hook goes live */
+    /* 5 - selectors, resolved before any hook goes live */
     g_selCopy          = selReg("copy");
     g_selRelease       = selReg("release");
     g_selHandleOpenURL = selReg("handleOpenURL:");
 
-    /* 5 - skipped: only one method hook is committed, so hook() does the
-       single encoding check itself. An explicit pre-check here would only
-       log the same encoding twice at startup. */
+    /* 6 - skipped: single-hook file, so hook() does the one check itself. */
 
-    /* 6 - hooks.
+    /* 7 - commit, undoing the committed hook if the pointer patch fails.
        Order matters: only start swallowing URLs once we can actually deliver
        them, so a failed swizzle leaves vanilla behaviour intact. */
     if (!hook(cls, "delayedOpenURLIfNeeded", ENC_DELAYED_OPEN_URL,
@@ -388,7 +387,6 @@ static int install(void) {
         return 0;
     }
 
-    /* 7 - undo the committed hook if the pointer patch cannot be made */
     pVerdeHandleURI = (void **)dlsym(g_app, "VerdeHandleURI");
     if (!pVerdeHandleURI) {
         LOGE("VerdeHandleURI not found: %s", dlerror());
@@ -403,8 +401,6 @@ static int install(void) {
     return 1;
 }
 
-
-/* Region [7] sits AFTER install(), so no forward declaration is needed. */
 
 __attribute__((constructor))
 static void init(void) {
