@@ -7,7 +7,7 @@ index 468f98c..5d85762 100644
  
      invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
 +
-+    const-string v1, "wmfix"
++    const-string v1, "welcomefix"
 +
 +    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
      :try_end_0

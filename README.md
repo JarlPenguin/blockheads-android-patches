@@ -42,7 +42,7 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 ### `webview-suspend-freeze-fix.patch`
 * Fixes freezes when suspending and resuming the game, opening WebView pages and the photo picker
 
-### `wm-fix.patch`
+### `welcome-fix.patch`
 * Fixes newlines and non-ASCII characters being deleted from welcome messages
 
 ### `world-selection-fix.patch`
@@ -164,8 +164,8 @@ Includes a native library (`libpaintmixfix.so`) that swizzles Apportable's Objec
 
 _Note: The texture repair happens after the fact rather than preventing creation in a contextless window; avoiding that would require changes beyond swizzling. The in-world easel (`Workbench.paintingTexture`) uses the same construction pattern but did not reproduce in testing and is left alone._
 
-### `wm-fix.patch`
-Includes a native library (`libwmfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
+### `welcome-fix.patch`
+Includes a native library (`libwelcomefix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
 > There is no sanitizer anywhere on the send path. `nativeSetWelcomeMessage` takes the `EditText` contents through `GetStringUTFChars` (modified UTF-8, newline-transparent) into `+[NSString stringWithUTF8String:]`, and `-[World setNewWelcomeMessage:]` forwards to `-[BHClient sendNewWelcomeMessageToServer:]`, which packs a dictionary into a binary property list (`dataWithPropertyList:format:` with format 100) and gzips it. None of those stages touch the string, and reading the stored value back with server-side tools confirms a message saved from Android arrives with its newlines intact. The corruption is entirely on the display side: `-[GameView viewServerWelcomeMessage:customRules:allowEdit:]` composes an HTML page from `GameResources/instructions/server.html`, converting `"\n"` to `"<br/>"` (gated on the message containing no `"<"`) and then splitting the result on the inverse of an inline printable-ASCII 32..126 character set and rejoining with `@""` - which deletes every surviving newline along with all non-ASCII. `BlockheadsWebView.onCreate` then seeds the `EditText` from that composed page with `content.substring(26, length - 7)`, so the editor is populated with the *rendered* message rather than the stored one. Pressing DONE transmits whatever the editor holds, which is how `<br/>` literals reach the server and how newlines are destroyed there permanently. The bug is a round-trip degradation through the editor, not a transmission filter; iOS is unaffected because its editor is never seeded from rendered HTML.
