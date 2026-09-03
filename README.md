@@ -16,6 +16,9 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 * Allows the game's audio to be captured when screen recording
 * Allows players to retain game data when uninstalling the game
 
+### `background-freeze-fix.patch`
+* Fixes freezes when suspending and resuming the game, opening WebView pages and the photo picker
+
 ### `dpi-fix.patch`
 * Fixes UI scaling on tablets
 * Splash screen is now selected dynamically based on the device's type, resolution and orientation
@@ -38,9 +41,6 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 
 ### `webview-rescue.patch`
 * Prevents the game from crashing when the WebView crashes
-
-### `webview-suspend-freeze-fix.patch`
-* Fixes freezes when suspending and resuming the game, opening WebView pages and the photo picker
 
 ### `welcome-fix.patch`
 * Fixes newlines and non-ASCII characters being deleted from welcome messages
@@ -71,6 +71,23 @@ Includes a native library (`libaudiofix.so`) that swizzles Apportable's Objectiv
 
 ### `audio-record-keep-saves.patch`:
 * Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.
+
+### `background-freeze-fix.patch`
+Includes a native library (`libpaintmixfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
+
+> **Notes from Claude:**
+> Apportable runs the Objective-C main runloop on a dedicated `MainThread` and creates its views there, so that thread's Looper is the one `ViewRootImpl` posts to. On pause, `MainThread` blocks in `GLSurfaceView.readySurface()` waiting on `mLock` for a surface change only the UI thread can deliver, while the UI thread blocks in `Activity.performStop()` -> `WindowManagerGlobal.setStoppedState()` -> `Handler.runWithScissors()` waiting for `MainThread`'s Looper to dispatch. Neither can proceed and Android raises an ANR after 5 seconds.
+>
+> The same transition causes a second, unrelated failure. Tearing down the EGL surface unbinds the context (`eglMakeCurrent` with `EGL_NO_SURFACE`), and the game constructs `PaintMixUI` in response to the picked image, so `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` runs `loadResources` and `updateMix` while `eglGetCurrentContext()` is `EGL_NO_CONTEXT`. `glGenTextures` silently yields 0, and neither `CPTexture2D` initialiser checks it, so the panel keeps texture objects with dead GL names for the rest of the session. The context recovers on its own about half a second later, but nothing rebuilds the textures. `itemsTexture` is unaffected because `Items.png` is a cache hit from world load.
+
+* Bounds the `mLock` wait in `readySurface()` to 16 ms, breaking the lock cycle; the tick action re-runs on the next tick.
+* Guards the `onSurfaceChanged` dispatch in `readySurface()` on non-zero dimensions. When the EGL surface is created with no size change pending, the size branch is skipped but `z` keeps its initialiser, so the renderer is handed `onSurfaceChanged(gl, 0, 0)` - a zero viewport it does not recover from until the next real size event.
+* Bounds the waits in `surfaceCreated()` and `surfaceDestroyed()` to 250 ms, preserving the surface handshake while capping UI-thread exposure.
+* Removes the `SDK_INT >= 19` `MainThread.getThread().interrupt()` call in `VerdeActivity.onPause()`. `MessageQueue.next()` retries on `EINTR` and never checks the Java interrupt flag, so it never woke `MainThread` and only left the flag set for later blocking calls to trip over.
+* Removes the re-interrupt handlers in the `InterruptedException` catch blocks of `surfaceCreated()` / `surfaceDestroyed()`.
+* `libpaintmixfix.so` swizzles `-[PaintMixUI render:translation:pinchScale:]` to repair any texture with a GL name of 0 once a context is current: file-backed textures are reloaded via `-[CPTexture2D updateForChangeToTexturePack]`, and the two painting textures, which have no `basePath`, are rebuilt via `-[PaintMixUI updateMix]`. `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` is also swizzled to clear the repair latch when a new photo is picked, so a second pick in the same session is covered.
+
+_Note: The texture repair happens after the fact rather than preventing creation in a contextless window; avoiding that would require changes beyond swizzling. The in-world easel (`Workbench.paintingTexture`) uses the same construction pattern but did not reproduce in testing and is left alone._
 
 ### `dpi-fix.patch`
 Includes a native library (`libdpifix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
@@ -147,22 +164,6 @@ Includes a native library (`librotationfix.so`) that swizzles Apportable's Objec
 Includes smali changes.
 
 * Adds `onRenderProcessGone` callbacks to `WebDialog` and `BlockheadsWebView`.
-
-### `webview-suspend-freeze-fix.patch`
-Includes a native library (`libpaintmixfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
-
-> **Notes from Claude:**
-> Apportable runs the Objective-C main runloop on a dedicated `MainThread` and creates its views there, so that thread's Looper is the one `ViewRootImpl` posts to. On pause, `MainThread` blocks in `GLSurfaceView.readySurface()` waiting on `mLock` for a surface change only the UI thread can deliver, while the UI thread blocks in `Activity.performStop()` -> `WindowManagerGlobal.setStoppedState()` -> `Handler.runWithScissors()` waiting for `MainThread`'s Looper to dispatch. Neither can proceed and Android raises an ANR after 5 seconds.
->
-> The same transition causes a second, unrelated failure. Tearing down the EGL surface unbinds the context (`eglMakeCurrent` with `EGL_NO_SURFACE`), and the game constructs `PaintMixUI` in response to the picked image, so `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` runs `loadResources` and `updateMix` while `eglGetCurrentContext()` is `EGL_NO_CONTEXT`. `glGenTextures` silently yields 0, and neither `CPTexture2D` initialiser checks it, so the panel keeps texture objects with dead GL names for the rest of the session. The context recovers on its own about half a second later, but nothing rebuilds the textures. `itemsTexture` is unaffected because `Items.png` is a cache hit from world load.
-
-* Bounds the `mLock` wait in `readySurface()` to 16 ms, breaking the lock cycle; the tick action re-runs on the next tick.
-* Bounds the waits in `surfaceCreated()` and `surfaceDestroyed()` to 250 ms, preserving the surface handshake while capping UI-thread exposure.
-* Removes the `SDK_INT >= 19` `MainThread.getThread().interrupt()` call in `VerdeActivity.onPause()`. `MessageQueue.next()` retries on `EINTR` and never checks the Java interrupt flag, so it never woke `MainThread` and only left the flag set for later blocking calls to trip over.
-* Removes the re-interrupt handlers in the `InterruptedException` catch blocks of `surfaceCreated()` / `surfaceDestroyed()`.
-* `libpaintmixfix.so` swizzles `-[PaintMixUI render:translation:pinchScale:]` to repair any texture with a GL name of 0 once a context is current: file-backed textures are reloaded via `-[CPTexture2D updateForChangeToTexturePack]`, and the two painting textures, which have no `basePath`, are rebuilt via `-[PaintMixUI updateMix]`. `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` is also swizzled to clear the repair latch when a new photo is picked, so a second pick in the same session is covered.
-
-_Note: The texture repair happens after the fact rather than preventing creation in a contextless window; avoiding that would require changes beyond swizzling. The in-world easel (`Workbench.paintingTexture`) uses the same construction pattern but did not reproduce in testing and is left alone._
 
 ### `welcome-fix.patch`
 Includes a native library (`libwelcomefix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
