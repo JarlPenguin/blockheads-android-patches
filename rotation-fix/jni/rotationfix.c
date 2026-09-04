@@ -22,6 +22,11 @@
  *    and 4 (LandscapeRight); with 0, both transforms are skipped, leaving tilt
  *    controls locked in the LandscapeLeft frame regardless of display orientation.
  *
+ * 3. Multi-window desync: in a split the pane's shape is set by the divider
+ *    rather than by the sensor, so the engine can be driven into an orientation
+ *    the display never entered. Leaving the split then strands it there, and
+ *    every subsequent rotation is offset by the difference.
+ *
  * THE FIX
  * -------
  * 1. Intercepts -[UIDevice _setOrientation:changed:] with a one-shot atomic CAS
@@ -31,15 +36,30 @@
  *    [UIScreen _applyMode].
  *
  * 2. Swizzles -[UIApplication statusBarOrientation] to return g_lockedOrientation
- *    only when the real value is 0 and only while inside -[World acceleration:].
- *    The absent-or-correct invariant ensures safety: the same condition that stops
- *    statusBarOrientation from updating (the rotation lock) also stops the window
- *    from rotating, so substituting only on 0 is safe.
+ *    while inside -[World acceleration:], whenever the real value is absent (0)
+ *    OR disagrees with g_lockedOrientation on axis. Agreement on axis leaves the
+ *    real value untouched, so the engine's own handedness - which the tilt
+ *    transforms were written against - is preserved wherever it is meaningful.
  *
  * 3. Swizzles -[World acceleration:] with a thread-local depth counter
  *    (g_accelDepth) to isolate the substitution strictly to the tilt physics
- *    path, preventing the layout path from seeing a non-zero orientation and
+ *    path, preventing the layout path from seeing a substituted orientation and
  *    reconfiguring the render surface for an unrotated window.
+ *
+ * 4. Tracks multi-window state and the rotation-lock setting, pushed from Java.
+ *    On leaving a split the engine's orientation is resynchronised via
+ *    nativeRunPendingResync, since the pane's shape can have driven it into an
+ *    orientation the display never entered. The resync runs on thread 1: the
+ *    call chain reaches [UIScreen _applyMode], which is unsafe from the
+ *    Android UI thread.
+ *
+ * KNOWN LIMITATION
+ * ----------------
+ * In split-screen the in-game tilt-control orientation lock does not hold.
+ * The engine expresses its veto by declining to call setRequestedOrientation,
+ * which only works while an earlier pin stands; Android does not honour a
+ * fixed orientation in multi-window (it rotates the pane and letterboxes
+ * instead), so no pin can be kept. The tilt frame re-bases correctly.
  *
  * LOAD POINT
  * ----------
@@ -59,6 +79,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <android/log.h>
+
 #include <jni.h>
 
 #ifndef ROTATIONFIX_VERBOSE
@@ -262,25 +283,45 @@ static int resolve_ivar(const char *clsname, const char *ivname,
    plus two stack words. The four pass-through args cover it exactly. */
 #define ENC_ACCELERATION "v24@0:4{Vector=[4f]}8"
 
-/* TODO: measure -[UIApplication statusBarOrientation] with method_getTypeEncoding on-device */
-#define ENC_STATUS_BAR_ORI NULL
+/* Measured on the target build. */
+#define ENC_STATUS_BAR_ORI "i8@0:4"
 
-/* TODO: measure -[UIDevice _setOrientation:changed:] with method_getTypeEncoding on-device.
-   High priority: takes (int, char), and the char is a BOOL whose ARM32 passing
-   convention is worth confirming. */
-#define ENC_SET_ORIENTATION_CHANGED NULL
+/* Measured on the target build: (int, char), the char being a BOOL passed
+   in the low byte of its own word. */
+#define ENC_SET_ORIENTATION_CHANGED "v16@0:4i8c12"
 
 static IMP g_origAcceleration          = 0;
 static IMP g_origStatusBarOri          = 0;
 static IMP g_origSetOrientationChanged = 0;
 
-/* Locked orientation, pushed from Java at the single splash-time dispatch.
-   UIInterfaceOrientation: 1=Portrait 2=PortraitUpsideDown
-   3=LandscapeLeft 4=LandscapeRight. 0 = not yet known. */
+/* Locked orientation, pushed from Java. UIInterfaceOrientation:
+   1=Portrait 2=PortraitUpsideDown 3=LandscapeLeft 4=LandscapeRight.
+   0 = not yet known. Written repeatedly - see nativeSetLockedOrientation. */
 static volatile int g_lockedOrientation = 0;
 
+/* The engine's own last-reported orientation, captured in
+   my_setOrientationChanged. Diagnostic only, and retained for the same reason
+   as g_autoRotate: the engine's value disagreeing with the display's is the
+   single most useful thing to see in a tilt log. Read only by the LOGV in
+   my_statusBarOrientation. */
+static volatile int g_engineOrientation = 0;
+
+/* Android's accelerometer_rotation setting, pushed from Java on every layout
+   pass and on every focus change. Nothing branches on it: the substitution
+   below reasons from the axis test alone. Retained because the rotation lock
+   being on or off is the first thing worth knowing when a tilt bug is
+   reported, and re-adding the Java plumbing to get it back would cost more
+   than leaving it wired. Read only by the LOGV in my_statusBarOrientation. */
+static volatile int g_autoRotate = 0;
+
+/* Multi-window state, pushed from Java on every configuration change. */
+static volatile int g_multiWindow = 0;
+
+/* Set when g_multiWindow falls from 1 to 0; consumed on thread 1. */
+static volatile int g_resyncPending = 0;
+
 /* Depth counter, set only while inside -[World acceleration:]. Confines the
-   substitution to the tilt path so the layout path still sees the real (0)
+   substitution to the tilt path so the layout path still sees the real
    value and doesn't reconfigure the render surface for a window that never
    rotated. Thread-local: the engine thread runs acceleration:, and another
    thread querying statusBarOrientation concurrently must see the real value.
@@ -292,29 +333,50 @@ static __thread int g_accelDepth = 0;
    per-thread copy would let a second interception through. */
 static int g_startupFlipHandled = 0;
 
-/* -[UIApplication statusBarOrientation] is a plain getter returning a global
-   that is only ever written by _platform_setOrientation:. That call is gated
-   on -[EvolutionViewController shouldAutorotate], which returns NO whenever
-   Android's accelerometer_rotation setting is 0. So with rotation locked the
-   value stays 0 for the whole session, and -[World acceleration:] applies
-   neither of its axis transforms, leaving tilt in the LandscapeLeft frame.
-
-   The value is absent-or-correct, never stale-and-wrong: the same condition
-   that stops it updating (the rotation lock) also stops the window rotating.
-   So substituting only on 0 is safe. This is the argument the whole patch
-   rests on — if shouldAutorotate ever returns YES with the lock on, it breaks. */
 static int my_statusBarOrientation(id self, SEL _cmd) {
     int real = ((int (*)(id, SEL))g_origStatusBarOri)(self, _cmd);
-    if (real == 0 && g_accelDepth > 0 && g_lockedOrientation != 0) {
-        LOGV("substituting %d for statusBarOrientation", g_lockedOrientation);
-        return g_lockedOrientation;
+    int out = real;
+
+    /* -[UIApplication statusBarOrientation] returns a global written only by
+       _platform_setOrientation:, which is gated on -[EvolutionViewController
+       shouldAutorotate] - false whenever Android's rotation lock is on. So the
+       value is 0 for a locked session, and -[World acceleration:] applies
+       neither of its axis transforms, leaving tilt in the LandscapeLeft frame.
+
+       It can also be STALE AND WRONG, which the original form of this patch
+       assumed impossible: a forced rotation in split-screen moves the window
+       while the lock keeps the global frozen at its old value. So substituting
+       only on 0 is not sufficient.
+
+       The load-bearing assumption is now the axis test, not `real == 0`.
+       g_lockedOrientation is derived from Display.getRotation() and describes
+       the window, so a disagreement on axis means `real` cannot be describing
+       the same window and is discarded. Agreement on axis leaves `real` alone,
+       preserving the engine's own handedness - the two conventions disagree on
+       which landscape is which, and the tilt transforms were written against
+       the engine's. If getRotation() ever stops describing the window the
+       engine renders into, this breaks. */
+    if (g_accelDepth > 0 && g_lockedOrientation != 0) {
+        int realLand = (real == 3 || real == 4);
+        int lockLand = (g_lockedOrientation == 3 || g_lockedOrientation == 4);
+        if (real == 0 || realLand != lockLand)
+            out = g_lockedOrientation;
     }
-    return real;
+
+    if (g_accelDepth > 0) {
+        LOGV("sbo real=%d engine=%d locked=%d auto=%d mw=%d -> out=%d",
+             real, g_engineOrientation, g_lockedOrientation,
+             g_autoRotate, g_multiWindow, out);
+    }
+
+    return out;
 }
 
 /* Arity verified from the runtime: acceleration: encoding is
    v24@0:4{Vector=[4f]}8 (see ENC_ACCELERATION). */
 static void my_acceleration(id self, SEL _cmd, void *a, void *b, void *c, void *d) {
+    static int s_logged = 0;
+    if (!s_logged) { s_logged = 1; LOGV("acceleration: hook is live"); }
     g_accelDepth++;
     ((void (*)(id, SEL, void *, void *, void *, void *))g_origAcceleration)
         (self, _cmd, a, b, c, d);
@@ -336,6 +398,8 @@ static void my_acceleration(id self, SEL _cmd, void *a, void *b, void *c, void *
    substitution is inert there. The one-shot is consumed either way, so a later
    user rotation to LandscapeRight always passes through untouched. */
 static void my_setOrientationChanged(id self, SEL _cmd, int orientation, char changed) {
+    if (orientation >= 1 && orientation <= 4) g_engineOrientation = orientation;
+
     if (orientation == 4 && __sync_val_compare_and_swap(&g_startupFlipHandled, 0, 1) == 0) {
         if (g_lockedOrientation != 0 && g_lockedOrientation != 4) {
             LOGI("substituting %d for startup LandscapeRight", g_lockedOrientation);
@@ -347,16 +411,58 @@ static void my_setOrientationChanged(id self, SEL _cmd, int orientation, char ch
         (self, _cmd, orientation, changed);
 }
 
-/* Called from SplashScreen$1 at the single allowed splash-time dispatch,
-   where currentOrientation is already in UIInterfaceOrientation encoding. */
+/* ---- JNI exports ---------------------------------------------------- */
+
+/* Pushed from VerdeActivity.onWindowFocusChanged and from
+   WindowState.check(), so a rotation-lock toggle made while the game is
+   backgrounded is picked up on return. */
+JNIEXPORT void JNICALL
+Java_com_apportable_ui_Device_nativeSetAutoRotate(JNIEnv *e, jclass c, jint v) {
+    (void)e; (void)c;
+    if (g_autoRotate != (v ? 1 : 0)) LOGV("autoRotate = %d", v ? 1 : 0);
+    g_autoRotate = v ? 1 : 0;
+}
+
+/* Called from SplashScreen$1 at the splash-time dispatch, and thereafter
+   from WindowState.check() on every layout pass with the value derived from
+   Display.getRotation(). It is therefore written repeatedly and concurrently
+   with reads on the engine thread - hence volatile, and hence no invariant
+   here may assume a single settled value. */
 JNIEXPORT void JNICALL
 Java_com_apportable_ui_Device_nativeSetLockedOrientation(JNIEnv *e, jclass c, jint o) {
     (void)e; (void)c;
     if (o >= 1 && o <= 4) {
         g_lockedOrientation = o;
-        LOGI("locked orientation = %d", o);
+        LOGV("locked orientation = %d", o);
     } else {
         LOGV("ignoring out-of-range orientation %d", o);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_com_apportable_ui_Device_nativeSetMultiWindow(JNIEnv *e, jclass c, jboolean mw) {
+    int was = g_multiWindow;
+    (void)e; (void)c;
+    g_multiWindow = mw ? 1 : 0;
+    LOGV("multiWindow = %d", g_multiWindow);
+    if (was && !g_multiWindow) g_resyncPending = 1;
+}
+
+/* Called on thread 1. The call chain reaches _applyMode, which is unsafe
+   from the Android UI thread - calling it there does not return. */
+JNIEXPORT void JNICALL
+Java_com_apportable_ui_Device_nativeRunPendingResync(JNIEnv *e, jclass c) {
+    (void)e; (void)c;
+    if (!g_resyncPending || g_lockedOrientation == 0 || !g_origSetOrientationChanged) return;
+    g_resyncPending = 0;
+    {
+        Class dev = getClass("UIDevice");
+        id d = dev ? MSG_id((id)dev, selReg("currentDevice")) : NULL;
+        if (!d) return;
+        LOGV("resync orientation to %d", g_lockedOrientation);
+        ((void (*)(id, SEL, int, char))g_origSetOrientationChanged)
+            (d, selReg("_setOrientation:changed:"), g_lockedOrientation, 1);
+        LOGV("resync returned");
     }
 }
 
@@ -373,7 +479,8 @@ static int install(void) {
         return 0;
     }
 
-    /* 2 - skipped: no MSG_* usage */
+    /* 2 - nativeRunPendingResync uses MSG_id */
+    if (!g_msgSend) { LOGE("objc_msgSend missing"); return 0; }
 
     /* 3 - resolve every Method this file will hook: step 6 needs them all in hand */
     mAccel = getInstMethod(world, selReg("acceleration:"));

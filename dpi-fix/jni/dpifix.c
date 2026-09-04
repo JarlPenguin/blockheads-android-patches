@@ -3,14 +3,24 @@
  *
  * THE BUG
  * -------
- * Apportable emulates a fixed iPhone screen: -[UIScreen preferredMode]
- * asks for +[UIScreenMode emulatedMode:12], which forwards to
- * +[UINativeScreenMode nativeMode:] - and that ignores its argument and
- * computes scale as nativeWidth/600, yielding an iPhone 6 Plus profile
- * (414x736 @3.0) on every device. UIScreen.bounds is mode.size/mode.scale
- * and PIXEL_SCALE is a cached copy of UIScreen.scale taken in
- * -[EAGLView initWithCoder:], so overriding the two mode accessors fixes
- * the whole chain: bounds, framebuffer size, layout and touch mapping.
+ * Apportable emulates a fixed iPhone screen. main() calls
+ * +[UIScreenMode emulatedMode:11], which reads the device's native
+ * dimensions and hands them to +[UIScreenMode bestEmulatedMode:] - a
+ * catalogue of fixed iOS device profiles, bucketed by aspect ratio and then
+ * snapped down by pixel thresholds. Every device therefore renders as
+ * whichever iPhone it snaps to (750x1334 @2.0 on a 1080x1920 phone),
+ * regardless of its actual size or density.
+ *
+ * UIScreen.bounds is mode.size/mode.scale, computed fresh on every call, and
+ * PIXEL_SCALE is a cached copy of UIScreen.scale taken in
+ * -[EAGLView initWithCoder:], so overriding the two mode accessors fixes the
+ * whole chain: bounds, framebuffer size, layout and touch mapping.
+ *
+ * A second consequence is the multi-window one. -[UIScreen _applyMode] pushes
+ * mode.size through the bridged setContentWidth:height: to
+ * SurfaceHolder.setFixedSize, pinning the framebuffer; SurfaceFlinger then
+ * stretches that fixed buffer over whatever the window actually is. In a split
+ * pane or a resized window the result is warped rather than relaid-out.
  *
  * THE FIX
  * -------
@@ -19,13 +29,23 @@
  * the GL surface dimensions become available via VerdePluginNativeWidth()
  * and VerdePluginNativeHeight().
  *
- * Scale is computed from getenv("DPIFIX_SWDP") (Android dp mapped directly
- * to iOS points, sharing the 160 dpi baseline). Phones (when getenv("TABLET")
- * != "1") are capped at a 414-point width to prevent crossing the game's
- * internal 415-point tablet layout threshold. The scale is clamped to
- * [1.0, 4.0]. Geometry is reported portrait-canonically (short edge as width).
- * Both getters fall back to the original implementation if geometry is not
- * yet available.
+ * Scale is getenv("DPIFIX_SWPX") / getenv("DPIFIX_SWDP") - the display's short
+ * edge in pixels over the same edge in dp, both pushed from Java and both read
+ * from Display.getRealMetrics(), so the reference is the physical display and
+ * not whatever window the app happened to launch into. Android dp and iOS
+ * points share the 160 dpi baseline, so mapping one to the other gives
+ * physically correct sizing. DPIFIX_SWPX falling back to g_pxW reproduces the
+ * older window-derived behaviour on a build where only SWDP is pushed.
+ * Phones (when getenv("TABLET") != "1") are capped at a 414-point width to
+ * prevent crossing the game's internal 415-point tablet layout threshold. The
+ * scale is clamped to [1.0, 4.0]. Geometry is reported portrait-canonically
+ * (short edge as width). Both getters fall back to the original implementation
+ * if geometry is not yet available.
+ *
+ * Window resize (multi-window, rotation): window pixels arrive from Java on
+ * every layout pass; -[UIScreen _applyMode] re-pins the surface and relayout()
+ * fixes the UIWindow frame. -[UIDevice orientation] is overridden because in
+ * multi-window the device orientation does not describe the window's shape.
  *
  * LOAD POINT
  * ----------
@@ -44,9 +64,11 @@
 #include <dlfcn.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <android/log.h>
+
+#include <jni.h>
 #include <stdlib.h>
 #include <string.h>
-#include <android/log.h>
 
 #ifndef DPIFIX_VERBOSE
 #define DPIFIX_VERBOSE 0
@@ -244,31 +266,56 @@ static int resolve_ivar(const char *clsname, const char *ivname,
  * per-file content
  * ===================================================================== */
 
-/* TODO: measure -[UIScreenMode scale] with method_getTypeEncoding on-device */
-#define ENC_MODE_SCALE NULL
+/* All three measured with method_getTypeEncoding on the target build. */
+#define ENC_MODE_SCALE  "f8@0:4"
+#define ENC_MODE_SIZE   "{CGSize=ff}8@0:4"
+#define ENC_DEV_ORIENT  "i8@0:4"
 
-/* TODO: measure -[UIScreenMode size] with method_getTypeEncoding on-device */
-#define ENC_MODE_SIZE  NULL
+typedef struct { float w, h; }             CGSize32;
+typedef struct { float x, y, w, h; }       CGRect32;
 
-typedef struct { float w, h; } CGSize32;
+/* Neither is covered by the canonical MSG_* set. MSG_rect: a 16-byte struct
+   return goes through objc_msgSend_stret on ARM32, a different entry point
+   with a hidden sret pointer. MSG_setFrame: four floats by value, which the
+   canonical set has no arity for. */
+#define MSG_rect(r,o,s) (((void (*)(CGRect32*,id,SEL))g_msgSendStret)((r),(o),(s)))
+
+#define MSG_setFrame(o,s,x,y,w,h) \
+    (((void (*)(id,SEL,float,float,float,float))g_msgSend)((o),(s),(x),(y),(w),(h)))
+
+/* objc_msgSend_stret is not part of the canonical runtime set, so it is
+   declared here and resolved in install() step 5 rather than in init(). */
+static void *g_msgSendStret;
 
 /* Apportable's live framebuffer dimensions; both return 0 until the GL
    surface exists, which is why geometry is computed lazily below. */
 static int (*nativeWidth)(void);
 static int (*nativeHeight)(void);
 
-/* ---- geometry ----
-   Apportable emulates a fixed iPhone screen: -[UIScreen preferredMode]
-   asks for +[UIScreenMode emulatedMode:12], which forwards to
-   +[UINativeScreenMode nativeMode:] - and that ignores its argument and
-   computes scale as nativeWidth/600, yielding an iPhone 6 Plus profile
-   (414x736 @3.0) on every device. UIScreen.bounds is mode.size/mode.scale
-   and PIXEL_SCALE is a cached copy of UIScreen.scale taken in
-   -[EAGLView initWithCoder:], so overriding the two mode accessors fixes
-   the whole chain: bounds, framebuffer size, layout and touch mapping. */
+static IMP g_origModeScale = 0, g_origModeSize = 0;
+static IMP g_origDevOrient = 0;
 
+/* Emulated-screen geometry, portrait-canonical (short edge as width).
+   g_scale is fixed once and never recomputed: PIXEL_SCALE is a cached copy
+   of UIScreen.scale taken in -[EAGLView initWithCoder:], so a mid-session
+   scale change would desync touch mapping from rendering. */
 static float g_scale = 0.0f;
-static int   g_pxW = 0, g_pxH = 0;   /* portrait-canonical pixels */
+static int   g_pxW = 0, g_pxH = 0;
+
+/* The window's own pixels, as measured in Java and pushed on every layout.
+   Raw, not normalized: the aspect is needed to decide the transpose. */
+static int g_winW = 0, g_winH = 0;
+static int g_winSet = 0;
+
+/* Display rotation pushed from Java, in UIInterfaceOrientation encoding.
+   0 = not yet known. Sourced from Display.getRotation() rather than derived
+   from window dimensions: the window shape is downstream of the device
+   orientation, so deriving from it creates a feedback loop that oscillates
+   whenever the window is near-square or mid-transition. */
+static volatile int g_displayOrient = 0;
+
+/* Multi-window state, pushed from Java on every configuration change. */
+static volatile int g_multiWindow = 0;
 
 static int ensure_geometry(void) {
     if (g_scale > 0.0f) return 1;
@@ -286,9 +333,15 @@ static int ensure_geometry(void) {
     int swdp = sw ? atoi(sw) : 0;
     if (swdp <= 0) { LOGE("DPIFIX_SWDP unset/bad - leaving stock profile"); return 0; }
 
-    /* Android dp and iOS points share the same 160-per-inch reference, so
-       mapping dp straight to points gives physically correct sizing. */
-    g_scale = (float)g_pxW / (float)swdp;
+    /* Display short edge in pixels, the numerator that makes the scale a
+       property of the hardware rather than of the launch window. See the
+       banner. Falls back to the framebuffer's short edge on a build where
+       only SWDP is pushed. */
+    const char *spx = getenv("DPIFIX_SWPX");
+    int swpx = spx ? atoi(spx) : 0;
+    if (swpx <= 0) swpx = g_pxW;
+
+    g_scale = (float)swpx / (float)swdp;
 
     /* The game branches on a hardcoded 415-point width to choose phone vs
        tablet layout (inventory placement, D-pad, carousel spacing). dp runs
@@ -298,27 +351,82 @@ static int ensure_geometry(void) {
     const char *tab = getenv("TABLET");
     int isTablet = tab && *tab == '1';
     if (!isTablet) {
-        const float PHONE_MAX_PT = 414.0f;      /* iPhone 6 Plus */
-        if ((float)g_pxW / g_scale > PHONE_MAX_PT)
-            g_scale = (float)g_pxW / PHONE_MAX_PT;
+        const float PHONE_MAX_PT = 414.0f;
+        if ((float)swpx / g_scale > PHONE_MAX_PT)
+            g_scale = (float)swpx / PHONE_MAX_PT;
     }
 
     if (g_scale < 1.0f) g_scale = 1.0f;
     if (g_scale > 4.0f) g_scale = 4.0f;
 
-    LOGI("native %dx%d swdp=%d tablet=%s -> scale %.3f (points %.1fx%.1f)",
-         w, h, swdp, isTablet ? "yes" : "no",
+    /* swpx and swdp are the scale's inputs; g_pxW/g_pxH are the window's,
+       and can differ from the display when the app launched into a split. */
+    LOGI("native %dx%d swpx=%d swdp=%d tablet=%s -> scale %.3f (points %.1fx%.1f)",
+         w, h, swpx, swdp, isTablet ? "yes" : "no",
          g_scale, g_pxW / g_scale, g_pxH / g_scale);
     return 1;
 }
 
-/* ---- UIScreenMode / UINativeScreenMode leaf overrides ----
-   Both classes' getters are plain ivar reads of the same two ivars, so a
-   single pair of replacements serves both and the parent's IMP is a valid
-   fallback for either receiver. The subclass originals captured during
-   install are used only for rollback, never for chaining. */
+static void apply_mode(void) {
+    Class sc = getClass("UIScreen");
+    id    screen;
 
-static IMP g_origModeScale = 0, g_origModeSize = 0;
+    if (!sc) { LOGE("UIScreen not found - cannot re-pin"); return; }
+    screen = MSG_id((id)sc, selReg("mainScreen"));
+    if (!screen) { LOGE("mainScreen nil - cannot re-pin"); return; }
+
+    MSG_v(screen, selReg("_applyMode"));
+}
+
+static void relayout(void) {
+    Class scls, acls;
+    id screen, app, win, rootvc, rootview;
+    CGRect32 sb = {0,0,0,0};
+    float fw, fh;
+
+    if (!g_msgSendStret) { LOGE("objc_msgSend_stret unavailable - no relayout"); return; }
+
+    scls = getClass("UIScreen");
+    acls = getClass("UIApplication");
+    if (!scls || !acls) return;
+
+    screen = MSG_id((id)scls, selReg("mainScreen"));
+    if (!screen) return;
+    /* bounds is fetched only to confirm the screen has usable geometry before
+       touching the hierarchy; the frame itself comes from g_winW/g_winH for the
+       reason below. */
+    MSG_rect(&sb, screen, selReg("bounds"));
+    if (sb.w <= 0.0f || sb.h <= 0.0f) return;
+
+    /* The window frame takes the window-shaped rect, not the portrait-canonical
+       bounds: on iOS UIKit rotates the window above an orientation-invariant
+       UIScreen, and nothing here performs that rotation. Using bounds directly
+       leaves an unpainted strip wherever the window is not portrait. */
+    fw = (float)g_winW / g_scale;
+    fh = (float)g_winH / g_scale;
+
+    app = MSG_id((id)acls, selReg("sharedApplication"));
+    win = app ? MSG_id(app, selReg("keyWindow")) : NULL;
+    if (!win) { LOGE("keyWindow nil - no relayout"); return; }
+
+    LOGV("relayout: keyWindow -> %.1fx%.1f", fw, fh);
+
+    /* setNeedsLayout only: forcing the pass with layoutIfNeeded reaches
+       -[EAGLView layoutSubviews] -> deleteFramebuffer, whose rebuild is lazy,
+       and tearing the framebuffer down off the render thread freezes the frame. */
+    MSG_setFrame(win, selReg("setFrame:"), 0.0f, 0.0f, fw, fh);
+    MSG_v(win, selReg("setNeedsLayout"));
+
+    /* The root view was the same size as the window, so it should follow
+       from the window's layout - but Apportable's UIWindow may not
+       propagate, so set it directly and let its own layoutSubviews run. */
+    rootvc   = MSG_id(win, selReg("rootViewController"));
+    rootview = rootvc ? MSG_id(rootvc, selReg("view")) : NULL;
+    if (rootview) {
+        MSG_setFrame(rootview, selReg("setFrame:"), 0.0f, 0.0f, fw, fh);
+        MSG_v(rootview, selReg("setNeedsLayout"));
+    }
+}
 
 static uint32_t my_mode_scale(id self, SEL _cmd) {
     if (ensure_geometry()) { uint32_t b; memcpy(&b, &g_scale, 4); return b; }
@@ -334,9 +442,100 @@ static void my_mode_size(CGSize32 *ret, id self, SEL _cmd) {
     }
 }
 
+/* -[UIScreen _applyMode] transposes currentMode.size when this getter returns
+   3 or 4, which is how UIKit's window rotation is expressed here. The device's
+   own orientation is the wrong input in multi-window, where the pane's shape is
+   set by the divider and can differ from the device's pose entirely. */
+static int my_device_orientation(id self, SEL _cmd) {
+    /* Change-detection for the LOGV below; nothing else reads these. At
+       VERBOSE 0 they are maintained for nothing, which is the price of the
+       log being readable when it is turned on. */
+    static int s_lastIn = -99, s_lastOut = -99;
+    static int s_lastW = -1, s_lastH = -1;
+    int o = ((int (*)(id, SEL))g_origDevOrient)(self, _cmd);
+    int out;
+
+    if (g_multiWindow && g_winSet) {
+        /* In a split the pane's shape is set by the divider, not the sensor
+           or the display, so the pane is authoritative. Deriving from window
+           shape is only unstable in fullscreen, where the window follows the
+           display and the two form a feedback loop - hence the split. */
+        int winLandscape = (g_winW > g_winH);
+        int isLand = (o == 3 || o == 4);
+        int isPort = (o == 1 || o == 2);
+        if ((winLandscape && isLand) || (!winLandscape && isPort))
+            out = o;
+        else
+            out = winLandscape ? 3 : 1;
+    } else if (g_displayOrient != 0) {
+        int dispLand = (g_displayOrient == 3 || g_displayOrient == 4);
+        int isLand   = (o == 3 || o == 4);
+        int isPort   = (o == 1 || o == 2);
+
+        if ((dispLand && isLand) || (!dispLand && isPort))
+            out = o;                 /* device agrees with the display */
+        else
+            out = g_displayOrient;   /* display wins; it is what the window follows */
+    } else {
+        out = o;                     /* nothing authoritative yet */
+    }
+
+    if (o != s_lastIn || out != s_lastOut || g_winW != s_lastW || g_winH != s_lastH) {
+        LOGV("orient in=%d out=%d disp=%d win=%dx%d px=%dx%d",
+             o, out, g_displayOrient, g_winW, g_winH, g_pxW, g_pxH);
+        s_lastIn = o; s_lastOut = out; s_lastW = g_winW; s_lastH = g_winH;
+    }
+
+    return out;
+}
+
+/* ---- JNI exports ---------------------------------------------------- */
+
+JNIEXPORT void JNICALL
+Java_com_apportable_gl_GLSurfaceView_dpifixSetDisplayOrient(JNIEnv *e, jclass c, jint o) {
+    (void)e; (void)c;
+    if (o >= 1 && o <= 4) g_displayOrient = o;
+}
+
+JNIEXPORT void JNICALL
+Java_com_apportable_gl_GLSurfaceView_dpifixMultiWindow(JNIEnv *e, jclass c, jboolean mw) {
+    (void)e; (void)c;
+    g_multiWindow = mw ? 1 : 0;
+}
+
+/* Called on thread 1, from WindowState.run(). apply_mode() reaches the
+   bridged setContentSize:, and relayout() touches the view hierarchy; both
+   are unsafe from the Android UI thread. */
+JNIEXPORT void JNICALL
+Java_com_apportable_gl_GLSurfaceView_dpifixWindowPx(JNIEnv *env, jclass cls,
+                                                    jint w, jint h) {
+    int nw, nh;
+    (void)env; (void)cls;
+
+    if (w <= 0 || h <= 0) return;
+    if (!ensure_geometry()) { LOGV("window update before geometry - deferred"); return; }
+
+    nw = (w < h) ? w : h;
+    nh = (w < h) ? h : w;
+
+    if (nw == g_pxW && nh == g_pxH && g_winSet && ((g_winW > g_winH) == (w > h))) {
+        LOGV("window unchanged: %dx%dpx", w, h);
+        return;
+    }
+
+    LOGV("window %dx%dpx (canonical %dx%d, points %.1fx%.1f)",
+         w, h, nw, nh, nw / g_scale, nh / g_scale);
+
+    g_winW = w; g_winH = h; g_winSet = 1;
+    g_pxW  = nw; g_pxH  = nh;
+
+    apply_mode();
+    relayout();
+}
+
 static int install(void) {
-    Class  mode, nmode;
-    Method mScale, mSize, mNScale, mNSize;
+    Class  mode, nmode, dev;
+    Method mScale, mSize, mNScale, mNSize, mDevOrient;
     IMP    origNScale, origNSize;
 
     /* 1 */
@@ -354,15 +553,21 @@ static int install(void) {
 
     /* UINativeScreenMode declares its own size/scale, so hooking the parent
        alone misses the instance preferredMode actually returns. The class is
-       always present on this build - preferredMode -> emulatedMode:12 ->
-       nativeMode: constructs one unconditionally - so absence means the
-       binary is not the one analysed. Log and continue: the parent hooks
-       may still cover whatever mode is in use, and failing closed here
-       would disable the fix on a binary that might not need it. */
+       always present on this build - preferredMode constructs one
+       unconditionally - so absence means the binary is not the one analysed.
+       Log and continue: the parent hooks may still cover whatever mode is in
+       use, and failing closed here would disable the fix on a binary that
+       might not need it. */
     nmode = getClass("UINativeScreenMode");
     if (!nmode) LOGE("UINativeScreenMode not found");
 
-    /* 2 - skipped: no MSG_* usage */
+    /* Same tolerance for UIDevice: without the orientation override the
+       transpose stays device-driven, which is wrong only in multi-window. */
+    dev = getClass("UIDevice");
+    if (!dev) LOGE("UIDevice not found - orientation override will be skipped");
+
+    /* 2 - apply_mode() and relayout() use MSG_id/MSG_v */
+    if (!g_msgSend) { LOGE("objc_msgSend missing"); return 0; }
 
     /* 3 */
     mScale = getInstMethod(mode, selReg("scale"));
@@ -375,15 +580,26 @@ static int install(void) {
     mNScale = nmode ? getInstMethod(nmode, selReg("scale")) : NULL;
     mNSize  = nmode ? getInstMethod(nmode, selReg("size"))  : NULL;
 
+    mDevOrient = dev ? getInstMethod(dev, selReg("orientation")) : NULL;
+
     /* 4 - skipped: no ivars resolved */
 
-    /* 5 - skipped: no runtime selectors or constants to cache */
+    /* 5 - objc_msgSend_stret, for the struct-returning bounds/frame calls in
+       relayout(). Not in the canonical runtime set, so it is resolved here
+       rather than in init(). Non-fatal: relayout() guards on it and the rest
+       of the fix works without it. */
+    g_msgSendStret = dlsym(g_sys, "objc_msgSend_stret");
+    if (!g_msgSendStret) LOGE("objc_msgSend_stret unavailable - no relayout");
 
-    /* 6 */
+    /* 6 - every encoding, before any setImp */
     if (!checkEncoding(mScale, "scale", ENC_MODE_SCALE)) return 0;
     if (!checkEncoding(mSize,  "size",  ENC_MODE_SIZE))  return 0;
     if (mNScale && !checkEncoding(mNScale, "scale", ENC_MODE_SCALE)) return 0;
     if (mNSize  && !checkEncoding(mNSize,  "size",  ENC_MODE_SIZE))  return 0;
+    if (mDevOrient && !checkEncoding(mDevOrient, "orientation", ENC_DEV_ORIENT)) {
+        LOGE("UIDevice orientation encoding mismatch - override will be skipped");
+        mDevOrient = NULL;
+    }
 
     /* 7 - commit, rolling back already-committed hooks if a later one fails */
     if (!hook(mode, "scale", ENC_MODE_SCALE, (IMP)my_mode_scale, &g_origModeScale))
@@ -410,6 +626,17 @@ static int install(void) {
             if (mNScale && origNScale) setImp(mNScale, origNScale);
             return 0;
         }
+    }
+
+    /* Deliberately non-fatal, unlike every hook above: the mode overrides are
+       the fix, and the orientation override only corrects the transpose in
+       multi-window. Losing it degrades split-screen geometry rather than
+       leaving the DPI fix half-applied, so it logs and clears the captured IMP
+       instead of rolling the whole install back. */
+    if (mDevOrient && !hook(dev, "orientation", ENC_DEV_ORIENT,
+                            (IMP)my_device_orientation, &g_origDevOrient)) {
+        LOGE("UIDevice orientation hook failed - transpose stays device-driven");
+        g_origDevOrient = 0;
     }
 
     LOGI("installed");
