@@ -51,25 +51,104 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 
 ## How to apply the patches
 
-### Prerequisites
-You'll need [apktool](https://apktool.org) and [apksigner](https://developer.android.com/tools/apksigner) or any other utility that signs APKs.  
-*(For Windows users, using **WSL** is recommended).*
+> **This will delete your existing worlds.** The patched APK is signed with a different key than the Play Store/Noodlecake builds, so it can't be installed over an existing installation - you have to uninstall first, and the save data goes with it. Backing up and restoring saves is possible but is a complicated process and isn't covered here.
 
-### Steps
+### All-in-one script
 
-#### All-in-one script
-1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source.
-2. Run `./patch-apk.sh <path/to/1.7.5.apk>`.
+**Requirements:** Linux (x86_64), Java 8 or newer, `git`, and `curl`. Everything else is downloaded into a temporary directory and removed afterwards.
 
-#### Patch the APK manually
-1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source.
-2. Decompile the APK using apktool: `apktool d <path/to/1.7.5.apk> -o blockheads`
-3. Navigate into `blockheads` and apply the wanted patch files: `cd blockheads && git apply <path/to/patch>`
-4. Copy any required native libraries to `lib/armeabi-v7a` inside of the `blockheads` folder.
-5. Re-compile the APK: `cd .. && apktool b blockheads -o patched-bh.apk`
-6. Download the AOSP test keys by cloning https://android.googlesource.com/platform/build (they are located at `target/product/security`) or use your own signing keys.
-7. Use `apksigner` or any other utility to sign the APK: `<path/to/apksigner> sign --key <path/to/testkey.pk8> --cert <path/to/testkey.x509.pem> --out signed-patched-bh.apk patched-bh.apk`
-8. Install the APK on your device and enjoy!
+1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source. Other versions are untested and the patches aren't guaranteed to apply cleanly against them.
+
+2. Run the script:
+   ```sh
+./patch-apk.sh <path/to/1.7.5.apk>
+   ```
+
+3. Uninstall the existing copy and install the patched build. You can do this either by copying the APK over to your device and installing it there or by using ADB (don't forget to pair and connect if you're doing this wirelessly!):
+   ```sh
+adb uninstall com.noodlecake.blockheads # skip if you don't have it installed
+adb install signed-patched-bh.apk
+   ```
+
+   Enjoy!
+
+### Patch the APK manually
+
+**Requirements:** [apktool](https://apktool.org) 2.9+, Java (8 or newer), `git`, and `zipalign` + `apksigner` from Android SDK build-tools 30.0.0 or newer.
+
+1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source. Other versions are untested and the patches aren't guaranteed to apply cleanly against them.
+
+2. Decompile the APK:
+   ```sh
+apktool d <path/to/1.7.5.apk> -o blockheads
+   ```
+
+   The signed APK is written to `signed-patched-bh.apk` next to the script.
+
+3. Apply the patches from inside the decompiled tree:
+   ```sh
+cd blockheads
+git apply <path/to/all-in-one.patch>
+   ```
+
+   Use `all-in-one.patch` unless you have a reason not to. Most of the individual patches touch `smali/com/apportable/activity/BackgroundLibraryLoader$1.smali`, so applying more than one of them in sequence will conflict - the second patch sees context lines the first one already changed and `git apply` refuses it.
+
+   If you do want a subset, expect to resolve conflicts by hand:
+   ```sh
+git apply --check <path/to/patch>              # dry run, reports conflicts
+git apply --3way --reject <path/to/patch>      # apply what fits
+   ```
+
+   `--3way` leaves conflict markers where it can't merge, `--reject` writes failed hunks to `.rej` files next to their targets. Resolve both before rebuilding, otherwise leftovers will fail step 5.
+
+   `git apply` works fine outside a git repository. If `all-in-one.patch` fails, check you're on 1.7.5 and starting from a freshly decompiled tree.
+
+4. Copy the native libraries into `lib/armeabi-v7a/`. Most patches ship libraries, and `all-in-one.patch` needs all of them:
+   ```sh
+cp <path/to/patches>/*/libs/armeabi-v7a/* lib/armeabi-v7a/
+   ```
+
+   If you applied a subset in step 3, copy only from the patch directories you actually used:
+   ```sh
+cp <path/to/patches>/<patch-name>/libs/armeabi-v7a/* lib/armeabi-v7a/
+   ```
+
+   Skipping this step will most likely produce an APK that builds and installs fine but crashes on launch.
+
+5. Rebuild:
+   ```sh
+cd .. && apktool b blockheads -o unaligned-bh.apk
+   ```
+
+6. Align the APK. This must be done before signing - `apksigner` will not align for you, and Android rejects a signed-then-aligned APK:
+   ```sh
+zipalign -p -f 4 unaligned-bh.apk patched-bh.apk
+   ```
+
+7. Get a signing key. Either use your own, or clone the AOSP test keys - a sparse checkout avoids pulling the entire `platform/build` repository:
+   ```sh
+git clone --filter=blob:none --sparse --depth 1 -b main \
+  https://android.googlesource.com/platform/build
+git -C build sparse-checkout set target/product/security
+   ```
+   The AOSP test key is public, so anyone can build an update that installs over yours. If you aren't comfortable with that, generate your own keys and use them - that is not covered in this guide, however.
+
+8. Sign and verify:
+   ```sh
+apksigner sign \
+  --key build/target/product/security/testkey.pk8 \
+  --cert build/target/product/security/testkey.x509.pem \
+  --out signed-patched-bh.apk \
+  patched-bh.apk
+apksigner verify --print-certs signed-patched-bh.apk
+   ```
+
+9. Uninstall the existing copy and install the patched build. You can do this either by copying the APK over to your device and installing it there or by using ADB (don't forget to pair and connect if you're doing this wirelessly!):
+   ```sh
+adb uninstall com.noodlecake.blockheads # skip if you don't have it installed
+adb install signed-patched-bh.apk
+   ```
+   Enjoy!
 
 ---
 
