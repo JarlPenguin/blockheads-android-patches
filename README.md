@@ -47,6 +47,38 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 ### `world-selection-fix.patch`
 * Fixes the main menu resetting to the most recently played world whenever the game is suspended and resumed
 
+---
+
+## How to apply the patches
+
+### Prerequisites
+You'll need [apktool](https://apktool.org) and [apksigner](https://developer.android.com/tools/apksigner) or any other utility that signs APKs.  
+*(For Windows users, using **WSL** is recommended).*
+
+### Steps
+
+#### All-in-one script
+1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source.
+2. Run `./patch-apk.sh <path/to/1.7.5.apk>`.
+
+#### Patch the APK manually
+1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source.
+2. Decompile the APK using apktool: `apktool d <path/to/1.7.5.apk> -o blockheads`
+3. Navigate into `blockheads` and apply the wanted patch files: `cd blockheads && git apply <path/to/patch>`
+4. Copy any required native libraries to `lib/armeabi-v7a` inside of the `blockheads` folder.
+5. Re-compile the APK: `cd .. && apktool b blockheads -o patched-bh.apk`
+6. Download the AOSP test keys by cloning https://android.googlesource.com/platform/build (they are located at `target/product/security`) or use your own signing keys.
+7. Use `apksigner` or any other utility to sign the APK: `<path/to/apksigner> sign --key <path/to/testkey.pk8> --cert <path/to/testkey.x509.pem> --out signed-patched-bh.apk patched-bh.apk`
+8. Install the APK on your device and enjoy!
+
+---
+
+## Disclaimer
+
+Because applying these patches requires recompiling and signing the APK with a custom key, Google Play Games login will no longer work.
+
+---
+
 ## Technical details
 
 ### `adaptive-icon.patch`
@@ -203,34 +235,3 @@ Includes a native library (`libworldselectionfix.so`) that swizzles Apportable's
 * Leaves `-[MainMenuUI gameSavesChanged]`, which runs immediately before it on the same path, untouched. That method performs the genuinely necessary resume work - `updateWorldTitles`, releasing `activePreviewTexture` and resetting `activePreviewTextureIndex` to `-1`, and raising the `gameListChanged` flag - and only reads `currentWorldIndex`, never writes it. Suppressing the reset costs no cleanup.
 * Guards nothing on `currentWorldIndex`, deliberately. The ivar is not stored state: `-[MainMenuUI render:projectionMatrix:]` recomputes it from `currentScroll` every frame, clamps it to `[-2, count-1]`, and drives `currentMainMenuSelection` from it, where `-1` and `-2` are the virtual Join and Create World slots below index 0. `-2` is thus both "freshly constructed" and "Create World is selected", so an index-based guard cannot tell a cold start from a resume on that screen - an earlier revision of this patch broke exactly there. The durable state is `currentScroll`; protecting it lets the next frame re-derive the same index and selection.
 * Keeps `startSearchForCloudInfoFromWorldIndex:` unmodified. `gameSavesChanged` calls it as `currentWorldIndex - 10`, which under stock was always `-12` because the reset had just run, and the callee clamps negatives to 0. With the reset suppressed the argument becomes the user's real position - but the two call sites in `render:projectionMatrix:` already pass `currentWorldIndex - 10` and `currentWorldIndex + i - 10`, so position-relative cloud discovery is the existing mechanism, not something this patch introduces. Pinning the argument to 0 would have made one caller behave unlike the other three.
-
----
-
-## How to apply the patches
-
-### Prerequisites
-You'll need [apktool](https://apktool.org) and [apksigner](https://developer.android.com/tools/apksigner) or any other utility that signs APKs.  
-*(For Windows users, using **WSL** is recommended).*
-
-### Steps
-
-#### All-in-one script
-1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source.
-2. Run `./patch-apk.sh <path/to/1.7.5.apk>`.
-
-#### Patch the APK manually
-1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source.
-2. Decompile the APK using apktool: `apktool d <path/to/1.7.5.apk> -o blockheads`
-3. Navigate into `blockheads` and apply the wanted patch files: `cd blockheads && git apply <path/to/patch>`
-4. Copy any required native libraries to `lib/armeabi-v7a` inside of the `blockheads` folder.
-5. Re-compile the APK: `cd .. && apktool b blockheads -o patched-bh.apk`
-6. Download the AOSP test keys by cloning https://android.googlesource.com/platform/build (they are located at `target/product/security`) or use your own signing keys.
-7. Use `apksigner` or any other utility to sign the APK: `<path/to/apksigner> sign --key <path/to/testkey.pk8> --cert <path/to/testkey.x509.pem> --out signed-patched-bh.apk patched-bh.apk`
-8. Install the APK on your device and enjoy!
-
----
-
-## Disclaimer
-
-Because applying these patches requires recompiling and signing the APK with a custom key, Google Play Games login will no longer work.
-
