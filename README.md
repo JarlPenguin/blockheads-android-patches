@@ -33,7 +33,7 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 * Fixes join links (`blockheads://` and `theblockheads.net/join.php`) not working
 
 ### `permissions-fix.patch`
-* Fixes the storage-permission request never being shown on Android 7.1 and later
+* Fixes the storage permission request never being shown on Android 7.1 and later
 
 ### `privacy-popup-cleanup.patch`
 * Prevents the "Privacy Setting Changed" dialog from appearing where uncalled for
@@ -148,10 +148,16 @@ _Note: the game no longer registers as a handler for general `theblockheads.net`
 Includes smali changes.
 
 > **Notes from Claude:**
-> `VerdeActivity.onCreate(Bundle)` guards `ActivityCompat.requestPermissions(..., WRITE_EXTERNAL_STORAGE, ...)` behind `ContextCompat.checkSelfPermission(...) == GRANTED || (!Build.VERSION.RELEASE.startsWith("6") && !Build.VERSION.RELEASE.startsWith("7.0"))`. The second disjunct was written to work around a specific device complaint circa the runtime-permissions rollout and hardcodes the two OS releases current at the time - it was never a check for "does this OS require a runtime request," which is what the condition needed to express. Every release outside `6.x`/exactly `7.0` satisfies the disjunct and takes the `startGame` branch without ever calling `requestPermissions`, so the permission stays in its install-time `not granted` state (confirmed via `dumpsys package`: `granted=false` with no `USER_SET`/`USER_FIXED` flag, i.e. never presented, not denied) and every write under `WRITE_EXTERNAL_STORAGE` fails silently. This includes Android 7.1 - one point release outside the intended window - through the current SDK 27 target and beyond. `onRequestPermissionsResult` already handles both grant and deny correctly and calls `startGame` in either case, so the handler was never the problem; the request simply never reached it on almost any real device.
+> `VerdeActivity.onCreate(Bundle)` guards `ActivityCompat.requestPermissions(..., WRITE_EXTERNAL_STORAGE, ...)` behind `ContextCompat.checkSelfPermission(...) == GRANTED || (!Build.VERSION.RELEASE.startsWith("6") && !Build.VERSION.RELEASE.startsWith("7.0"))`. The second disjunct was written to work around a specific device complaint circa the runtime-permissions rollout and hardcodes the two OS releases current at the time - it was never a check for "does this OS require a runtime request," which is what the condition needed to express. Every release outside `6.x`/exactly `7.0` satisfies the disjunct and takes the `startGame` branch without ever calling `requestPermissions`, so the permission stays in its install-time `not granted` state (confirmed via `dumpsys package`: `granted=false` with no `USER_SET`/`USER_FIXED` flag, i.e. never presented, not denied) and every write under `WRITE_EXTERNAL_STORAGE` fails silently. This includes Android 7.1 - one point release outside the intended window - through the current SDK 27 target and beyond.
+>
+> The request cannot simply be restored in place, because vanilla `onCreate` is not safe to run a permission dialog against. Three separate mechanisms fire when the dialog appears during startup, all of them latent in vanilla and unobservable only because the request path is effectively dead there. `onPause` contains `if (mLibraryLoader.isLoaded() && SplashScreen.isShown()) System.exit(0)` - a deliberate bail-out on the assumption that the boot sequence cannot survive a resume from a mid-startup background, which the dialog trips within ~10 ms of launching. Deferring `startGame` until the user answers holds `onCreate` open for an unbounded interval while Java-side callbacks that were registered earlier in `onCreate` keep firing, and any of them that crosses into native hits a `native` method whose library has not loaded yet (`UnsatisfiedLinkError`); the vanilla-narrow window between callback registration and library load becomes as long as the user takes to tap. And starting the game underneath the dialog to avoid that deferral means the run loop reaches its first draw with no current EGL context, where Apportable's `checkGLExtension` calls `glGetString` and dereferences the null return (`SIGSEGV` in `libGLESv1_CM.so`). The permission request must therefore be moved out of startup entirely, to a point where the game already tolerates being paused.
+>
+> `SplashScreen.hide` is that point. It is called from exactly one site, the `Lifecycle$1` runnable posted by `Lifecycle.onActivityWindowFocusChanged`, and it nulls `sSplashLayout` synchronously with no animation - `isShown()` is a plain null test on the same field, so the `onPause` exit guard is already false by the time the next instruction runs. `hide` also disables the `ApportableOrientationEventListener` on its way out, and by then libraries are loaded and the surface is live, so all three failure modes are closed by construction rather than by timing.
 
-* Removes the `Build.VERSION.RELEASE` string-prefix branch from the `checkSelfPermission` guard in `onCreate`. Once the permission is confirmed not granted, control now goes unconditionally to the existing `requestPermissions` call (`:cond_3`) instead of falling through to `startGame`; the dead version-check instructions are deleted rather than left unreachable, since unreachable smali has inconsistent verifier behavior across ART versions and a `VerifyError` in `onCreate` would be a boot failure.
-* Leaves `onRequestPermissionsResult`, the request code (`133747173`), and the deny-path toast untouched - `startGame` is already called on both outcomes, so a denial does not block boot, it only leaves screenshots unavailable for that session.
+* Removes the `Build.VERSION.RELEASE` string-prefix branch and the entire permission block from `onCreate`, leaving `startGame` unconditional at its vanilla position. Boot is byte-for-byte vanilla behaviour again; nothing in startup waits on or is skipped by the permission state.
+* Adds `maybeRequestStoragePermission()` to `VerdeActivity`, holding a one-shot `mPermissionRequestAttempted` flag, the `checkSelfPermission` test, and the `requestPermissions` call with vanilla's request code (`133747173`). The array-size register is set locally (`const/4 v2, 0x1`) rather than inherited: in vanilla it comes from earlier in `onCreate` and happened to be valid only on the narrow set of devices that ever reached the request path, arriving as `-1` elsewhere and throwing `NegativeArraySizeException` at the `new-array`.
+* Calls that method from `Lifecycle$1.run()` immediately after `SplashScreen.hide`, re-fetching the activity (the original `v0` is overwritten by `primaryContainer()`) and null-checking it against teardown. The dialog now appears once the splash is down and the game is idle - a state whose pause/resume path the game already handles, unlike any point during boot.
+* Strips the `startGame` calls from both branches of `onRequestPermissionsResult`. Vanilla relies on them to resume a boot it deferred; with boot never deferred they would start the game a second time. The log lines and the deny-path toast are left intact.
 
 _Note: The deny-path `Toast` message is long enough to clip at the two-line limit Android has enforced on `Toast` since API 26._
 
@@ -170,7 +176,7 @@ _Note: Currently temporarily conflicts with other native patches._
 ### `webview-rescue.patch`
 Includes smali changes.
 
-* Adds `onRenderProcessGone` callbacks to `WebDialog` and `BlockheadsWebView`.
+* Adds `onRenderProcessGone` callbacks to `BlockheadsWebView$BlockheadsWebViewClient` and `MoreGamesFragment$MoreGamesWebViewClient`.
 
 ### `welcome-fix.patch`
 Includes a native library (`libwelcomefix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
@@ -208,13 +214,18 @@ You'll need [apktool](https://apktool.org) and [apksigner](https://developer.and
 
 ### Steps
 
-1. Grab the 1.7.5 APK from APKMirror or any other reputable source.
-2. Decompile the APK using apktool: `apktool d <path/to/1.7.5.apk> -o patched_apk`
-3. Navigate into `patched_apk` and download the `.patch` files there: `cd patched_apk && wget https://raw.githubusercontent.com/JarlPenguin/blockheads-android-patches/refs/heads/main/<patch.patch>`
-4. Apply each of the patches: `patch -p1 < <patch.patch>`
-5. Copy any required native libraries: `cp <patch>/libs/armeabi-v7a/<library.so> patched_apk/lib/armeabi-v7a`
-6. Re-compile the APK: `cd .. && apktool b patched_apk -o patched-bh.apk`
-7. Use `apksigner` or any other utility to sign the APK.
+#### All-in-one script
+1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source.
+2. Run `./patch-apk.sh <path/to/1.7.5.apk>`.
+
+#### Patch the APK manually
+1. Grab the 1.7.5 APK from [APKMirror](https://www.apkmirror.com/apk/noodlecake-studios-inc/the-blockheads/the-blockheads-1-7-5-release/the-blockheads-1-7-5-android-apk-download/) or any other reputable source.
+2. Decompile the APK using apktool: `apktool d <path/to/1.7.5.apk> -o blockheads`
+3. Navigate into `blockheads` and apply the wanted patch files: `cd blockheads && git apply <path/to/patch>`
+4. Copy any required native libraries to `lib/armeabi-v7a` inside of the `blockheads` folder.
+5. Re-compile the APK: `cd .. && apktool b blockheads -o patched-bh.apk`
+6. Download the AOSP test keys by cloning https://android.googlesource.com/platform/build (they are located at `target/product/security`) or use your own signing keys.
+7. Use `apksigner` or any other utility to sign the APK: `<path/to/apksigner> sign --key <path/to/testkey.pk8> --cert <path/to/testkey.x509.pem> --out signed-patched-bh.apk patched-bh.apk`
 8. Install the APK on your device and enjoy!
 
 ---

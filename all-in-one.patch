@@ -1,0 +1,4645 @@
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 2e851ce..9296dd6 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -8,7 +8,7 @@
+     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+     <uses-permission android:name="com.android.vending.BILLING"/>
+     <supports-screens android:largeScreens="true" android:normalScreens="true" android:resizeable="true" android:smallScreens="false"/>
+-    <application android:debuggable="false" android:hardwareAccelerated="false" android:hasCode="true" android:icon="@drawable/icon" android:isGame="true" android:label="@string/app_name" android:largeHeap="true" android:name="com.apportable.app.VerdeApplication" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
++    <application android:allowAudioPlaybackCapture="true" android:debuggable="false" android:hardwareAccelerated="false" android:hasCode="true" android:hasFragileUserData="true" android:icon="@drawable/icon" android:isGame="true" android:label="@string/app_name" android:largeHeap="true" android:name="com.apportable.app.VerdeApplication" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+         <meta-data android:name="android.max_aspect" android:value="2.1"/>
+         <meta-data android:name="android.app.libs" android:value="v cxx System icu CoreFoundation xml2 CommonCrypto Security SystemConfiguration CFNetwork Foundation GraphicsServices CoreGraphics BridgeKit OpenAL gles_apportable pango CoreText CoreAudio AudioFile AudioUnit AudioToolbox NoodleFoundation NoodleCompatibility Application"/>
+         <meta-data android:name="android.app.lib_name" android:value="Application"/>
+@@ -30,18 +30,19 @@
+         <service android:exported="true" android:name="com.google.android.gms.auth.api.signin.RevocationBoundService" android:permission="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION"/>
+         <activity android:exported="false" android:name="com.google.android.gms.common.api.GoogleApiActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+         <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
+-        <activity android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale" android:label="@string/app_name" android:launchMode="singleTask" android:name="com.apportable.activity.VerdeActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustNothing">
++        <activity android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale" android:label="@string/app_name" android:launchMode="singleTask" android:name="com.apportable.activity.VerdeActivity" android:windowSoftInputMode="adjustNothing">
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW"/>
+                 <category android:name="android.intent.category.DEFAULT"/>
+                 <category android:name="android.intent.category.BROWSABLE"/>
+-                <data android:scheme="theblockheads.net/join"/>
++                <data android:scheme="blockheads"/>
+             </intent-filter>
+             <intent-filter>
+                 <action android:name="android.intent.action.VIEW"/>
+                 <category android:name="android.intent.category.DEFAULT"/>
+                 <category android:name="android.intent.category.BROWSABLE"/>
+-                <data android:scheme="theblockheads.net/join"/>
++                <data android:host="theblockheads.net" android:pathPrefix="/join.php" android:scheme="http"/>
++                <data android:host="theblockheads.net" android:pathPrefix="/join.php" android:scheme="https"/>
+             </intent-filter>
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN"/>
+@@ -50,13 +51,6 @@
+             <intent-filter>
+                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+             </intent-filter>
+-            <intent-filter>
+-                <action android:name="android.intent.action.VIEW"/>
+-                <category android:name="android.intent.category.DEFAULT"/>
+-                <category android:name="android.intent.category.BROWSABLE"/>
+-                <data android:host="theblockheads.net" android:scheme="http"/>
+-                <data android:host="blockheads.noodlecake.com" android:scheme="http"/>"
+-</intent-filter>
+         </activity>
+         <service android:exported="false" android:name="com.apportable.media.AudioManagerService"/>
+         <service android:name="com.apportable.iap.BillingService"/>
+@@ -114,6 +108,6 @@
+         </receiver>
+         <activity android:name="com.apportable.ui.TextViewHaxActivity"/>
+         <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
+-        <activity android:configChanges="keyboardHidden|orientation" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:theme="@style/NoActionBar"/>
++        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:screenOrientation="behind" android:theme="@style/NoActionBar"/>
+     </application>
+ </manifest>
+diff --git a/res/drawable/icon_adaptive.png b/res/drawable/icon_adaptive.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..b77c81c239225ba6cf53f3c33a7d8c633d840fbb
+GIT binary patch
+literal 73748
+zcmeAS@N?(olHy`uVBq!ia0y~yU}gYe4mJh`hRKZ#eGCi=44y8IAr-gY+>PwXiJm3@
+z<^L_iH=55h+l}v3ug)tCEiDZX-`=}>w}$zRV^<R#AGVv_sB`MQz0E=4NVjUsK_`zr
+ziXRU!-xad?A^9=mo{maN3#)#vd2H=#zvuIcjr`NjOf=-L{<uL|sr*eub;pSl7L`W-
+z?O)!R?c8HszUFUj_75=!mr*bp0wXa5z8G-IH7$R8{Quzyrwjon2M%7Q1_364q@P=V
+z^D~&-soVSO=P$E{Pu~O@w*9d^^2yM~-u=Mezx~p$zukL(^eyMUUw^Ot4gDUvm;Y)t
+zUxiFX-1-kP`tLti*;m|~@0jzi=I<}t@*5R7M{@-~SZ&+)-PY|z@~{8z7{A~AvG@Pi
+z-*U<yBr5v0zmmvee4qLFy+{#H>m!Tb`TR#M1%AwMJZ}G_LMy)e`S++BKNncEU%T(&
+zdRp)9?-L8$;@RRkTOM6Ede@r#wd(07yM6CnFVu?oFR04?v`&2e)7KHU>!x(AZ_X3`
+zQ2g@e!(ZO--~ajk(Qf&Bv)8}1=4F>EAOBn?bG2AIZuYB<A@5_qMm02ifB$pl|GgUZ
+z>n+3r`yc<0eepKrzV^G#r?a_!#ooyN{_pM5_ZHSgKh2~6-3h#V?f>Sdf3MYh|3AO?
+z`{%!LzvktC{apWNJ4^Bbb)A#W2Y3w5vBqlXovMy2->(1YwEmy{pW~kH-9CNQiX-w1
+zH5Re2>{4@T;@7;ZFMIU&)OilRRZP|oclQSD@evfc>EdF;)F5(N;na7R)e8Avt*^fB
+z`1O005L+sf@N+Xo#<CZ=O+u^-E#gB@1_vmKO=|hkTyx~lO#8$Ru784`qWUjND=XEl
+z;9BE);cV@Eb43yPqN~*+g6~6f>e*WC7k-q#E)jXs?YH3a!meLCdn^w8wwV?nZ~y=N
+zlIJ_T&Kpkpx8(GHfk)f+-n9_hcl?uFv}W_{Ya5c^<X0>8*Y<oaoqk-P>-oLsh4;eq
+z*YIR7X4WhI_c{5mwPf8+MKuN&{#iXYKdU=Sx#kCLEDfCWYC+oTB*j{BpZtVHy83g9
+zjCX#Fo3XdE@Bdkr*fopvGLG-F=v<+~^lILxi0y%_N0rhP^tM$W4gKD2RiX66wp+IE
+zc<>908>#}`d)Av@3{{Qja=Gx^vbQRBRiJWxv!X5I<S%#1UO#sd++EH5zQH5+Z`9IV
+z_Z`{3yDO}^@64j|M~H`^vxAetHAdmD?Lnu)t71&IZP%7_yfBw@HcdSsTu`llV%3TJ
+zx3x7k))uy#Ykap2zrxXQq-a*>9$uy+pUj+?cb!!e`z-k;M{HN7;zXefTW(+9H&5w-
+z^eMic58<}IyOyy23uJg7Yunj&<10%5i>G67Xo&6IL}eDo%Mpi`N&k%R7Mmi$@wH^-
+zf=stS+pn+hv-egVeR(y!)~)4He$nysm-aF4{=mBP-o3AD<<bP-H@5yi;C=tTOCJ08
+zf9D<F1fFbo-r?o4L~GVJo4zl-R$BFX%6;uUAB*q5{<=N?&~>>yo0czI=PNxi{aGh(
+zrt~29w^?7~jdu(m|KDBm<!;=&c`~c~ICmc3x%c%6=R4PnUYuXj^Ko9vh5N=2*cL8k
+z{P%hO42BEBe7{=NF9<4%m*#wb_D<%*=?Mwa2QN46aXftNtMQuSzJduA`LA`FvyWfi
+zynUaB*ZnJE=RaEq70R$Y@aX*iw*Hs=$6uTECuoXJ)O`}DF+FfiSb(Li>%JhjbpcIN
+zPafEiv*c2y%A|&EJsC@zzwYsS&ss5+Wkr>EtA6E&?>=n23s*PQTs`Vs>cw&NeCrLq
+zw5i2UnVYH^zy7IiVR@OD&A?E)sL>*LM$;t574hay@AQ@Q-UMDwaG7&HBqTwkc#E>p
+ziF;q`1Un~jysDk>@VLL^nxD&fS2D$1trpxdSA1_)bO_^qBcac#oTpmi3gb1mSz9+P
+z3-t_@7AaV;l*jVfzWb|}aUJEIRL<MMZzbw}#OCAu#{wQ#e%n4d*jp^#_~E6~5tasx
+zJyQkUGfbMQ*h1g#dX*$~<)fGw=jpTDi~fK6x0Nl)Qba*id{N>4{%4`Wlkb_T-CciC
+z<k}}cs|g;=D@{rcw`9&f@yz&y*e8uJFO92NAQYB$LhRFqO_oc(noQEXf4a<UGSd-D
+zzZ?0x0s<aLn6|1JIQCdSzb~J{{q=Pq>;HeH9E=;Ee><;yZEMGdgoq=%HynF8*Y2CU
+zmBx+f9ejHZ3%$E=ukgt1MZ%IFwD(O*?3~TP=^$!*PhfWEfotif%tJkYmQVZm=;DTk
+zn5o4qvj2NqT#s3^r<~wFyi8$lzjwfmFUODHn^}APvHqcR@<~h%Pk0|VRcj`**%n%-
+zHHoeL_5Oi8-~Fr$BH`K(cSfwwfAlsmI!yJ}EcP`Lj0_CvSF1Ji#TmUBI2pg}j^+97
+zobZiH;@?Z7R~Hz3*;^P@bbL&tC#ML?>T-9OG>9x%+TbG8St8Yzt2F!cq5!=GF{>8^
+zXe|oRRE*bCjMq4H?rGvJvrAQ6oh{Z?4|Lr5_5^ny;hR|h<V;_~gV+`O_*cx@9C+2u
+z)M>$tdBP^^<GEk1<(HNfVB~ZT@!$8VaLRF21xZe;bC32t|MNyN)MYNe<6FmortPJ>
+zSGdII_<4SkyB+a-RTkqXIc0`>^H)l3+Hk*Bb-#3QT8*rfbnb*l<v|zK4o-IASXn3O
+z7+kkVh_~Koi}!+cud*vOvIXQW9ZC?KHsS3Dh3M=4JDnf7`!ICyU5wuDue9NP?UL<A
+zeg{~^R<#8R_ITVsTKo0KJ+`vf)pz<NN}_pvjwc_GtTO6h-5|jv!Swmsv+j$R@`NUA
+zU|g8IaH-*o8xk?MD%5k#Ej=V0lsG3|S}2_vv8^>nu{&vJ$0<+Vt)GpjWQ9)A3cV32
+zy)0F6W|2F;$-~O{zI0wEmrvr>AGm)$4O_o&(eZdo_WSkGuIu+{-EawLkT7CBA#cIP
+zHYL&1@yPXmM;=_5zc`uIYqwh8s#4R1*$R8=y(J&#_dO6~RBU2a`Cl@-H|}o-m&FJ6
+zqeZ_<Pd2cezW;fbVb{xAf5z{DXV3Qkiat7%@$vs?&Xwm9<xYKlzA)^)Wf{Bd0fl)p
+z7%n(UiRS*S7qqymnDNi_&%r4i^A8D&-C*bYSS8M=o%dMQHDKTV28H;We?>plUZ}Yf
+z%3r?yV#6H&#-j@Nq|28vEIY7BUSOjN!&w#+W}}HmBa99Grd_OB`&hKZyi!1F!nKKJ
+zB{w9wXU^%ZF>DXo*%7q0CunO^(AF-eoh@&Qz9>wM)AJEKUCO>Awq8J_<acwaqLUlL
+zqB{Aa*`;|ZBG0G&FYj7l6!!9*#eQzB^OB#6>lcXqs1msId;j|@+M$OQbGfxH+8%G(
+z>$l>aupw{2k7XB+danD!+xX$Hp^JlyHj_}(0YQe)eY^hfSa<FGW0b&hAl^_Xr*5lo
+zD4WTv@_P&JSJyDTdmYcbK!!0uhl!8tPpi^H0qZSK7fO1axwv4h>jCRCPwm|#0~S`q
+z-wV2W>a+T}FFPhEiEo@-ys<K`Mq@7D5tary4}Ir=2V1gR-t!vm;a&V;>xp};`~O)T
+zbG%x`w7TlY^Y89&_!a)#|E(wYTFaq}#l>qu@OtL%mFX-G^i&j{A9!@^ulefyeFeHt
+z*Xas)D$G3o<=BxeGhL%+RIHtO`iTOsiqM5inG(wyeXhB!4075TcIf73<B+USk*>-o
+zU6m=DEF-qD-o0>rG5hPYX-t!t|Nq=1`eF65A02ObuY@?(-f(()KqZvrI}^L_f5t<v
+zzaH20U-c{J&UaR`b4>4R?SB_m|8cz`q7<5WdqwYoBi}e2o_q{dF;mLvTBMY5J>)X8
+zGE>ph_f2ud2foPte;wB6=W+COpwHuvYQ+I6+#9cpCRj^y?UJvJxc+5ErLZC60(Hrc
+z+FtuOTH<@&n_ifBW0k;?p2>n6I49;y#CJUiWUlx9zgBMZge(^)CT{i@X3`DD(cj+O
+z|J)eaE5~qP&)eUBi|#f)^V2U9s^qCQYYX>`sh`=p`<(;3kfy@aw!|fgH`R(NrH>Xd
+zPR)|MdRZ%LxoJpN=#<r>HzcLoRw~boVS9c0V)NB6O79Erb1}5;YMQ`tlf}EEgCXDu
+zhmYV!bqALt@AT6pzwZ$jJgA-Iqgf??uu;n@AnZ`*Oa%o6iPjE}86uZU&FuCE{k>Hl
+z`C#wG7>!d6d8Ur5S`P*2Gw{ukQn}*z|JY+zU+FH6KjoaS{&r6OWGiEE%Rb7#=D^d(
+z&U4MSIIokOJBL+PA&KdL^MN1t#a|!c_j?y29I{vZz_II>!mkCneYxUVQeCOvVDx0w
+z%enWM?@aqQWuEJS4|m+o$$Ysb>(F;+-tX_H80Sp<oqvzD;NkDtYlRr3FZlEbTlPq^
+zMa}A6zi_uQca)Ha$^;XilueRPxXe~<H9GawMr*5))>WZXQ;oWwDiyWLyy@Y!of{Rd
+z7bP2g{H9Hqv@*lI1-_O{0$VsNG-iZMnJ%KJ%zf{E_YB6=3v$e>j;LlC*4{btV1nZf
+zyY54aZ!ro6ia4;m4HYzD<zTe7Vpo~|@BA(fj#+<CvTl%^kgvn^O@8}?-|TFm|MsV!
+zICpR&cirB(vW%Rw>SG%>b@I&kwE6Tk*2Zq$KgzrRnZ@PhH+@s&)s@j|ySLliE~!K-
+z&*;EQ`y(t3PSPD~6<*0j^Zsu$|7Z0r$nbvH53}PF6U7s*E=t(B=Kp(dy+7h{n#ofx
+ziyX)?I=J9A^OGMB|2ID6i8#Y_O|HU?-$m$io!s0q#<}KV`x<xp@Lh6HVx8!B(BRUE
+z6kU-n%aCl<IrFX-d|T7C`E&3TFIIEQ4Y@Ox^@UuDy|&@sY`x{;xuG#mKa?J9u>28q
+zV;-BLs;jfRNKHJ8-ju#o3?k1h?*$tOzqWlR_#(MI#b@gSD;>oN`#!s93F*Jwy*_L2
+zVXcKzy0$W}nsg|raE;2L=Q-S=8{|blBv%U>J<yJn5&GhN^<zKRpTEB~-UtfZch9#z
+z-SF<4U9u|k8I}%ChPToh9oAnW-r2-Qve^gDIX<atN#bKB?QQOIW=z~U;f$a5egBxz
+zkyy`Q@t6OP{yRxqhK9)E&+FGOozB_BJ9C5KB_jz_qZRd259n`*DW9;VVG7@2ALYr0
+z6ZLOsO#i%M?v#R}po1qfMYm2i(z<H&sZ}TEw%e)A$(xinu8VqdqT_QA%bSqiw+VV$
+zFGAJCmC_!_8C!DH^i;q3yZ`iKwy@sL&o+wO{mEO6nO?oLTXn>jP5;w94Q44Jn^je}
+zw>Pb9xcBWsg71pz?^91U^3==x|JZX!+2Lwg>m9o-ToZ1*yLmrrcDZe2nN9lpVypAc
+zw>d3V75g1~^Xd7X`XnZYiM=^DzHp`%lpJ3Wzw>Qv#D}*#FPxqrR6WtN`MuIpjV2M6
+zUIvywH5J9pCo@<qn%!%bc^sIz<NpP2i<y@kjJQ=cN!-67VV+}RA|1bGnOLXF1P{l{
+z!5egBk0$X=^^#k@Jax{zX@S<7i>rd1wgx$EjBqfU-?~nHqKDr3_SDp?p`O8-3*Tgl
+zI*Olb$aGao3)<j)LC$p3hXA|ZjjowWOg~P@{cm{UVaj@9KcC{7U6YJ%@N2T}e$UZh
+zRB<bD^_>l_2UeZqOs!s-ah}P$mMt{V=>*TojsySqRo{Bdc9$pNz1WTJ1xqH)VE7=g
+zLG|OcERn#2|M{dFS<kYE-p$C4xMlu7ekupc*E`OF1}s-!eA_SipEdGPS=Py_U0u)j
+zW->{XSkLfRW4xR-Pr$O&o!88b@4+-}(O*Sx9ofz)wAS5r_<!kGb|TZE*#3qTDG$}e
+zSyn}n!bgL|u4XYVUoJXlet2P7+~J#<qDPD5w&fl+C|PnzN=WJ&x53iK>udw2-sZj|
+zY2mhD-5jeWJ0`B0lKx`Ktd27ZugZ)b7^^?3dB@yze#O!M6C3yS*d0sk44pG~erWE+
+zYsu_BUq99Tk-hqQ!oEyfrML%MH%?y9@#4<}#kVOvnhw#qqTBxWIXZ5wcPx+S-=CHE
+zDVF)yg71Ir%<fO>V)3#(CH=Kc<<a^hVSoPUiB`FI1a;b$KUPy?a9Mcpz}zI4(A!cM
+zPE<{9Sg_4(#auoq&kz6e7O$Ohd#b<LGM1HkOQbIB+{g56^6izzPkuXFy<^HuXE|ft
+zH92SJb4MlS3^h0N$eveX>-HIaEM9UaO)HV%q{yXdoj%80HcoKdImdNv*pZi+lIiJr
+zO##-LizCh)-lqFv7n|?xJ3MC#&9e8pv%O+;d@xsUP2z6`nb({59G~1Jd#iH?XR~>x
+zfMUDmiX%(^8#>D~3oe%HI$!?e%iIOOPfBcDz`=Km>G8V_eZ4adriA$Hx4PH9hV6^p
+zy6Eq*wJ+@K=YMjvl`v#n;4b^XJyf?-=YDxZi-Y8i->Xh|+;5F++oMq5-xs1H@o$yU
+zDM5yK{fo!m%PzPa@s`ox8RypPo*N3>{h7>NqeJyJ8N9unVQQ4YDIA|6>9F})wOmJt
+z)U>6_@h27poqPCZP0#1eM(572UU9W+MM$@X*ryZEj17E+S8geA=bzTu__*TK>|f_r
+z?wFm>8p;`U*X*3lkHy;=8B-k&+eH^L{aL`+v*D{4lj48zhuQjnJ}>!e9q^kuL485s
+zt%y6?No+Tb9{pHlW#M$oHC0LU!e#l0TOkuqoalI>tMOs~Ww!)(znu9_k{5OycizOK
+zVaT{(NAK~l{J0)jkHu1tHY^PJzh&NmBMK?)e)*dg>^d8^X~Uky%^x0C9@recVo}$z
+z8on*-^%#BR9XKzz&y?K}+$|Pd9&GYoKERuK7Gs85ic<5z-rj>#`?wPy^dH?+6sW|z
+z<no1HlTDJstxdgIs{NZc8_ly_{qX2#sd@V?oOjM~UpS$C-SWG({3hk!CVlCX^C(^W
+zeeR@|9p8mN3O_&a`<=iE*S&5}4_)kFu=jHkFw3|9@Oy$^*M^m`(aH>rsa}Vl{d>R3
+zzRCVa*gsk4O$?HSb5aiMYTo<Jq&uSG@4lpCb5}F8PSNU(DOeztw6FgtzctH~^0~X^
+zx4N?#GAisUmfq&<AwExsWy{GAEWiGxB)(p>Yz40#v)-wHU9zh_)vvnEc%a0{b^p~O
+z?*^}S^<x_+H-A0!WZf^Ft36L&IEo3MJ+fq`^J8i0`Q1<ZPI@q$G!bg+%em&VbBgoQ
+zIgV?i4xIE9e4Z{kXU??1)zbo2iA+45nlRH!$WuYlMwxwe>&bwS7{TwKEvw|`zuoY_
+zTIU9DbjIGoIVm69!j#;OJ7*{@+O@YwP~-TFWLfhFF-B!Z>*F2!{5t1qnJ8BIUU7b5
+z`u+G@`K<hZwI$~^GJ{4D?n+O+`Y8V4?Gqj?@d59pezL1EcFCqPpZ@(@Kf?OU8jFB@
+zw<T4veg7kL@|R~GNV#zQ!85jkHk+ApDNO=fz9sB@-sr)^Dc#-J>1W-3E?YJ}W3}w$
+z-lu&hH6_xdcCKkH(rmvxSt+irq^UoC-lIQjnxfXW)YvuqTx-jeeBFA|>5iUPpOkF}
+zS5CR-lEY2cZ_G~>e7{-l%5IIaxlAo@|B6geW(e9Fyy3ek`#NKRkJlI~+!-I~tO)TH
+z<+@WDam;$1(W`ucjcf|%lpZWl$+*u@eBJfH#y-agH-YcXh4c6RR6MSbmETrz^X9wx
+zv1;r`SQ_5lIbG25L1%;E?HS$ri{5WG?A3TzTNB*IBz<8)_gaQF^SSB)OkWI(^2BrV
+zeRU5NC2o4R&hUayPqo>xUYT|Kw|!Xd!FZ_Py4sS`C1;;rS+u7$OSOISWTtcHwJPf3
+zj^3;kRbMVT#jEnkCdn7SHf3G>R1>Aj-q%t!>()fO&xKZ8Wp7jYytB$AQ#oc;sW@p#
+zw%UeWc|FxyCD<{z^^lut$_Yo|F22s#|7}J(MtAk^^?WU_du98D|E1Kqlm<|rO<F|o
+z`ytV5ikq_o-v2x#eaAg)Kga8<T#*yR(*x&iS6+2LQ{TJcTg4(9wIW8Hws-bdXD-t{
+zJ*zLrCtt@z+HBUWUj3G>cRnlds!Vc-YR{F{5XrHz)_(kDNyGE!pc=HG>eai-0Ilbs
+zL>Hy@MP$N-yz4S+-1!#F(-M09S^E(yll9jh$94FnB+hhq92XJnZWR4~`;{Soq`Sa#
+z+xJF74Ys%4>Z4W5e^j&dPSSd>y?FARi0928RMi?&Z@gQm{<6dN=kFS`Kb`?MGJ;=3
+z3s}o^%f^{6|0^uaz_ll!`oE&qi~bd5Lf6XJV_zoay9gWn4|Cg6WaRevW$j$02dr!I
+z7BjxsKKnq;DWL`a+SUcyc9zK+*X7o%63euja3b--X2Xi~hi~UcGK6Id1vzN(-t|zN
+zZ5XI?Yeneiin6$a-Ooe!)KqqT-fWb0)o7EY^tN23sn;g>+)-P@&Hm1zZL|CNnjY6f
+zyIJ_7gX@lzUD{W*Z-JRw-q-mXo(punUtA{gP0jOPeK}v)cg{U71;$%T@1(dySGFGr
+zW3w%o^U{>RLL*`RO0Vx*g+JVD_ukVk?&HJIar02@`fjCb{D+rwux=|gQuyGo=hh8r
+ze$nJC$NhI>!d5(#Vu+e+VVq!Ce0o-1Zr8S1Q7H_wdQbMYdKxz$%a-2X!05s2@xsBV
+zcS)ks?9BmZqF00#Tg3Y5R+YsayBW!<uAVx@yYfkKq(mCm$|>sh6SrUO4txGd@jIhH
+zwVA9_&cArcnXG@bib52hoLub2u*4?k^LGFD>pCt5+*MsC{CkhzJLV5@dh747gVI)E
+zl<dMChuC7?Cg&wcy?&&zXq}5v-EYzIEed`~N=Y%6;h(qvek=B11B=E{+n;-byQ8{<
+zEjQjXt-N=B@!fNab$x1f8g9+lY7psem%cFQ<inelobr2DJiHkx`TV))l~t}GT9qQ7
+zEK`isN@CY67xO$mUBTlhQ=s7fpEsWVpV+ThrosG5zO`p3hsCShU(5f!F;)_oq4QSa
+zPIv7*=H0qXb|K3OU$`D<f00qe^PAz#uZ>g6PsVg|GT5&DVXwj8vFn7)qKSRQ&DOr1
+zBER>pTM*QE@A1|d-d}FZmQRmXV<=g{;>dS*RnX^c?_>NJqqr{QI9xV-_uL@w#g1P=
+z$LDiMJ4ks%IcT+RS*SeuVxU%9LD1R9H!CI2pFjO>9{YJM3){5|LQWhy7jYq&QzfWD
+zjY)_lCqF@Lk<z(__s-d0s!uh%n;mmxW}J#>?y-Z*{<&<Oo%DU%i-g?2w(bXGSpGaz
+z=Rd;I@FMZ33;V9miqa064KFL2>Xsknawu8Ce<&*}@IZ<2L>3`Q2V=vx=@+wRW$Zoo
+zpjhJc#b%KS9*!^Aa-!XrPI28jsdTy6T(OUTB3aL$)2b+ob6gwdvT{Om=CX-iJEa#n
+zYI)5%^|$Hk2BQV5<mx5Ue?N)cZyzL}#&>PT(Hg!td#;NJ8Zs&*DG9!Qq}_1x1KZ<&
+z2kx@;yx2Sc!RM!S?6M5g_X(SAy<>W_MJDya`z06mpLqmoa7O9*Tx(3>$~1oKr>m7(
+zP#1Nm`*~{3>&3!*D#8w)^c0*LB-iT1CV9IhamfUq9o0z|eb!kUBHp#D^UJ)E%VK#T
+zVaeE>tCYm#;IF1pCx7qyhGiET0@pXctT-XG;0t5Th497f%n8?S{1eHvS}@b$(6KG~
+z3-6s-@Na9Yee1(GH6gVLK8l$yPNeXZCl;yhma)`$yja|{=FcaV^XIfIR!*I8de((r
+zmPxnXZeFuY)bjfT1pz@pVTLLW$%cv@`u_#=eK{7~U*&vm+3BJQF7gG+8?>@t#g{Ye
+z2=1OXd(qk7r)4MKm-yk8GCjCE@ARywZH+;O&6l&p^yf`2tcyDEd9%>D^IjI#x(}B`
+zxon)^s+Ycd_99*Tp4CCi`kKFQQ<S=x{B43*rm!$WmCMKdJJz%BYhMv3_h986mItTa
+zhCY>J__9K}({jU%-HX{*J#kpl*b==oqar!EBK6_f`8R*mZ;%PSaLGZdcgjRJv*ZOK
+zTMDC2KVJM?wC2+%mizynu*|P3>hrSfuF+$@eQBYz=MtOO3^F?I0@D_AxbWO7-+!%m
+zqM0G%0`}P+Z|=T0s`;sY!MpxY|EIo>Z|O3g5@e`4b+U2J?$GX#EnhaRS=kzS-)(j3
+z;;*-kJU?{ozorkvyAzIw45poIY>l#P-aOf6-u$T_K2=KU&kz6jW>3@RD9)uxVv@HV
+zf;8+Vuhy4%D6{MQ6OHTqp*Q^mKbQ6Y&EI(WcdEF(A>#sP){l>D_sv`3mcRUoLuu+w
+zW6gqd$)dTiwE$w5?y~s!F{B@x-0tzyaVFCYrf%s2{|zIjo0@Kvh<LF@r{rGBv}(B-
+zr!(DOmPTH#Id>$}v_CzawdVO`;hIl@qUX<dS=ehX3_H0v;*8StjT8J-EAGrM2s-?y
+zzk`$EXlHNol#@L<0m&>E-fzCu)-hY;NDYHx!_SnS#O=G+FdXsbyZBB%E<f_}vv2Kw
+z-s{VK=6$=g!d&Od{&SDxIk^8@hn;NfTQbq@+O<Hf2#b|zAOEcB=#LNiaMInh=Fg(G
+z{(0entDj6f9qFMOES>7M^=W#wV*csbc26FNG5!_%9b!JIJa<K^gS%IRdiSd`j(a=9
+z*;sx!E<XI-@VM=(%11q3E`Mv2{_3i{+o8!PD9o_SdA8!WJ)4Wloh0inT3%VCD*5Tk
+z#(Agb>tq}#F)8qFVDqh2ShTw~Yi{Rn{#e(?8?>^slJA*c%uBymm;8u3cc<bkg9aBN
+zkJl$sbf<8Moy)4Uu|D~5v3Tm9ny_Q1)2H^fp4^t}7=KPT%2#ui{%SGZz6mlerkzHM
+zc)5F>T>l*2_nkY8^<QD$cK;^9@0NUj$~miFCterWd0yV`T&wo8Z1D$Y6q1-66gR$&
+zUB{m^UtR2>{-br*H(B_vty;I@xH!`co+=$iuP^tc^!y_)ujOB{ZH?a)1{3MOadLmX
+zx$pn6VRne`(^}GyBIT*v8*|NN>5FyNKVG=9&fl}*LG=7N57&gbtPOKeobRfa?Q9<8
+zp*H>G!9%`$VtgASbmE1o<6bff7_M9B;=}Ml!P7B?-~A3l+_Bvs{q}w@ulVn{K9nQj
+zN_Mi{T&8Y2e~CrxR~sxFV#1z9eQCUT^_hB<_fBP&S)D%*xUEiI^tHG1e9O+5>Id&C
+z7rbOMl4Ne3(>Xay?76z@o{G3*$IoY1{9Dtsc{A6lsZ3n0IwiKfQ|fLvteM1|{;=--
+zi5F#|mS0n+AJfgsJJT+4@|dhEhm_)t?@SxcXE@*ZGk?Q%akJ-|#}W@J{|E-<c=_vI
+zk}}2Z=e%RgqJD4LY~8DL#DnWy_L2l`$xl5?`K)sjtR9IdEaG2VoxImz=kkadYj!HL
+zD6y(fbX}jkSbfuvXV2SqCvWoD**!TpbBV8P>z>vq)ArAkZRX9L`ti-0j?bI9{QOU?
+zxZ0&Lo$Ex3&WkE0rNZ68pOOl#w`#1ARRfi${I7n!eA~vs^X%w5S;LL1|Gu#d+OX)Z
+zY39TOzK^pa|4mSJ=#=yS{Y*z(m3c<__Q}i>qx=+&4EGuq+&%H=mpAkOpwmnqJAW&x
+z1YanTm5g>b%zwBf?7-*Z?Q>psKM%F34|81`<)k;g@Ve{^t4o>N&z3BiEwg44iyGUL
+zop;>yCf)mL*vZLYIM2R9St<2|(^gxlMJEE8CI272Te`%-Yr*v$Y+{R3^OXc`JD)hT
+z>H7Gsnau3I`9gO3h1~`pUp+Vbx6_Al)>A#7YrYZF`kd~$t;|>)cJ}d`B^~L{Lv5_r
+zKYFvK>z1cvtCQTarT5oaH&`#t*cdZIM^=r)U-1JwpYinn6HYRNI@?p3Iv(GNHjEGI
+z`Wx@~;?doP%0-UB2Fbk<90`We2^aDX&b2>~Hl>5%MC)#i$gKvF5&pV|44M<KANp|W
+zSnGznUpWpHEEiL~?C~P=Ns;7~F3CCbrxuol9r+n4sjjYiWtHocQ?4SPEF&VN+tw-1
+zEQ((Eb<3isCl2mAc`){N;sfURie2xknl}hJSj)`W;N(!w`D^Keri3IWhb{%nGRX@K
+z$MTK`{W`UdL-SCz&ZD@RZ#yTvoy2nHm~u~E)oELXj*g^)V+_aMEz5}JeNvR$n3lLO
+zGGn{$mi>kwkIF~CyTz=_t5VugBDE}4VY+FcR%&68?t?#jx<03y?x`qjn>^V_YpM~?
+zX$PyhP17REs!rUV*nITR+$@nR8SjM^+}0M~-TJrolr`gh%NOE|*WKLy9bst*>D}A$
+z<L0k&Mq6d2XP;Zl>Vhub=-xeji<tF07MU<skBmId3nvR0ESTpxxRf-sRfJv(2@Lg7
+zxm!PrbETw2*(QlBwR@b>|L3P2j;&5$SZPvn8kDIQCM*s*xiCui!ILFDlP4R22BoJO
+zeflZ$CWmch2vg^iw@E4aMF&>8`kOZ@s4*N#QTX>o?r743STV+SyZ%L{pZi4KY_4<I
+zeb_K^I>TI_2&O3=eHRSQ*RrzfnLFE0jOmy2$;*j}jou+-_RnYYoxcJm%pS`WE?MbZ
+zcF>#exO2|&n~{>|=goigW=+rJ%TioNZ8q)H@j2}l<*&T4hfhW)-Mp58d-D84BGWh6
+zUjODR)xpVNdv!s4l@yEX7ky`?pS5C)-7^}i=4e{}?%}hzAtNea^pBZ?k>^(FiJv{H
+z4xKOlZhvs^V)NQf%Q{Pi6okdtX7wJl=AM4xqyE-2MwS;Er|@0AGVx@@3GtjMrz=6@
+z&T~Qvio%??hB>Ybax<IWoH_G?(7TKkQ{J6uRKCl4>i0U^j_9Xq@7C=OoUO$E_EGg2
+z1-my^V!sm@U%BQQzIXFsc(F2_A<0_u!!{wMlvh1HH{Eh$)-&xgJoKzO&!)`d=zQ6v
+zp9i?z5*BT&+5h+1*H2BSSsFUzihl27cyi(Gni<=-N&D*Vm9v#7)$K8nE=_z~oOn+!
+z%5T}k3%(KCI)ipL6sh)SZEeX~+j7fOa%z_3(IU>9F?`c<m6tAGpnA9L*2L|>Ju2UA
+zb_5^V;4c}_czkzW(+q|S4?i=Me%PHH@HeA>GRv>G%cB1U`&B#=xY&OCmG$aP%WPf0
+z%!u;SH`;K)=gyX#JA2MPoVsD!$;Nkma!W27@G#HpX>~H}_PXlJb8g<;MO8tLJA)j}
+z<~L8>IPn_ql1oXpRSLD;litsg@o?!ET48m5@w)omHg0peu57%w?1OE4j9-243N4Y4
+zhkYHK3_qomws#6ln84_}-~;P{z+OIqxFR2h@>NVrWG+p8b$!92)>sRX{>_1JGZYQq
+zl-%KRIM<^tAZUB3`|z2+&wCiQ)aE|Q3N|s9lu$R4h@YL2Az9P6CHk64B7>%E=H-^$
+z*(aWE)|j?w#g$VQmTMOk1-UMba$6YTWH!G&ai+)8Ev3wRXN7Gkco%kUia=$ox*Ee5
+z6=4RM6y5`RpT9FN=WPvP?22MvP_s`$v|ixjuRrGV{g+F8t2!O)ROza;XnDoM4|!e7
+zvd##<yP}ksaBH*SRiljT$UQ=A3O?np0+o0tUQ3KpGup}H_0%RyJv3yM>XdBNDW_CL
+zyi`-TS#QkbxzzSBuS@OD^7!?(6)C~p-&Vd5es1?KTXTKf5tarf<_Eh&K77<?5;NQ-
+zdx+`1v!8QOO~2sxk1Y(#4%;28eaGnFB64Sj{<Q2RBH8@cPB!wboGDS}!*f5iP}k>A
+z&DL)Trd0_qHslEZbP`)yBsg_4S5~_EifdXL*RxJM+q}Uja>*sDNt$oVvL>egWi0nm
+zOJZ_x4BTFBxPFf;=Y)Cp*Sm8j<*<m|dcA&zlZwlO(_M3J6?eEOX6<|NY6b^mPrlU*
+zKDGmkju*FgywE$@Sf3@hVNTQ(wk<r%X0>K2HJ>wIw)>mIi@Z-0E=|0^3z|aLYX(gj
+zTlNPn?I~K@RJ0W|Wt_8-<@C0R*CuZd?GBsTJ*Q$Z`|dEITd7x~e<nDV3vIu?Xh*8U
+zPL3Hf7y>drNMCt(<R*uYM&6Fo>vpl9ig&usCG*BK<G_N@<4I-@IT!>l?lpO}degG5
+zUNKiDflP(OL`9xETQ=<wWYgPn#>mp3(M8JR<po~muw!l;V_cSoxqaQz<+Zk}W@SUn
+zLI&&U?U}bP@Cu(?!sZ+Ou2Nz8Z&{hbCl3}#R~}uv+1H1mf+J%uNBPZ)HDWK<?dR`&
+zve)*BwEg`=!3`lUuNIchDUZ>9;2&jDf4#HgX0vib-D<uw>aV(m1qJUu-kQaD;$l(a
+zrbnkX>1AgnElM@mX?F3SRkQv==FX?Lnx}M5dAH7XL$TSXqc&Yng-&hN(o#2_k`*eV
+z9eQJ@%%!%Mc^%vKxOtr4vMBl8j6L3x7j}d;>;Q#`&DU>NF3-wg{kQtP^EXC|BT5e}
+zX76OV``_+5*NV81{iR#?aBO4}5WL8|Yu3+Gv*Ld0nXF#vs+KmZb!OVa<*5alJPr}>
+z-cMq4@oJxWQekqbJO8JpHeFAZxSk4eP30<TRWfR2^0Dro@-BLYj_rT`t_$~t^H|(`
+z7&O-Wywmk@G1E(DJ*IuZ=12Ly_eQbEOmR8EdLiGG(USGa9CaSSi|oaX+_R&W><sQU
+zN#1F2^H9L)2T>9YX}d3X3$ab`QeG-;pd)-UM(k&h;L<43sh6czr9VF*%6;Mq_XS<<
+z%)2f|n%5Sy_bo4)Sg^tJlbp~N=8K=d^INrc%wV{1nfsrsixNY{vim<4{f-r5<i7tm
+z^y{z3I%}BTZD2bP{;cG$gwl@I*fY;0O064=%QiDADOItEJEZU2ep<pIefLN4lV7ha
+znwgfoEOLk7v$waJTVB4Kku$?Um%Hqko7sHVeIX9}g4{Mnx$X;bTo>b}HoZMDeWHij
+zLe)F3&t<J=RzG(|DKxy!f$f0n0nnT$^Z(vcOoG`ADF>Q!&RUDG&tg*9F0H%q@uKAa
+zpEGyM&3{_E>@nl9zjg}kHiaD>^G<~p*;ZX(5BMH?U`uJ~qSmy9>u<iuHd|+M`mR9k
+zUW1zsUe^=TH=hvuq!DsTBTW0mbng>WPoEI;+EBzQQO2fu*Fj11&g&H{&$!EjO%k?i
+zIdq&*?%-qyOws?nuD8vlpmg(s<M-3I^&jBlubIBdMatmicLUj8hIUQ{LBT}Jstr*y
+z?gYkIUpoEL)hsPaYHpR7Y~rJ>Y5J3yWj&-kURjk~ZkoDv;@RgD^`}o<9}>7Cq~O<D
+z|3J(7%I)u}-ToY5X)wE`cRndjQow}!YROz#amIYsw_Wk4CTKYnE@ybVo5SMO&K3r@
+zy=KoYpWGzg(b1vNWXx(18gK4$DR$1B4F=+D&pLV7X0`6xFwI)+b;II^?)!g-f84zP
+z`}~B5Z^WK^zX@{$MR2eW%ZB?>4ZWGp`;I7O2!5~&ZJ4rN@sVSbo0yY0BfIT3hPJz6
+zPjXHPEpTxuY2bc;=kIcz>{YtLElfVY*E@5pS<b?F|LgRNHinD~_A>qNwfwV6M<IpR
+zA%Xw@y7h_e2kf*WElwB)+WcK`m0?b#L$a@nONqw0O^@!dq^XI=EMQv01nRULaLk`m
+z5wlfrMwVbfgs4Jjk)RoC#`P5CEM<fD%Tkq|F!0{;Ew{Kn^FxcG(xTtXB@K*s{@Bhx
+z%S-$5`qRp43|~Z;{#QpZFPODU_?mO!bS;P7A>6mD4TTOQy?d~%kk^74RCK$zcU|(C
+zG4su}uUE@ws@<~P{zP#>v$|-Pn`hO(pY@vkJC;@jBx@>5UAkG(lDM5&rz$6}v*Seu
+zXG7x6jq4{K`pnPxKmENuqYUGM)GNE^{Zp#BTy^BF24lhg?uPGknM6vh1t&7Nn6^1F
+zOm^g->?qGr{lBy0g@sV2bX%_c*2z7fywvg6oGCNZK`#B*xmYnq`w}N+x4mM|CJTx)
+z2n$~PD8z8LE$^00g_;^e$qOC_rbCS_Y>ey^n2K&L-G5K;#$;KJ`%(?gI!x34U1Y7O
+z`s!LCdBI})=k?JSYHs$HZ*l5)o8rbGu~oVtEjXd@aB*8lN1xKt^a<B4zkWSY<aGAz
+z@4vLo^k3e49e%-d(&dH@&I7^y|7&?!3uXv5)QU0Q4;NkFEU`uUKoXxt@;nn4mlBao
+z?fxlw1zZBMGUAMrZ=Zf2xlsGz@3<<l4^`oxPTjt5+oIy8RVTOYLHTnQhjTL+1OzWm
+z<d6vCJGrH<!F|_X`|AIk4>%Z->-`rOOc!MMpUfp`z<R=XYeww<`}TV|zDM5+{wjCK
+zO<IgQ;YQ}}um9(2`b#M(Sv9egShuGb6;{u6sgS&|_T`QTpBO<E<;4x<`}XbM<bTGL
+zA)0aPj^82+WaH{G7CornH@9ss%Y!p%5_i8aSh79%Fh@~o(c+ejux%W^#ny`+#cgKN
+zpH>}{{PN=?5rtbB@+l|2@3!G%lJowxOrX`)@yZpso#&;4_nh2d%fQlbGo`0+|NA^9
+zH<0%=BX%-vIa2qX?-qB%319t}C)xjg;L&w^%lu%z@s`5*XXB5qv)HiD*Q0d)itigv
+z+c5<4Z~GW$l3?{B(M*c*+yr$VK|xthsWh|gk_WZ**8R&?7Zhf=Wh?3ML#koL?={Rt
+zJ7p(0Pt;j4&;RS3!qW}!KG_LA{+lUf@W#YIx}RbB`N=IE9ev7)3X`=p9{-PR{=56m
+zbUAfD#;RA2`}cSC@88s)|Ei~4>%1QCiECTtN)-1#k>d@W^U^VKYU7ecS7o-WYdp#m
+zQNYsB(a|@Z;l|HH=Nk8Izr?@%Z-77_!v(7ky_?HCZW`}@tn^^PasE|t3S||xtE9Ee
+znQkBS{VQuA&&b^ej?X1N65pQb9S96<a58S*aorCz2C4j^eS1@1(!c(IDQ~{4XLNA+
+zpci^^-}+4xj5bW~x_`97PT`+a!-kZ@kqm#s?#})H-lyV_fZ)Zzj7;fWneX;;&RBKC
+zbosvvzy3T@T(Cl}Wyj^LcR{8Z%QG#l@2P$AY>wN*Ahy}E?d>xo?xf3}E-uF>`lK(I
+zJ#AOHkH)^V?RIaA>OKnCd^}KpQ+LBV$$%bRF8}R~^;W(6eVLk;v##C85z``FT=;&U
+zGOKpq`>$-a`xp$Qc@5ruXGlLXxwWICPi^V#3#HCG&+`ft{pH=kE6zAs+?_#Vli?2U
+z_y5{`G7hBNI9y`#NRGk9rQ{CFfintI{XRQf*!zHkA@|!n?xTGN6t!C(>oI-%FX#B0
+zYuo-iUI8t4{>>FQ$UXD%8<sUO><SH@>wABu9AZ7-;!@(m`65hA({}I1aQ_hfedSN8
+zlkeG=GcA+YC}6wshJ6-$!u#AM%Y9bdSzfdJ{XfU<*(zn)FEyRzlJC!LXk~D_EB2)3
+znD2p(ju$I98xo&R@L2Y(@5WAHgVu)}48{$&=lytEzpadgZ<V#$Hs+5D+|<fmp4(u(
+zu1=(U$peP=^c%U1-J0JS6qFV%ZcA^Q>#8)f;c-sf^>13tUPo9OwlSrxj9Bto_v1@{
+zA*U*-J^d^H?ClVJ{9fb+`?QZd9#M<L81q#a=88Qy!)W>Jq?3z_`=qv+XC1v0lo@YK
+zub-tenJtOQp^>p{&VicJ!)t$czfh=uZMgK&HzgYn{?!lVzubvBll;&l;mTW`?+i0O
+zswgTgdMuzhV`fZ(>Fx!ui|!nlcexQ%{_y{~K5=tPgc;|;!`)rIdlU{;Kb_j!yGUCp
+zC(A!%laN`chM)8Hy1nxz_Ww+I*2j>*_HDX=;Khp>R&Qbs`Z7#AYO#c4$Bt7EQW|F0
+z2R_g|=KSG`al={tz1-E;@2}tAdHw8$*Uw@Ky?RbD-`DG6Fp$2JaO3R;77al`+3-UR
+zbI*RXxUlyj2gBq4&1)Dxu%B<NY+H2Q=}3gQf>WJjD4WSS!w>$-LbIY7GtA^RGYJR^
+z%33lSB&HdCh;J*Od0gJicG_YlP*6%W*Ir|AG1aNoXX;zQBy#n{O1VS(A8!oUQ@N1w
+zu%GO?5+0qriY5WUiyxQh%-FU!R4cmU_R8I_ZL7aUupBUD0QWo6HXhC`&y08?$9r+%
+z>FQ&K8F7r=mJfO=f<WF?xg^G8ExaQfJO&!Q;r)B7@Hfl?+qyhhT%IJB3mY!_vm>-2
+zNmYfBd%AhtiuZ;~SlZt1ivHUUYK6!KdYwODa5jSTz%f;ucL5fLj1LqmK4~7<l(?gJ
+z%i(JbM{<Li-ivK2Hb@F%<f`6b@tfgDCC~B5cZ>?h8;l=jf?|G=Vs7e0qn^3U-w*tV
+z-=HL5$he^4LHYbX=ECF8?>skr!Z<J9Wy^x@mm-hj*e3`(=v6ENRRk&vq9b3l6>iXU
+z*sZ6arpEBaWpd+OrV`2bg<<^Lyx;HZm~GH<#&i-RZ{mf=oQyu|&ON_t6D~gQbaZiX
+z_hsPGZcou-ZT!9R`FT*g@4-s;zw`7MANEeOy~|>>>ZxFPb_Abcuf`gmm+RKMbCmNp
+zyv#WA^S_HrNs8u-nL0wV+FCbPFSS-uW7rbRqF3AaU#m*&x7dyTn+~0^?=_n0YbV6<
+zGWxLD>MRpZxcK-d#LhK2d`gT59$r*XV<@TL_<!!IH%EF_ZkN|cGFnvLyngSbcG>>s
+z4=Rp_{g{i)O2rw41qEfhr?q9KPo16eu1I!I|4L`jTGmXZ4f)QS!;d{YZP)bdRk!k<
+z@4e534s5u~A{Lxr_~0bSDjx<OiEVplGQ1HyS*#8k>AHAvy_UoM&D@Gvf*<y(iW|nK
+zrMwJae__6k!IE{3=6OLSC98QYjM}qH_5D_5Z`{wE+n+J7yP=bl;c<Pbr;Oxc?uQ+`
+zrw_VoG)eh0S`@$RW3WheI9D+VROkvbT;6t7)gkn&&EuFKH=g?YFuZV7Q~W+L<Vd8=
+zgKV2thP1_sZg<5P*g%2z=ERwn%-ij?K4m{a!?PK4nI7$nTX5sO-Q`67%Lf?>+H4#_
+zrO}ottcSNTo;+8Z#N^O#%YDPRV|shtZYhITTMcISFt&3ybauQr(HMEFDKToJe!-hN
+zpg#VSPo2)@HBJnV{g{jF9_xWh#}v*bCEU9bS6pWRC8>6)HT5s{3Lf?ojwlc|P*Sq0
+zi<oAVyTo@gC&OLs-u8wJV`ZsQsRm>AIh_6Mf`YQ9j0S6Tf->i}H@*Amqa5YB@Ab!q
+z>eZ(|Z{R#o*bum#*+Lo8<lD!mnwVDPu`KAj8PkDA)+8o}9l42Ryf6AMv~)aHlVxf!
+zo}YZ@HAB&%v`HNueLB3_v)z@JCK~qd<2o%7zh3X_q>G?Qn)XY=5AL^AB+GAFE0kfK
+z!~X2PVc?P7w`+`!R9tw@l%S+k#V>x;WKE9PEH<4#j(e02gr_lc{G0_EC)>huWdH7;
+zeTw^^e-m<I3Oew&pP?m0UFx6j0kyq+%bM*J-2Xfl5WHBJX|={j%!wslo4L6TlyIv#
+z_Pv&BSP}5&@1E|rymhG_ixjuj8NS-KVTNDBQC@#uB_*pWriAC8-j$xV&VAlz`>TD|
+zAyBNXsXU-pxUVSd?7G@-{7-#%E3+>4lbzweliNU0P&WQh!_1Qhb|!B*moR?@L%^P}
+zr1_=?9_fADSCeqE(K<cj#xAxwk{cd~C@3jeZJNS)c^gCe|AhIDpdgS{{#C8Rto41z
+z$BC;MJlQ2o)-&uZ_%A3ZC_8c5ro{B(jb07!O0IspGl7%IkWs<^bis6^1^o&B42m0O
+zoHcm0?T*lbqGOj2J>N3v_;)+Y<NS8Djqmqa9E{xBQFN|po|luA(BhjibN_LOpXJ-P
+zXT{^MuEOirNAJihx%lSWMftvpr;18keE%o<%r?lGUCkgM%&_bIh5u$h#1Et`77p+#
+zuKu<Ej+f#U&7-mIyh_V>?<(>OGR^2^pYbJsnrOofAEpD_<L5nC|M!XekL`7zvVZix
+z-*?2*kbTLtvu(=LS6>PH8r52@u=VNvBt^sdXANa~3$IEqxcK7H=_={z(|K#kE*^O5
+z%DjGEbjH@IjFR6odUk%460}X_R4L_NS)%oUOGR+;kMp0{Uf=c<<55y$5V@3aB2{5e
+zp4y*-`}eF}t$f5N@`EbtzdMQ+4dT(72d~*NSTE(dS9sR;8>7I1k{gFhEFLi>FxdYr
+zzJK`s@9+P({=KdLdOhGo`W@X#>D&qX8s_MiWhE4~_036rVEsJwPnlD(zno&jQKrc^
+zWz7EyuB&E_xpw=<vsJy};-!0b<vh6R${haHY~3u|J3MVO{GR`rBXn`GAH$`#-jJyK
+zJ7SK_diJ>cgX9}wVTP`r*>@Qtj&bbXySAI7?^iPG-6CtI`u-M%Wq<XaUFLjXbJzDk
+z-QVByAMF3JyI%JHyZAqXK`%uNW;*q$m0Ry!!XhRVVbPGEHkHre{EQVTxqm*L4le)V
+zaQV(}3%+BIHKqOv-kK|26Po|{ZmRJ7*eivV7Y|H-KP%&k^^Uyn1`<6R3uNl%b-p;P
+z8sstCEa>Hzd%+ElzI-vZR8V7R**%pp=#NLoTrHN9rJEF(&6v8s?|QdOaE8Ev9k-k2
+z_%>9&KRK6G^7H}wAJ+DV>%VQU6PLVQ!2JK?6N~iu%8WV<N0VOXXJtsudv072cji&J
+zeeF9n_R|m5(>ESSFmPLJf2eeG^YyQM`zoW4Uw=RA$FH-ddarY1u35kM#`c2$_@5QR
+z7n%JTE?w{y?o2U?yYO!IE9J*(Y-bocI2l;C8+|If<$ovBWTI|2hldo?JGDRk>PgED
+zU-cfa$(9w-FTaw@*!^<yZI(Ce^X-ny|66Q-puhf$_kjwgpAOF+t#{{NQsVvS=Q6oW
+zhD|R;Ha#`5TPgZ+w*7^MmS_Ji6>gYu?xI}Z#h2ec`Y!HX{aUQ<<F>x-(@Sd#FFNeK
+zcQAEx_w0WHk2%F_g)jd0V+b;M%Olj8QV{U|=fgNh`)1JE;Dd=<vdrv0Xsr6nvbUI%
+zC+d2Gap`|s!TrA<%Rj3Bm;X=i+-lbo{A;Gy7(3pW_ir*ofMID!j_~|_7B^?bnMnFx
+zkn;=3Fa5af;?dWq+2VBF`R~PS|L|;8uiyIqb7uv*S(l3oUaVDTu=25H)>Sk}SItUd
+za&YHd8m3(py1MB4|LL=L9<cHk_&7g(dWzH4uN$v_X0v_p_V3)CM^@Zrdh+As6o$XE
+z_y3OmvAF&V`-vBsCr*AboOku~SN2ygU8|HDFVAVc?8LVJ*Gum5FAfLhPBMvqkY;kw
+zx4vWhS-Ewua%<`?9yq$2t?uKs*g1cm?dr|TZ@AYm`<UQG#tbW-+ie#ZbT-^nS2tgu
+zwDH+b?YuKt4o6rT?i@QH{3HL|5zaX24X0RJcI2j-b$4o|@yKSWKj_tT-q(_Jo{>wD
+zMeOoMYt|Q?Aq>Cv&i|+OZ~Fgl?+;&KdGhCF==GhlwhRw+riI@=YkXmDT*!gSwJd)g
+z2$z3h$ZLAwlm4PtEu;MRj-1ku-&Xam*ORI!jXZu`oHyo*^^UBvi!XT%W^LG`DR|VI
+zVU3TNz{TL|ko)WZukZLI`2&>sF0Q$g%5~xJs&~Tr%nWIZrG40H%UK>w{QZ&N{;2%l
+z>HGPW7rqU-^f}Y_>%MB(S^zbUS1(<q8k$xvPLTfbr1GpU-<GF4_Z1k-K38yA{^6?I
+z$4mD%uYaApXYY!~pHHjl=}G@scF%2fZS%FW493&URTq^qO|bkCI=Ru_kWr!Z^oE!m
+zZAFEqWj}Sazuvj$+H&ph{=fIE^Hxguez0jTfB5e0kHdVIyUXseC+swd;PCksd*=9J
+zcl*E3e`ZSl|FQpff8dFz3C3*m%KZewp8D1XF=;&2nZhMm^MA7OpX}AITp0|a6KrNL
+zEH^$9y1l>qwb{O%Sr4zKGRMc8efYJh^K=z^ZyCRNv*0tIOC9stS{RKd-+Xg$`p0E|
+z-&}gFKT{A?!sjO1SXWg>&t0%-o|9Y}?}5fu40l_jnYJ*df7_wWkm>Yb|Nry<&Gvo0
+z_>z75gYV71T~0o&mnr>_mm$^TB(^n(Z~w1c|H@#G6F-?2Uu60Ek7I2afBf~^J9cC|
+z*nC>;UaZ-NtGm^tdimDfHkaT%UQl7GUZo;9lT&+g@7-j1v$gJQe;UrR8Zs*6xIHMZ
+z?fKjEWkDc|;Ns)VUFmnT<rx@zZj~k&vWxYX^B&m$KmVWDzhm)#xq1G{yEHw}%wH8z
+zpRjb&j}=o6yHB;L`&%u4SB;~u`Dabz!GfOGvlXR!`Sz_V|L|;4pT53SMQz~m+g0q>
+zd-<&PGPW(|<Tty>uE?nSRFbiS>&0TDhQIk<J`68T9{Jypubv<&+r<8kMP_@Df6rDX
+z_Vr96e}dZHS}8nl_-vuQ>&a%Zf3N?)_+GKEUPJ!mguncg7(P`=RR$j~_dEULZOgOB
+z1#i~bXYe1(DF6Lq*~NpqSBupZ1|C1^DjXkkC2;-r!kcdr4I~ncp8jKZ;cxO#S{ZHN
+zV{8)CKZ|e4s=xZFJt<8y7zFNW7JWRwm%sCU^Xw&$^<>J#gcj#rp8Nm3%{jTt{~x69
+zZ+>4_#Acb&|6#GGK-g>k8p9echqGn@rz3v6I~{!gAG^@vixOuavaAggU;j#W&)$p&
+zr^|i!)K&Lhzn&WtxAnrSZx>(lKeXTx?dVf(+>+?L-FU(|xm+gZ>LezI-R3f@Q}^DR
+z*Ysd+!*t`Rwu!rL%<_10zw>)SW37W^z)Q{4RaO5M%xz$05!<YJ>@MGfp1Xk!?rO=B
+zKYs83KAj<KcBR$)On0V$_w@;CLKX8if7~<SApic)kIJehmRy(r(w1D3-&S$^&7)Np
+z4?fR-T~U4W!1Mf9E6i_I)ZRUK_AG<>951&L3#HaAiB9HczLr{Ks3%CK3p1?TXFr)G
+ziOFI1!cSTY?rEKV9Qj83Xqw8yl?oz~Pfj=7)?EEXrr5+G!A>^ONP?m0i^lBZ^Z#92
+z|Dala{^nQwu73JL44+<#e7edMH*d<FCkhMKzTZ6K%mqo`3t9Ic_^$3gUG7^`dGpBY
+zZmWH}avprz)%&`P|L(mBm%BU4c8M%ayd|kJdF5aG+k*GK(-=WrN#VvDxBKrT=KXKZ
+zDrx+g(eN^Z<IL^;Px`;j|KIArtI+pR;;63x)2Z2NECFVvQ*wpx|9p|M^Z!93#|R6F
+ze)Si;$9H6XEx7vPLHB7jy?dq~f6mU{vwHVazuR~1ZtYc+IsTAQJ<9vwDbWc&>djs4
+zci$GvezG-WT(G?QD0@r2l>Z061Mdzr#Dv`}%-<}h5Rt2+W6sXgG)v{7WbBQoDxC#4
+zauuF@RQk?%!_TjUt!KBdj#_fU#oChkdr_M0^Z(o`xA@!6cR6Owt?r|T;`eYcB&Y}(
+z6iHs;iv06xx&DWIl`XgVzvT4&OX<qn-hcWW@49uje>~dMd3`!>&ChLpr>msJznb0J
+z%UJbSkl)N!*QtH(Nhj|e^7`)=?3}XCd(Lw!&D#4cVZRe41Cp2=9y)F@?`mJas=vce
+zZJQXQxBnZxq;G*T`Bxk`5^n5ko6{$k%6Z}bkAvF_!n7Uzmf7rm$-(JVQF+-%tJ7y~
+zNBZ*A2h;68hUiZ!SZ2)QCTvp09Amz_qV(>e+o#p`?Z|m>HkEn(y4x8hyEDGANo?Gs
+zX=^r%@34`w{^rE+^A}heJ2)9M7ng;$*N248kG;n5M)-;RN}d-hO84q8{`w(i`cM1*
+z{~K$WoWC$c&DsDe^4F|X&X)f1BvN$$%FON0-yJ%bV|I9f{h`qOj@N1I@v&P!d|T9b
+z{=R8J<;_Fp*L6*zZMRf0`|SMJV0VD!z^SzFeBZ9l-+nuP29JO+1D8L`wprpElNsbU
+zuqmWiH}*2NKkdz5&UBPJ?)y!SoX8(6hs%;98DD(-I_dv|YWd<b)8$;7CNKq@h|+js
+z^y8ho`j76{cPBIIh|TbM_To!>M#=Ar+b<rR4dssCv-a^>Z~<R<_sxS{HxHjpXps~@
+za=F=u!DwRR|7-lIB~BYmjShH&`Ufu~nIG^TxGLRPc`C!JGTI;`l<i8igNNH$iCe`R
+z3mhab^hzz*$Z7GJ)ot!FYbFKp{#W_hEeE<MFEW~;^h-gwrL^+$+xxGj3MQR@uw=$j
+z{(WC_lK(SX#wXa!TVyA(@amgKr`_1Yr}Ng7-8}NtRW^QK_M*u53+}y5HjpU%&uq1?
+zh4HdU^4Cl5tiO$x?4F-)X2`hU#WlyB6TYqE|1m)+CBaZG>C$_qiW=Ld);+!A>ZxiB
+zUrMZumk96pcfd#O!=?#GPY3bY|GMYC{kOb@Q1?%!zYjTj|8ZPD%NG}4{^6^u?0Ws#
+zKVH2xy?51m$C~XI-|`wf_{F@dzdP_!Ltf;BbKkzq-5qmI@&jnOcBWFx@|8Ez`Sz#t
+z1a;gkV~V?PmeAku+ee}0K+cupB^E4m{w@A}y6$%*ueznQb-uRe7m44dPT%Z37*4#-
+zeBvv6-%j)4_WIPF{}~x9_?}(1j5=&+HCK91R#{=~)kEpxr7?SQA9SB)d-c`qp6Tu#
+zFZ*}=XM9_z>*chBXU4X@m%qro<o=ZE(zM4*XNCy4&NW-|LG;(eM#jCrlV6&JoIbi^
+z_T~0H=KS%_3+~xktl`MKU_Ifr>7j;#<^QV9j3y_2whTXS`m)?$zMotw>jL}#hy5pR
+z<MDWR!%IZpkt3ph0!x5#>6IMe{a-$nBv%Q_bbhR8x|Y!6wz~UzuU=gIm5;Atx!2!|
+zdF;ElwR^Q#)Lq71=FEQjO06uDG?_CGckq2^-u1QCetO5hSu+>}G@~XxFl9KtSL=6O
+z!2vA?Cx*#!+(l;0Vtd`chyQsw|Np$`fLR@UQxtTz*#$E-EX=exA8DbV^5L+5{Eo%!
+ztF@Rvv+i2VS+$q(-nOb8>$ZRF?q<6eXZGReZL4*!bNB4bTU>5@<ZQ!lc^glq){t8*
+zd9x-eGgzPHu{vM^S}E55?bI{PgNwVqH(z65x%z9mQ>;=5)2WLLPvw~1y{uRaUYRr;
+zeXPy+Yfadp_kVtsGlp3!TKN?zFqU&)f6Jmc-%BZ8_rXz5&L0QW9h5fiJD+6aT5jXG
+zy0&@yS~)$v**{*b>de1)?c>+oYI^s!2E6}r;T@mF-WP`I3~h~D^4`g=sZRd8V*N}3
+z0bzzurt+7>f3mZ@{VqF0{^E|?Oml87p3U@S^ZlQtQ?yx67@9LER|#+)I`(DJZ3jEX
+z1t~8yY>hv@JT3gdeBWz7!$}Nce8(nh{%SVVyKQ@Ac5F={s9mjQS6$q@x=Q+f%+?F<
+zzFmC9`=H?9fA(1nOBPD21-<+d=v89$PhE{+OLFkX9g`S$PLS9(yJ3#)Dq98~+gAG@
+zd-tDtW$z*%(zHMi)a~k-)9R(jT=U!V->0lXBZf22Bzl&=xW`j)bKk+;tIhW9%6bGU
+zCHAa+{Ag9{_Fg`#yNtX3D)N7G_G9poJ{dCWIB2cRM14B}feELNZn}4M-;F4iJ@Z~Z
+zo+<WZ-F8vw?!4CWTmBBN@-J61J&Cp0GwYH5-|w6^*d2718@A@NJiGbSfx`k+{hK|w
+zv*R~|jgbBC>;Gly{{EJC_Pg=h|I5Mc7X>eOzX=g4TiWnBOYq0P<L@3lNqzjvCtadP
+zEu)NmN8Z;DuU0)(W1r5ur}p|0^KjiOvu#bPYI`E?eX&(zu;RJhG|gvS_K*CxPgX}f
+z*sYbb)%0q7X?10_ypkHj6K__Rp4&NWALMhYwM~55Y<+&&CS0sFsXw|V^^yF)cKhV_
+z_7{aSw_d;8-LUr4GO30&3zf4afBc9Pt$%oZ-(x?0riRw$pE-SX^&PM830&{x+qW-o
+zH|HVOyS@VJZf9(*&iKkU!)M382X>%gy@i>NG)kpsFbfDX+`6~v`$`=qF{aCP;+GTU
+zBW&i`GW@%||8MZ0Q{U~|Qu5^lXP4(U2?X5RGGS}LiPR6?`u-m#hkjj@YGgR~+(k*A
+zi!Z)>Tz2u`?bTxYV)7<@d$p;v{HxizXxlqHZZkGMIPh<a$r>NAS=;I#n&~mAsWEIx
+zzpSXB7%p7w#Qgqt^nJFMAHOjM9C_F^hiTp(ryuhzH}I?|FBcZv*}YNVz>ez;#<Q6|
+z6|$V(|MT$s2l9XZ?Po4{#V>f2S4x&MVduXC*H6yB))1xF9HrPD|L@x7vw!);xO?1!
+zul!anxn)}u`u@SESmyb$CLg|?HMOh$$``+HpHu%*-^HA=WoFV9J9)TXY|m4<T0VvG
+zHz*(;g(}!6@!z^>es0ae2>&m3QZWg8v>1PJJo`VLTk_9C`#-fQy3CW7GIhQXn9jyo
+zu3pF<u-4vSGUpzhw2zzS9OmEuTS#EmY!wT>Ws^1U?a6-l|L+^=Ka=af>3{J5zux}X
+zb#Y#~kg1@d*qz%?TL}s?aAl}9J^OKl_lo&84n98#r}=S($%6KoANJq6UH({p`i|Ng
+ziM#jdF#byPXS{S-^UuTjujL;Ozu%W~(_hKz*3{&^TvrcX`_;UKVP9$7!R>ZdNALf5
+znZM}jn@98ie6~L*|9Aa=k^jg4|5dkX$d;O5kno%<I&gQ<<@lffH-CRtxM^<b-2cBV
+zqu1`uFZVB+JbS|24J?O*wlQ!DIQ(3=AW-Q<hw+OCO@b|jGBrmF=Lk;yaQOZL<3JZi
+zcY%82$4nd&V$K1ajh-Ag-}%0~wEg?Ky|3ncJ|n+;*Y0nt-rc^t{ng9&&-a~s`)*Zm
+z=<}7u=f3~`X>-1OW%*9oa8{`!cW#~9)xqre^_1|NQss5o8Jn(UM}I9`dojDe+`#1R
+z|7%;`$JX&(mfCgf=Zmw^CbC&w+T0i4?3cSES$urk&ewale{NpCBksh02Za~%_ZK;`
+zEAEPL6Zh&_F8t?(?)k@`_y0fr=luQusd+Wmo_<ng)L@sH{^UZyUhCHfUhUqsdzP1z
+z(>GQn1{PV4t@j?iw(@cOlC|($cV|$GV{1^F>MI5rKDENWN<I0X<@t}*?|%>~iJMf%
+z%H$}&dse_=Zq+$m=U2}!H=Y0cglx@^@Vcg2Vdd&Lh8uZvDvUPj&f75CUDQ!QfKlN^
+zl2}Rm@m({gi~W9i?e;I1y1RM1j^@ubmx|xNuPAVF;We|RAG}$;Zu*!qR($Yz^lzo1
+z-PdUQ!~XvsbT56>@1P)|;lH>$)#gF`{-2^XKlksSKi&TODq9_fm^~@8QmQy)^Cs;u
+z|8Z&F-rdvc7?=bZnr@Xk-E~-botaJgny~dW#TTi0PTy-XzRq4}KW}Yx%%LE;SiQ#m
+zRt4#AT+i1?&Hw+Ry7H~}eAOrM3IaUKo?n!jt6%i;p`_jK>iq}K-z)np_g5|E(MOe!
+zDZA8z?!8vpou??!@|inJ(epslH<^9jnrEl2&s`-I68wJuW9c_ZtqMyQ%yIph+BSKX
+zkE82dv)?k0l{4%99gjbH{(hM;=Xudj`T`tm_n(H;2u(Zs{@<nk&G|)B;(y-t=WDUO
+zXIKB^;jzaS>#EP??Ves*)9Ap`u%L72_2NI@LL02UGp@MK7n>X38<FvfdBL^5RpN;k
+zyyY8s4TEB0mrc<Aa54S|<GP(McxCFd<_T}^ma#WI-)a1L&Yak!vc%S-Q+00EeB3i{
+z?!%BK`MRgYKYz;aZ(SZ+!_k$x#pJFa2g|aG1qLotPwjc0yZ-1_k@x@J+TV6&QgE}G
+zcwp1pWh-v(vii4+``~-SAMsB0EJ_S4x|y~4pLwp7|5=;-ckZmxt(EK7J*k`hc5Tz4
+zKfx7!&wl#Pev~=A=fj)R`hBm$nOhX=ZmLh$FDg?#{^t_c@$~5yl~wcH{m&P_I-{h1
+zPS0rnj#G!crv2eNdnCT7qRsqHiEaMQudFe3Clx<1&-^OR!ID;`ur~0h(EcCOu5Z{f
+z=kdA!-@>btAB6Q(7<J}Gw><n-@#)^`FPtt694$YtZ@ss+(&wtr+3c$h-(Kzw+n={N
+z{`7}MvV829W}W#X^Kr)6j8l!1`uR#P_Zm*>F`ndC^yY(!`Hiq8G7L=<yp}rYML&6y
+z)wi=XwQqjxqbDy}<!o)wpS=8e&Wz}!Lc_y{vZgupKecpkn<QgxbC~zK%;Tx&ch7nr
+zU)^)@W8#V*L63qJ1l}+TGOUVuX#eMobmgBfHuc}G#~asQIHf$#XMv8D8sqmzCwKo{
+z>&nRC!oczBt;3N6uYVW5<h^v?;nHIJQeM+=-P;{2=PG<&`-xk@O6uxf!5L1DFM?y{
+zC1<G|3pkXwQ*GD1Cu$sv*k<sqWr|^4?9A!b9voAZ()Rp17mNLZppPe0xX-MAW?{Vl
+zOy}nAId;2`+$m~H+SnuCawJ*qv9jj3e*WTz2Q&5TERHUGX*kD4=hvGqedB*jjS2mo
+z485{hb>Hu9|EPc8`kZtBT$31vBOWS~U%y+do4LL+;Cn>=;^|iz8aWsm6RJ;EuAkcw
+zJ!`2f4||ZnwC*R<rd52r?B>C{^TnrU%VWP(g)aKWlvrbN@`uMPZ~Z&$VZ9C+S<!10
+z*L3v;oX*+rpm5{%Iu(u?vt%ARm;bR?U-vve(9H7r$*zeW%NMzRpZEL4mT&W%-m%W!
+z_2r4Sz?Ji+Th^_)U;TJpZqA3T%Bc>zhl2Wo^bTL~$WeY*zk9!LY;KJ(%Zp9>@9_qU
+zd%Z|1jsCy8M=yNQx|x#}stRzhyhxfkJ8#D<`Tbv8+cq2YyJ&4SPT7Agbz8w&P-$VC
+zn_4=ZPuVs?aqaBWB42KBMqD>}6J;E-Yn`a$+x@v2EXzdd@>+{F9(b}r`+2;A0LL%U
+zednw1m1zqnJE!&eTPA#0V<@ryes|gPH2vRPE({zltR;M6S9qr_-RO8@*)zR!+gXEt
+z>{Q+IzW6EYON}pX3IZG~f1l6%)38|l&GT>9?`3RY=$PoSbo*YL<@cUE2D|9Q-|Kae
+z{xw%~PyGM&XIGx*^XUJ3&4kxqPghvv8-6&}tmVitnfi`(d3)RCukNdqW)%KduQgLu
+z$4RZ-c4J%YdVbld%PuIsSn#a;=OY%TgL(^M9;(OxS85C5RAy}`vUzkeC3bGz-3R-t
+zA|tNr#-v;a$LYa)&;CohIbEOpZCU+XYrbpicrr>h&$w}9Vu`5E)`jl5hi63Hh+eS4
+z#@{Hf_@Pfs7=zUQI|dC4m=aB2p6hk4VF?nRFt6>3h{~}8-U3(GUKaRqF}um@OO+r8
+zQ)9yJHIw8&Z0Y7Ny389csli|)WA0`%^VXD;Z?;9;_u}AS>7AhEkQ8V6eU<g@kb~*b
+zZPJtCBa@O&q?$bKN?lW@-oj{MC^5@vX}W@~q+q={<2LSTXWdSx#j5^E)p)*OPJ5A<
+zS7eDM_f(sZu8W@+%I`G~S*@_LZ9Y?@!v)#=nv<J<oO%A<*q@;yP<g}LdBzhz)HiZ4
+zIC8&>3!WbIGA(z*zs+-hW?a0odg;0wO9C=N8Fnt$JN%YEm|fJ!+gnDq+jvgVw{Khr
+zqzwK27pnCgdhxL1OZji1sa;2!gqv>!e4e_X)aBpbpk9X)A*@b%LL7AqwUlZUV*D?N
+zH7W>j%nJBcdGTwwk)hR*Lq*3l7#|#cT(Pkt{d!Ee#NyuSoExFrZ$`E>fXex;FE5z#
+zRQG;aZ@*;Qw|R3t>Q~QW{F+l#ylA0xlTqu`RK1;AtbI<?zc0{?;l3z&um4uPX^%|L
+zp~`J%S6=04`BBgvEY%d>wt!`6jEaz#q{j0LPjy1L9*7@|=XPDS&gu$R^Va*UOb6v=
+ztl_w6Z+Xacy4=I=`#;tNGAT^+cyKH!I*RedR*iE1Q;rHu4hk!_3uSe$zwLHuU+d!B
+zo177mAw{d7gc-}snsalb9K+wY9<?4l3;ArBkLlUiZ+>&CtBCvBC+=A+P6C`P`y*m)
+zJ6M|Zo-dfvd#L-5)0Qd)CP#%E!uLEZ&928+UNK-4C}k|$6XBh7Z=LXmFzHrKP<8Tk
+z*}}}S`22si3Q@KJt3I!(d#o)jF0<<WcE=~x%7v@md6;C?8al6aH`7dgm@anVDN}g7
+z$(HSh>Pt8@uIyX=;6drdH#PUIT&+*p76=C(DqK8;r&;63il7ze?KPe+y06`;@h3x9
+zb7z=>Nt+}mOB3V9#96EL?J};-2${l=bKA^u2dmKj&TrPb&dnglRL}muzV+6X_P49I
+zsku7y9_;%T+M81M_NU&nHQzp$bo+<Smh4z(`AzI62bXJNC11__j|*+Du;}m{=v}N=
+zRcG?r{>6rz4Xc<GE$=xg{J6;Fv{c}!^pxTU&lNS?X2<ui9I9$6^8LG4p=X<ch`gr2
+zm#MOsWh_m4gHFxqdwELP)~F}-av;MOk-fpnY`bc$lWv2YboQEqslcl;<6pVLwdQ{v
+zcUzq~bxLO1;u&%u749fMu{Uhm_2cM-S$CwbZ+_bFykR<v8iR#t^|a%1^;6X4?2iT?
+zmrt*I$MZCXO<PBBJF{BbW0`q!kDLBZj;TqQ^s-ZMO0Kg&gZvC<3zjBFR{<kaJ13iW
+zK^jxe3Njo%Y%SEODdw%f<gh{0Yu)XMf220u@A|#HYiItp%&cm@ir5|#nVjw0uQMK9
+zTA6k%DaK+idlf?qqssAs<9S(L$4q69CQbbPZg>Cwzqj{4Jstngh~M^$z~|4O?`~}l
+zI^)w<@bjYco*%osE1z<&d%DZJ|G_a^jo&W}L>4Ow%u&yuTA~|sdtn17lSAXvi5|<%
+zbQwzYtzXRB{Tftte%r=kaXsaJuFB6``$sXS8nifSKAq;4nbBcv_+-}IHD2rj(zlAA
+z{J*j?xaN`Y{0GVMza_rkum8U+{hjk#OWW;dUhYi&_wU~O5At@uBIi{eb^Y_=toes!
+z;dbpSXBKLNx^Qr?Ja0C-ZPu6T@jvKkgRJsYIVGOz^p~@>o?X7+8*v1bXA`uGxt_ay
+z*`8FoZ8Oh`pch^f|GeUI?^8Rl^@6Cg=bUQ^)hoK=x1^u=f9H;j{J#(FKVP`ppIRBb
+zeB0aFzX}iTvCBOK;qCVS%>R7hzklR*{ez=Dy~`Fxh^1=@yir<nKw<V;nF5<2<-^hQ
+zx-ZQZWZ9bJz%!j;!xL?Rd-uz-9Jc@1c{MjUe}nL`FhQ}+Pc}#L`Kul<+riYs7wA5Z
+z+1a@Ik<h;<>h>o;&--pu_x5^SZuH4|<#`sS$7SXJ7{`4OmVa<L{)gHTn<=_#AqqEC
+zkNGSNSr)NQ!bnCuwOVD;O5XQ7jz<06#a^x_(7_<^MUNwa`>b=>%p3WKDqkc`TM+W(
+z5wmCU+T<69f3zBup84Tjnwi<TegEILdtUnHKbq(+cXR9czxMrhN2TlDHShV$Tz?{H
+zVaunOjnYg9`!<Un_1fohQiAcp!ySR@4{k|TuDxCU(KZ}vmBWo{#V>!|K3U(0TB?yc
+zjYE5?2IGw*rU7dY`Y!5=>3?bZPQK=YW8S`>Y5yMZ|9h}U_OSe){{7FV)&HGe@!>~i
+z$Q|KeC4o0<1l2dsQZ`WKIq|6=$uQ}o%Wbs;-R0l5U%bri!ob0zt0r}8c1M}n%FFky
+z_h)W-w}J8L9j!usy;+_!A{jl{SIpE_FiZJTT6Mqnd*Nx_?H_vcYaZ{BKfU*UT}$-6
+zkF)<g{(E0sP(k30MY3T=lJn6IHvHyd`PTARCvD+>XEO&>qTl!UpXO=3#a}$*`}c1?
+zkuUh7#iO}X#M3^?XlF5{Mg3cUO+dPB=5oo}y>+jn?>}O%|G;ip_ow2%%;k@lKkxZ>
+zziz_%f2R+xn9;$|n6Nx2M(bUorn5^!*TbX9JLYZItiLIIUOW)oz3Q~c+S{sGzW4L(
+zvM62Ipom$|FQm*_naJ$j&}NtQNU7k_vA9+J_WvyMYaUBizFN8b*Si~O;^7saWy?Q4
+z5MHjT?x1i(F@CDgk-}K#E^)2?2&KlyyQ0fVqf2ipae+#oXj4_@v<%T(`V(X4q-Ux0
+ziElpZ%~+6RkeT-=-){c%Z@2UBUro7x_R&dW?ms7F%QtSAH1(AO)4?+3D?UCw21Zj%
+zTo{gYs0-aV_s(B}<G*+ZgTNa>jYC264!z<Em+@>)zL6@=HepuFkrf-$KQPPxVEF%m
+z|Nn*W$A7MEpZ7rA{zrO-d(;{ZmfNSJoYmTdWM;@2AJMH;ndGUHn8+l^z;uxBW@M`1
+zlj)jIi+NOInYo{2T)82beEz=e_dAF4|9{KpKlAb4-|6ws&i{WG7h<DkKHp(OY?xp3
+z>&lqIhm6iQrn?)>b>id}?qCp@BVKeTFPPW9`o^ya#(<N0j!Vx>T)Cq%d;T=$mzm1z
+z&wDLB^!xt*x>HX-Immvmw*TV!Oguc$Xs^0J&f>Mfdmila<}KJ`rZL?`OH|bC(%#=U
+z-~GFOAt0`igW;f_CWBPnw*$X^hlyx#Z0Z(hles(HK$|fl`@<vwdBabi{(M<(e|Gx*
+zKTjL2-?{sr`Sj4gmT!s43Wp87#!Pnl6~|JKu-RUWvrO2zq-|T&rkyj-tp1wop#BOJ
+zIc*#rudZdWKCF>RO048N9x5}ZL-HE40*kq*D&y>DueC+%-hZ#lPw4;u-To`9-~7l4
+zEeVYYyC1OIyj{d>^Y{}t`<?t-2|HEV+o}qBZd(`YCpjoEITYM;aayc#qq0vXASUj~
+zg%q1CCNYU^Oak7Ll{agiYR5mkSN&f0#$$Wq{b%O?`+D8sR1+7=?c{e1*NZD3`(EeY
+z;a_sF%yU_=H1{Q6<5a0BEiXYOc3J!E>p5rtzlz`LEAOMiQFbM>#qQ=()@AO=JgT{m
+zo#dycFJt&|MBUC&fQ8w%t^e=&^+8%w0*vme3FPpf60LhN^?YhpO~YZiP@dBtJ(gVJ
+z{rEpn;{31X+gfu~*g=lIFmY;l{i?Ke@!G6W+$>jTJuDaEHC0MT4`UIzr5}7E&9Y2^
+zbzSPbo87#U<*MtvX7eh-)&i_q^P#-{dpWax-+P-+D)(zXa8B5?p!(7*t)+|321)Nf
+z9bTLlV#Z;)qrPeTonK9i`z&m7%AFZZggz~6l37*l*mo`^9+VL?vL{HL`e*W@F>cSa
+zEbl+jslwZT?EdvL`&i!YW1`bGJqZi9G!a$T+L<76)}Vm(!N1?{pa1yynAyHhf#c`w
+z`XAy2IU5a+%?@ZSk_}O6^Ez^%bVZBe%%skvF%zHGOpMvtlpncbhWK0YV&%dGhu^-h
+z%QHG<_rB)x>6uc}auJLVD&;=9Bo&)#-a2;f)vT+`jSI|AY`HS;dz7v1m073rbEn6O
+zo7E|H>rLPBr$Fj)6vOSliA)b>-~Xd_YeI49`R($GD}ET=PI|G2a~<<G-!jwV<@?L$
+z)K`5d-1qmxWSdV<bc(xIKjBi<s%uEqOzLya(l|MBW?`SK?UBvv_w+1}FYH;&zI>zX
+zf*GwrjIwPD4!>ewF>8Kpa^!jK5`lt)3p4M1-gf=d=l?(b+432}=2RFpig)LKm45N+
+zQt0gCrPHs2O5|@M|HE^6-NK#jH!Hk&JM&q=!dpi>t_dyPof&d!(I%sIF0D7xpLsS{
+zOX={>*-?1?se<}{vquMy`x)(@l9;9<D`?%wcqHEO%u)T&AFu3fkEs8D7x(X<^#68u
+zzd4E=yXHTx|95Wjht}T=9{l}9Uqiz`%!-aX`8w_^*SbBwf<gjX-YD&w(HbPCRk=b$
+zLBlzq^GM^h>SzU#(|aEOujH)%_%r{*)qGo<1o42L6sunG{_VWq!*y5gTX)~_`kyy}
+z8Y}Yj1v?l7IBs1m+sZ0furFp(P}ikbO6yiz801B82CO~UD;>^c!s9Gg{l+l)*yas$
+z9{!lgns%(+k>$XH+YaZK#;p7Ba{oW8^4dqmHE*N&=U>hWEi0Y5zW!}?&EM?!$LIe4
+zh`v*ET6fRq^tx%{_kT3;?p|ryBDz9ESux<8qh+_AtG#k#0Ly-vx64asi?S3SX}mVe
+z<;>&n_y32*eYqB&UZ`sA;QoH1hgyM6|Aub=C~v-Nv(?_;y&n#0?Pui6hLjs_kaXPe
+z+s!>V&aOK-a>=8%P=-rZv;J;B)1`kt#pukrb5h3h6gVm$os3+!|5egP?dBXIU2dD{
+z`}cph{`1QHU(@<OpTBSWYh1Kbr~ae;zd8H=oLOG^Haq?_sK8ve``xaN9k=7Q9BrTd
+zcICB;uNvaJjyPDdKb6@vrI*ENCqvyrErCBCGFSGUZs1~x{kZehjYQBmMB(rC|E|vq
+zi~q$08tLgv4Smj1HRI^|yGuit&3!lV2REqr3q8E>RjosBc;M`qz%X08jVomucO}1&
+zF<bIluGeiD^ZY-jlqM_7O+KtAVam9=cMZdqEnALUx-=;;c~<l}sTmFX+TSdBy<wL2
+zr|kW|Ip6&{@?0bQkE~cP<NTjz(tjKh-*-U&&msK}@5=Yjc2T<ckRf!7(2FCtI9d$2
+zWItUG6IgU%k%z()<%<u**@F~bB+a}XSFWu7eA>^a_x~PosED27t~K}As<m~?vsUbW
+zH}S;k-rA{Mx7c3f**Swsix=naNY8s$7@8nFE3y6f(gi_FHtadDvD3oY^ZE{zgr};#
+zyJgPLv2@m(Zk*+#eRI!^nT~spC&}Ia`)~4|x7Y1X?d7-GwR-;EUAs=L|MzPBr=|L}
+zo&9xR7RS_l6bqj?B~)3!?G{JND=sI?`x~kzbjyAA7MP;I6UEI^D%Wh=o%-%a=k*O+
+zCOtHN|1Z9_&hh2~nMp50CeI6+z3k<##r*d?1O*=H3ot6&Q2CjEXY2IP#%W3mdW~)b
+zmInqiefi+(Ic4z$(Zf86IX8BAf4Z_V_*e)-lyilha3V{zxnie8{Ga3OKQ_kyto55`
+zTfaIe{?8-v%Acp>&)qG*f40~B-VSEwt&0kr)c5HLywVGobz99`S7>|0WBMx2Q%|?r
+zv}AP%?(!-sf8TUHYO$8x|BtcxX(=fk-|Jrlv;3WvzgT8NjL=G#-+L^VE>=4bDi-hk
+ztXlocu9u~=g~dUwfr~72zuhhpU2s>jQ!h>9Ik(JRbIxr|U7qTvn3%&E{N`9B&Re)O
+z=i{E{vg)JBH4k6kf7pKS@4|f^2DN`a9<RLnI_~)VKPTsZcon|C>U(albpN&^8JlzY
+z|9bE|d3JI2as^}VqgP+-j6D??CCvE#=gI3u6;(a;zvtUso8Nix6zgf#sdBfb)UQ$f
+zH+OPlwZE3wn_Q2~EXChzt+`fZ)yH4ex*EQ<=I=DS8M1RUg2bl25lY;7=IHOq&jbxl
+zpOIrw<7&9#!F7<~rtA5q^Y?w$$p80r_pdG&J$?Pp%J!d>|Gd5bFZch=MMpGz;+m|g
+zlwX~?zDTc<vqxr4m;qOrFUt$3&f9Uno$UU{-#^T~e)k&wx7*muM3|P8F6LjG$#y;Y
+z^VzdM<1@|FK?Cy3SXQXNkoBz6ofv*Qamlt!53j(ONR?-r^NMd8u&|{vWb<yzj^PXl
+zW<7A`#)L}W7e1z~eP@Hy#VRh#mK$#0ajX3J_FcP9Mc?}*w(sxT{O|9lzc`ZcNaIze
+z`Qmxsyd-R6-o|dQHj5DViYdRz`sZu={j+oJKRf&Me-B)-<Ws;lXQiomueHtn@9ZvR
+z%B$P!q5>K<Gg~Ui#{2XttI)ioQ#wT(?z9v#Ib@$*8NB?=u6&)N2Wy4XI0KpmHIAPD
+zcWwTM6O;c&ca@cuO}m}9yZ7hMpa1?lwev5~t9IR@Bp}~+sI~0yv?<z4Y}&v7S$+L;
+zzx?m-dtM)pJ9;ETKEyZJFz34JM6a!Lg>UThG@khp)ExbC<c&F3#<q9Ac8iH^2}{{r
+z8GV{NAp10%@B6#IHcx$(^C4t$>YB<8Pw%v`9cp-UNr+u7$%jWWjL{>UwZZ7M*tw@g
+zb1aLGtuQ>AEEjxObMveVGqboJ%azwZ^R8KTYw7m+9}h6|7aW%@=Q%gsx=!%br|`p9
+zQm;-}Fn7Ovi9{<)?3VmV{QoZH);vCMcVMpl_q2JnPXlG1+kExkn6zV^x6RBICokms
+zUzvKTw0B;pc2oRgVe>s3^WGMhUaddT^<-YV3gi3I_T^C%-iXEQ&Q!lTcg_6wED53^
+z8hYmoZ$`-Ir!8h)ysM#cy4kxbla1^LZoCi>KAicI>CXFY7q(ecrcJE>K5@UqjO2a4
+z-|gP{^;&f0-`DZ>66|l(0^H*{It{-}{?7PtolnvWg$Abs7hf9Q`+P0>=TZ4O%llPd
+zH23{D&;POi{~z0ZpMPkkJ)a(VR;=uyQ}@H8F?%BRoIL-kPj2lt!5Qx~Id|;jnxOI@
+z6wSLnKVRpvf2~Kx_qg4f0wOF+nQl%M)!V7W+ShbogB*k5XCd$O^z_KsSko+@WM$1u
+zoijKZ>e`<dU01h1zH;Z&M$0D#JeBu<-#dOf?we6t8`}!a2me+FY!vymv3k*j1+h^l
+zuQ+nF3a!ii_(ogr(aq~IO!j5mGiy43E)Dh5S!Yz9HnBZje1@&<`S1Sv2K8l~lRuwM
+z2`f(dbTn6xVPl2N`R=R!hpzvKx|^(QaMelXf~yDzsFK<H>Fc@v@7a<8sSCX&wOVD|
+z)71=&o}M&b&;8-$<>j2b%BR?u9q-)9w<|>K@ul@<=eJdSIwJY+!{vCH9m)USmG3_-
+z|L>vvr*-9fvp4Y7{85_nbdmhe-?5^Mf(Ne!d|b>cQ6$^;&9~rUqvnoh5;ww3eb}0U
+zW-d+Ye7cm!UoUlr?dAi@prL%z<BOMzTU3`#yv)5i#mKU#HHcq)w!4zx@vnQf?b-8p
+zm4ms``rShHn#@`Pj0!8%UwGxZyfi=Zba9mQvTN^`M%6cE&3LrJ?#3M*pIq<AfTbc&
+z-*6@FJTmd+j!I*NQ%y6zFi5bxnJ?AN(Yl~s@biz$=j)qyE<NKQ_b;~m?$O)#zHK`g
+z#mXRI+hX<0>5FoFl5#}q_k~;g!aAZ=Ufn*BVsq@tL6+$<^BQ04v7V0VU#u^FdX0#e
+zj$XRO&KVD{%w(0b-h5!P`g04r-3Q*>R812Pk39QCL*(>=7`0>Vg);2+S6)A~DJ|Kn
+zR_1=yj49Z3^WR<bUYLJpyI{+~0-kWN4rzI1H+$o37RxjGP7fw`S-0J^<(<a8u9E4&
+zN%i?Ac|PKAq{XE#o`2@;xHIC}dHeGF2l^gfbeDg+dH!FW?RU#=Kal<N!*zwS<(H53
+zJ-;}=%-`C3qE5iUA=uc{|6qvGxe%+9sp4;#UvFCFz;LJ`Y2~4;eJB1DwN3u4{pU%2
+z<(vww-c6zH8xFiP{(1Z9Hr8r!BVE-OS)A86Ym)05&Sp2pn%-VIwNmDG()}6f(-<x^
+zJZ=;=e-~s^_h(08vel0IAg#PF#xm{swm&TH*S+X$lshK>|D(LS@y+Ir+VDe1F2-sL
+z?ppgSB3ya`E90&=i@Q@x_I2oqTwKak$a?uDOL)wN{@Lqx_EhNjRaLA=Jre9c^+U#G
+zi=4kZe}%S|{RWMow)`>wyLQD&zAF)`9#^9mOsj3WJ}*1*Y?-e_hHqizypTiBF1Xy;
+zz>*+4vHrH{yCRdd><kAMb_#kjyi4C<7XRy+bI6~B1??ZduCJf#E?--cAUko_gPj82
+z@1r(vh!y2X6p1t09h8u_^~{BUqQmF6eVqJNWq&LG3eMkwrTy2t8^8VT1hr^xeEzdP
+zRQSQxJcd=KNAK_BZ_DlcnP2sJfm2;&<H^MSiBocKa5b>$XU6b1I4wNz^78UtsmX6|
+zobl=R6y8whrV1Jnll+mGvN>|!kE8m0?-=f=yn0}KHdZ%yf;P*OF2;>t3fMQT-+uP&
+zHeo&{&=9`u!u&a3*ZZ=Ct?dzwJ>9x0Z~jd$!GO;@edphB?ss9mr9UY)F6n>8oRCA3
+zcb0xEbGvguj^Xs_(>i*3Ql`sFjLv-t2y$xpb@h{`tKQ`2jqYbo*#0~fzR&0e^Nc+b
+zZQmOCc=p^-i02CMGPE+gbxphMQ_tHPecnWS>6HE3&x6LqILuNNuB6@DaP;^4DT0?Y
+zN|rh(&VKshUlu>Z<#T~&Y#0l^y@?D93+s`(eB*||;!CVM`fV2^8BUhJ@yfn;$Nzu7
+zHK()hxU*(c!0+{D-=eIy1}qYC(2{h|p0)bHRm)?)ZvMI@+H~&U=BqmU-Ci4<3cZlM
+z|MaRQ91M*M-0Rj<o%ry!T_s_u&Z(QCT05D<&#4?RD%f|}fwAD%m&}^`=2<?Im7SN^
+zgoiQwy2c!JMt9wWlcK#6=T1&mkBo?rc;nb3*K}n{;Z6pPqe<JGI(lWj%X*Hytevzb
+zRH&fVW8$O<@}TfFcfLI1PxSZl<=3x&;|_S9bY|Q63v53{b!z67|6EbIdHpH2>wEML
+zs7+(A-BHhUyYvX_cSFtS6HhpKJTJvXMm{_<)0nx=Pv^=L!_O=X6Li^*2pa|+epx#E
+z!tDAS+1>YbId@$C?IAG%G*otQPKgok*35%zFSSRDYrXz4kJtD3w!<2lOEq-P3Kl<n
+z^q2Fq7Q;=x9h`y;%ng4hD_c)|s&~VTe}zSD*~u9XL$pMVKV=;23(1`mdFkgz<I1FY
+z&DXE6?x-zVw`%2z?UwSIm-#^RYH^nJv-u8e^*pe4^Tepr?b|-~u3D{Qkv=IV((-i0
+ztyHDAQa6|t`0~!|@V<CNjzL^zj+pf2>)-qfvktD=GdXCb$&cm_K@;W~t*%*jO~yX@
+zNbk;wzT1`$w`c3*E>6gp$`bS2toOXPsX`+M!^irZTE6(Nzn1OYlV&aW>xtO&88Y7_
+z{BE@!jSsJ8h<Nsu!J_ihlEP#w15I0oUw_N2jQ8s>Es(Fh{DE<^N7jm&@w&!FHZ8A@
+zE;?0`mE5%U-t||@>=@?O6jv8s&=G0*0qQPq^LH#s__kZ_&jJyaRIQt$G1rf6o7!m0
+z5Ol0{>Xg%|pJz2_9(_2I^Cjbj>q~T=Jc-=wb^cgV+Zw)Q%NN(EJKtIIO_|ZaWXh4U
+zZC2}w)jtHWg(xsNT$r_Vd&lFIvD4Og|7x8U`s+OR$Mup95vPJrtZ@@<kU72KXWuFY
+z1D?~TPdCT!UBWo;xq+#fimJo!n{QYdi%&;3n=DT%DY-I1T7$Q*UC`KqtLy26scZag
+zW;#Tg&7D+r+xFTXt@|>!Hb0!49nP2XEM9@hA>kKK<0cO8NUxtZ?#qM{q;D`Q*rnW=
+zAtojk5oe|?l3b#3^h&^~6Ip6)8&bPkg*LN2WjK;#xNO<7GZH=0{VolhigUasYO|$q
+z*(onR95K!6d|enzBZJIOu5Y{e@0|D&`ug(kt5){eb1Sl?S+DD`u8?}X?W42l8m1Mq
+zM44UxMqk;N_qcP{3$dlMzUN!?-ST&ieDR0NaVe-#&UVX!HSW@m*B`E|3~s)AV8v7h
+z318zWekZsb<R@?P*?7ilTf&(MZSC!nl9Gl`{zL?BY+lwE*_^qpcxgk<#q<n|-c_AG
+zYhx4R>wUuiE?Rfr|N4)lrK{^-cU;ik`Yj^&v%%hfUsp=K;um655nxo1D0mTdILx$U
+z=~Y&a8oe2Pv#&Rt+_X5-@NhyB(}#VXfkNw;pLX3@QLDue7FN9G$r(WgWo6|hm)UNz
+z-<~6|VCfqFl|n-POD|^S^2Mz`fAqCg)xDSBf9=1%>-V~!4za3#FK+wzdsct|$F-L&
+zHLOiy+g9yVj5wU*x_kfchYwD#_C8{3eTtET_YLENBfYzy`RFiKCET|-wejfFZ)?8?
+zpV3X%6geANIcvrYg^30$+&dIK4`>`sTIM8h=)(zv7w<m)TPv3xzS4i|XYtbgkks#}
+zeaxR<XJ7l@bLB!CF3r00DDu&~vlX{kCm&j0x|L-`_B;lQ!bdHI$yO$&T?_WJ9{A&x
+zR{QM=i;u5wZcFK`2eW)m&fl1z8P3SN@=IA;!M0cI7j_x6J6z!4WE6UL|I_!f&AhgT
+z|JtrH@7jC3Oo>M$ZJMQlU~<t7(=F@`mD}G2``f18nZYMN$4sB)tj6Q?k5|@2syd{n
+zrS(Yl^D!se<ZhH{N`0&nB%QXftTlG~3GRlh2?4qf@2_!Ku+%}|w8{ig21nz}aNS*k
+ztIj=IsJ-)kuipVL!D*k@oY5~xv1*jw%=`GiRMNAf|9|hxkK<=}@ZiS=6^8FS&sy)E
+zVVLFd``cUNGZs?}Qu(aIc?xW&hgjV;W65}Y>xwVmrefs{w~7`B-BSkjta(1ZZ`^&k
+zStH|4YWZ=YsSInM7~LtkyJV)S1MeHg4VyL{`txT`<nxo8EH>mPvF~Ci&)BScW6J`w
+zwVX2onH<<3i1%bxRiv$Kd2Sgiz4fcvt$QB-+Vu0@h${$qa7<VrTbh6JQFgX?{-6DU
+zUR$<G244|l&;2`5_kPl5_w^!mWfM1qJXtieW#&V1!_QR=I(mAWwrokcGGkI<|H_3=
+zc5*VLuDu@}^}0i#m2uXFsDEAyr?5^7zN;T~<9ha0yDeu}%3K7BZY_{wIL6sv&~U)q
+z`GuCn&VVBylWxT6>@t1*sGx*>f0*ub&#g8ZXBRrHb*}ni#=#3}#oe5;zp>?VLQEEK
+zp!w;-IN|;&t@C3Kg)u&MUboPe;Y>86MeQ$>R;Pn2410Td4ech~tKkTk`sMWnb)9tr
+zBH<j~t6QGR+|mzCUUZ$MLG<nWiU>cRr)nGLRD50DUi3)gbfy4DsNu%rtW8XZy3XI3
+z6shQN%!HAd<CH+ynS@mf)uK5hq`V#-eN_5AcDK~uRq9grtvF}&zGUe94(bEu1c|(P
+zApLHM2Zzz;md1s1!*h>&FeW7NH+-BZ@^T0J-ni~lY$l0?Gf%zBY`P<psM^oBSn@&?
+zQ+)a3j0;m`4q7dYkDj>sKv}>k$DM^bx1B3jN-Y#{zF9aWxA|$9^gC0ImRa9T_@*gM
+z*EZU|CF{%toAb#<MVICjKbgKrltI|3f$8kcr$)}sk1hI|?{_^gzjNK%`?jkPXxO}J
+z!J}1|AIIL<^Xg~p?9&{YSM^F(oZbCu!lhG8ojcBgCMawfbgrL}V*pje7RHUwtzInf
+z?yVGEn#g)H@|1VKu!z{jM2XgK8lq<(l<&0+{kwNZ+XeS*`M2V)Sedkb#hiA$$#<$V
+z@#aK>fIOMgzKh<x;&KXgNr=4azmn51N<Z4D;rq;>ly23qV%Ow#J4>w2-ncQtk!gWX
+z$nnYz)r=YnUraZ9yG~-i6tOLKuEYi1?^k8-rLR@G5Vd~Zvw%f@-;>W~OJ{L|)@Hdd
+zZ_!h@6VU09>*@A}$!Y$fQ%vp4CcTmGo~g>Ph0UDN&xhpzL&E(h8aKk8OP|}s@wt17
+z*gpRWv%BSj#ZGP7{(jjz6@ik5bw6HsHEw9Tv3|YT8cr5#xlR`I$nV9vM?7xwU6`=`
+z!h0r1O|fZ4YrMoC{Bu>^fAL=Jf!geqLX-4aefoRdx@-5{J9GNFW!>_M|IePcJmPj?
+z;IR6A@ES|p%3mz^cg+onHEGKFJa1L-%YduDB+g|j)O8+u#l;@1*Eu6MgP-B{j_eQ6
+z-iFMKHwIJF9bW`n{kGNe_IEkC_xb9_nZ6l;mupuX)_A`lh^1ue<`<x#REY2k<vFrp
+z&Q{SD7Ztua5~qq5hw@xaXF9lPM*P{pbw7^96hD6acu5djD@RyY+KqyxC&ZY;KG`KN
+ze);S7nw9(w>&mC)zUPm9UVnS7j0qPzq~5%cdo0no|NGg%->h9Xb*9J7VhUe)x@|3k
+z#0_Qz9%toh2ALUh`Mz;Fvo}mxTJfx|=}*#BncIJB<5%)ADQYbIo5ys}`R2t_jZfV?
+zPnBwOTz#JqtFWe3`)$gkO+j-^*DzhUaz$iXYCvlK{Rtm*SZD4zpLOqe_t9BuXKx99
+zzc;BNn!EY!ZGX_B0CS1@?H2#q{$6=@Ka2hN0uC-ouAMUM>TU-o$uTrHT)i54Zk}!S
+zogIAsy=JNm+Nae{=m%MRJ)g1vhV8!kfS%)OtcR+CHmAC4vt<8dyLy%Rw5LnwsXV5q
+zN6eb$el=739^JM4+^o>5vZ|_EYi6&QW30>=;kZpgAj^Z7zdYtjK&*>n@>GSpi{u+t
+zMao`~{U!{`FW>WjRzKEpS$@1qP~fdsN8aqpaIXCm9K*F@N)Jw0Xv@&nD}CwGrAdXh
+z3^~Wss<O7MV{h1$^XH6C>*f1R7v6u4{C`)7qsm!fN?6vU?#2JuPJP>ul=<d}Mp>4W
+zwO!MuoDzvV?wOX^0jvrQe}8|MHkErjoo6Sjh<D`tfWs#|tacS;&!{_nvu^42o7Ew|
+z<I7JnzW5n^x9+|+sFtr$-uf+gt0z;~T#=Sl`2yQMmY8>5{IUGjr6v7AVo#r1t}#gX
+zze8NK-{94shzF{@yWgCH4FDg0sdD+{6E~q<sgIwFuYO`5vHp+p3mt)y2(=UX51u~@
+z;O<X4>R!;!|A0sKK#}m(c^uJ8oDxq=PCxUC$;Q|?`P$Nl)6YaOZg}wHCQ~9qUNFam
+zcM)IPk7>ue42zj}&GW#8b(bcDFbZ`r2$Xy|z1K&0h21PqjWv2g-I1V)$~7z+2{Ugp
+zKe)0o`0A2?Vgoa)BPR;9q8J0j5-q(yUfCa#{;%~<ewfUPSLI@2;TmGoHi*d`mbGoN
+zE>k@9Q7Le1B#UD4=`>SD<1AJMo<%AN%DWh}|DErYnf7{u$MWr^g}b7KHaJ{xoz2zq
+zBERX$>UU@Mds?sf=9ayiZDEN+-aC=W%5sl05AOnvN@}Y*u(MoFc3u)=zU$E8hD$H=
+z-4pek{+<75wml&1O7udL|F)lw@9)}QwJS<;b$RxpDT{(uNla(S3E^{)aEWc;<qSC~
+zQj=8JA7XSfjv+++u$h>x)zP=xtNpfrJi2Qas3*<R+qV3bgmTilsL5ZlwqMxF7W=h&
+z?cSoZ6V^s<t_r@QSMRV=u9|1dt6+wfx|xSgF&Qs5bPMXM^gS>~;>J9V2F3&b{t8FL
+zU9nlc=Lbh!o#ToB+itC1;W%sE6U}+Q)Vr4N3)NkE>v8!Sg=me98?yXf%zSL&<Kr`<
+zxUYGu-T}29*W$F5E@z52#;(7Yd~HJA)qh3nZ!h1PpZDSEmgpnXQxZV6Xkv@Q^v@z;
+z({_Fdkcv5NBfR{~oZW_-xIY}>(CA*U!Kd;ir}L`6Umn{gHf~zE#>VsCk?Wk^Gw)4W
+zJvGTRTp>9?cteO*>NJKA-hn6XG-xxhK4_m4r7_X(c;VxZW`B0`8eW%L>%8S!?lwQp
+zkGuXJj+z~*;S9>@q28{){SL^cX=J5;%)I<3+r5}|ifcg3(x5Y&>uu6fI4|5v@eE$D
+z)oc^{fr-wS7cAWK;ctdm@P@-y2NZSI235R@J9H@Nds^kRqjxT8&8#^&<NbjhdIua?
+zm9;EGv~N7~W^{h3GVisUrGKo<qF12`S8VQE9a;YOwTg^~0+T~U{p-}DUkl_zh2LGy
+zvD)VIF0{G8;&|YSLtMLpo~`1(l(w#*tu8jwQ+UGZr!(fxHGLN%J4dGZjZR(JxfAEk
+z{>?m*vn5`w{?qKMY}vB=%9ln&oE4NRvG48co2ANdYUkUxzYF9h>a(tSRx5Op<y6_O
+z9|?Qoj@NJgx7)bnuo|eNU-Il(?Dy9@J8$&G9qlSg6BK3X;jd)V%UzY><}=%L_MR<U
+zjy!s_C~>)0Va9!yhlhlZ3CuY7^PMh-mWcmfW5>d!wH6bWTBJq@Z&<lfQ|9=B0OS1`
+zZ2nsp$uSh4R&_hpRv5#+^vg80b0NGF-~YLFPNm*AqeB2>@3#Gsb(=5VSbbf~;p}CZ
+z+j;_8GhH7Uc6)zQS1>rUVdW}@6(YS-*WSF*nb{M$R3h21zq4i0q}lA=XI}plV7vt?
+zYIREjvT_rrJo?fU>3g8(HPf5v2C5!Q-?UHpJK^EOkoRf}kA<7LJzXW|@o$zufbO03
+zpn3ESm!lHD_j$KZ2@@-j)n3JrqU2;BC1%dS&CTuBn#j=8%V(UG`a%1dz>I^&A!do1
+z&Y9nKuYJtD_1T#{k=hKP2JmZ{X`7GTv8$6Xz1y|C&Fo?J_SHGdTmFJd=UY-zq48;J
+z6wUT;3yIW!XqTJ*KiWU<%Mz=Q+_PJj#jvm@dgN7h9u6*C=5F(OR)eF6Ur>ZumdDSU
+zdpj<hn9WgHX&jXBxaPL$>1CU$x=x*%eD){9!e>t+H@{Q8%+m1fbQ(tn>r$_fqv;hn
+zTdWqZkN$mlnH@uk`n#;=2kr}9ze=0hyYhgXQMEBr+HJ*gzXN+)et-F(6(RZuwici)
+z+9HBAu{9}e=E{i@>(V8&?u%FzN9mobQ%_nf_i;nRv|az7|L+SFd;0Uea9G!CHeW^-
+z#$xTX)_IcKnI4FrjbIGu%29O4mXPym?7I_uc~02zjb+`>*Vk6AKj+^9S~d1Srq#(_
+z#x+7~!s(QqZwk0%P6zzUcP!f{C7s>z(a^xH?te%3YL%bc<4=S~oD7bu5ZS7BV#=Zb
+z4aw`Q6=`Y5<{WHsG`)Y4fi>aa<j<;3@=2Xfw*9<a?8zhs_SdpcU4BoUURpiA|4Z}g
+zvtYBjcx}g9e_q|PSi0h2km~fOi)Jp_nRwmH)skVR@iCsvl$0YoE|(NsIXvl=eeIIj
+zxmv5$IZy5U`lBmn;~B4ObJP;1r5ajVW=>%E(3`=u?b+(E&vvJZJ^FdvFRqkL`x|<D
+zt?SqM>sEhR>s+Uz7y&9K&S{Iz-9Bwk?dH&ivNu0OpI%j65watt{?eHr|Dz`F`>?|>
+zSyEp9_-C8N=gu!Yx#P^<uab<H9VP33x@_S}(3}>wX^q4cR*RWFv#zpQXt;)+=gF+u
+zF=g$8O1+gKOeM8@>$he)?b{jgk2ikLM=9N%;N2d+#^2<=-S+*oe_4W-c6!Iof{*`N
+zZZaL%l<>2~@Z<q@J{g1V9SrTqFSj&WT>Cfc$%Yjv=N2><U16<I_1+j_mR584@L?W)
+z{@KNc{uGt69^kR5Th{P;r^P!z-?EZ<52w$p1C4}*EA9QadHK?YvfU*d*E2I`WgV_u
+zbUuGw%LPuwqf0Gw+zqFd@y@>zaPiHJo9#UkXK&n)5RWNnG)z~Y+EMti(eRIgK=q~c
+zZNA~3Sbn;0$ayyX%&JQ%G2#yv^cc3qWQTng4O*#^r*khUV(<AQtEHyje6#Ge_Wu)a
+z_JM}R)E95sxYA1K{@eKUsTW?ozb3y%is#lc0k$7AD<92szH@`iVQcxC=6V1339e??
+zmRtPy>viekEWY=%AAESi;iz$L`~Qj=%O+VePkXd7a`P^Ke?PxjqF&+W8a4kqnyh(N
+z>((ZGBuQ>p>!%!*555Z>O_y#kf395G?h6{ueWAcr=8<Z0HZJFHt!RkXlj+kfY^EmI
+zyiKZOEMu+X{CmY-(r}je-WRUN=FEJ(erL<Wg(2SR`WENQdpB`(X)j<tr#Cy4>B<?s
+z18F}3-?q<*(Gcvf);RrY&xW|~E%$DedClw)5MWe@Z%jBYa-{D&W5={_pKpfFD?DkC
+zcj=}y?+hJwvH1<H?(B6M`V|McdlU`U@A&7H^Yp~u`}4UN-ij}n@*LzN2I){Hkp)2p
+zpqAlEnN71+PmuFUj4U&LX?NU?feEzs>f6MxzIm&zx}DEtd0z2GY}bs1bM!aV+icsu
+zY3`I(yMO%wF|scbef<4DcZKgs`rvuv2#0xWz39{nlSCWpTqPECOQwmRjbgm9zkYw@
+z^ObXqkL{dR>$_3N$j+=Mb#-w;$6DtKt2VxkC%NiD)6Wn8Hzzqv31az~ddO?$Y5wKk
+zueo#v1!yjk-><GU)BM1Wzu#`N@6)`IowuiNCUbC0Sxk@DeW&14I!4=7VjF({()pR{
+zlgYGg&gaN8Q#@6KZKvL`EC0XRd?%>;#KNo<|K|=DpJKaO^0Ds>8T+bpBP>Nb8yNHK
+zN+0){fBN&>zCNM<{%4tc|JtTEyieZAxl{Ldn6b9eO`hVmrwlVhnU);Xml9^0qWNQr
+zmg38WTYPqcx<4$pGZVN^bMNSTbRnhYJtqUh?be^iFZ9=^Cb%}d-nHlV-S=`gf<MfX
+zUjO*lYJJD)rz18hPEoC7sD1fniqh<}o3a9g4VH=o2M0f!v&3M98sqGXtUDq&9W~vK
+zw@p0Z0LnY@j`JV0J<m4`T(~l2nuM=)&r;cMYg)I;&Zw67`(iq~naqpO^;M$V?^V4%
+zAX}~__;~O3{cNIb3rwfYKJ+Pwd9PCPn$4Sao=p#nJo~IyGT27WeD%z@7qc(3oM}@}
+z<8Be{mG)myYT|x1^YZRJ;9z>LqOi@|C&$bxklk+PQPyw0M^~#leE&4}&4ELUU$p;Y
+z<7y6ndSqK}-DC5*=7|$0Hd?(a|M%jo&F7cLFHG&&qH+76pPz?PK|B}3(Mwr<UPtHX
+zZ9aVXFmw6&l9u=`sYXdbrX@d4l~2E@A+)k2-!50&YyuBxOU%JE-9YVY`%kxT*r(b0
+z&08c~Y)3^s*V8DY#fg>^Y`g0|tWSLRu+jRD_WC`Otl#e`PU!poa=P5Z>GwZnY2>Zh
+zm9e%kC|E<4aer-jwZ_qvt)YuooIi1*qcXO^+1V;HTVtAY&Ur=CDa&?w?5N)S`|XVV
+zpo;o}@Xh?K^0t1OZ<cHf>{_tF%WiUFnhx7GfpstXwjI=8B)^;e?}z6K+YJKR|M!*e
+zX}+Ded+q!F;vAK;^8bEsH@2GMaJ@|Ts$yA^jJBOpqC>3)gP;Dh9;wSmj<9sLICeg-
+zySd`V6fc2C6?%Q*-A*+(_Rg~LeZT+P&#3kJpyBkrXa0UQ(@}pV^?0c@M{98>^QE)X
+z*PYW}?9JLXc~VKFe%~4o4jox{`ycx+^w*arv^1nf-YLBvd#B=YZ*6r?U+%~M`@WaW
+zD?F?EqNuw-==L#LOBKFt{D$*aN|?$$-o-Gzn2j^tS0L-rM~OI_)_bqG4or(le_g-k
+zzdopGWD+WR?~c!}vZo9sbB|^GU|1^h@0HCDyKouL_h-2rV&CVnmoTKuyV(EOzgV=f
+z)qUZm`<@e&m6dD$JeGeRdA=&_zU=JW$eIu0`Hy|g?>C$ikA5%GX5q}fVegidTVDm8
+zL{6*TUSTMCo%M#kWXZwIX`4hZy|mcqlCRC6`~3W^uI5)db)}a}qrXp3F!Tk5h22c;
+zn}3QjR5vqZq`BG7y!1llgAV%^esA>){WY9_=k9m1|6}=O<?qC&DOY@N=zpE+Zc*|=
+zVE*4X>AzRmH@vp^b5H-j#rr*P(=?`9$DN(__MxwgtG7hJ{RoNF-A95ByY-&hqLvWC
+z<)*@*&FX0R<hS}~mC2q{-d^*6UjDIp!_K3HcR$A}<Q`y=o^XRx@!r>z!oSP2K3060
+zomZ7&-naJS$qAoc+009SdsZzWT8Qae+vHd)!B!4UZ6OXnnK=>_Ctpo-tJM4u^g!)E
+zZ}VH%hpxL@nA!P0gx7x!|MSKFzsdYxSC*f9z1`ey&Lidbzd7q(OndIQ@XFQ7EZGM<
+z@<$?VJtxH9x%%Gs!l#ymqnCCRZkF0Asm^ff*^~@kCyu5G3oj<-96!o$^6=Qx9j(6C
+z&pdnmOF;2%-PQ&%@XRI4UcuvRLF)o?TMi$~pX=K6>g8rDx!@O*qoW=iaG7(sdMoFR
+zY5psjQm=Pvp0d<PS2W+Rx7Q@(Gv}O+Kh_&Pcq%kImabw_j1}eRT%mc>%>1B~y!><j
+z|6lxfe!G>u^Yc0DlTXX+J3sHd9&@Pu{%5gyg--)Z5``7HPAQqyvbG9;U$nJ<3zO~q
+zKlUz5)n-b_3o~9g|6Ef;x_Caz!ev4&J$-zMHwAv}Dy`X{7bo*#o6^14s~loK&YxxP
+z!U1Y-ZM)xaJ)rV#>$BHuXH~Iktq3@?rr_;Dlb2hXza5=3ce94WRy#$jo-kgm$`kr#
+z94xG-I%iF^{Ft#cA@}J4@5M=5nGSZl98ycXZT7zQeRbtY@3=#<<#!I+e!sI>JKobu
+z@_Fp`yN6`+D@|X9$i(X8e@f%n_(-{8^7Notf6pD`>Ph&npMSdTi3<C2_g<;#fw2u+
+z&D2;pmPVZYt&^%1Gt=+d&qEW$rdF=#y_~<7<$|GS#C75SW&0wX8d#JVSnhi6$rF56
+zeD2KN@`(<|`vY2*+U%Svs<)?%C5QWugWsK>LL4tv)NPM%I%M=Z*vD((b*Fxv<-3{$
+z*v)V12<%A-RjA12Jiu#y=fHEj@0ND|KK6gM-v8O!=EDJIYojYOo_}K2uT?Amb7ZZ}
+z->&WjA&%3xN7$<I6dc!6&`DpZW2>n2V2{KW0d-T(dj{ff&6j8A>4<>_L>GJ(aR@ln
+zA<DolW+WQ+$xivPux<FaO!q6*=U88eFfEa8X>(v{s9|;bCf(b(>fdr{&noU`>loIW
+zu{h6tdrxiQ1r?4dPSZcLELA$r_h$O!8}eKWcS&97;|O1L<mRPUZQ`rqk|WBtbUmoJ
+zsMRz*Cf>D!#i_`aUs0_4<F)Pkrpi}cp8fMo`oBr`zZTm+S{?tF>*$}I?QF7h<eqQU
+zuVl-wz1wT^x~p61c;t<?RVq=!v-dH{PFcBTo=ap>S^3ptnZ3qE98707HV60csYagT
+zsax~&$B!M6+6;~IxotNN2dTPfN=VA)#ZKNY9C+X7u>LGp){?Btn*&8ab8j22iyp9?
+zRI)Ui#rbT|l2yU{tKxjGtZJQhn&&KA>EETN7EOv((V4pVNBzolGYh7LcQvosP5G-K
+zzA#s=X}4V3ls^8?$>#B=`}aQj{^Q$sxySkYzJ%_pIDftJ!EXMdUuSd@FVwnfNPge(
+z;DE^W_*%pDRsXi`c_BI7(AbvG@xrcs|99R|^%A^a&KuSKW9DTgrn0m9T5o(zoO8v5
+z#qPJ7yJguyyLZ3OB{SP^>DJ#jW20enk<_0clfVUMA{Z@p$0+icY@8uJl_7UCQ^5b(
+z_flr`z0=Tnb*e5*w2f_v*-QtPh6ML7N2HG5-YLTX8u2f6(wpPy!L-4UY2mkY<B5xd
+zdXic`OYJQZI+rmewb1v}<5}i0r}g*#i+Uy&R`KPE&T;=ak0u&(>zvUK)(Pb}ByfJC
+zr<$<L45_Ct4r=zv&U<)bU*V*eAtk2MYD)^+Uros7o#y)Jz-7&IRUy;-7wB+%^4zPe
+zn0)*|*~P?$**%{pJ&(z4VW_yad0uO(WJs)*hO@+sKtpd$KV7klw+?x$a60c2`s#cB
+z&-RYr?{E1xtlB+A1vKt*Fs--2O8imW=AeMt$qlz6EMK_lYAo1c;(ccGO>;F{hHrgt
+z8RwiY2t2J%G1f@XdTUVnQ*d7O)z*Z_uh~zw8h0;jQ)p1QV|nSm7fXWR{c_W?oEew?
+zI6o7ZSGOfMvBBD;dGbB++Vc$i&g-7vIqCkd{Cd+5b7#f>x-@-O>7hT5sxlUEYD{sS
+zv%|Y8V?`zF0%y?$aoaa!9eXvYA=|6Xtj;5M$NDAUJ;mEjJ&Zp0Wp#1Q{jxjzTho{C
+z*mR)rqr~LH^VTqMMDPo8o3_}6{QALnNh<%3(wZY2OE>ciJrNH$Wv2XPVgA0f-lxYt
+zF4J3IzelLxuc>(P*Num3em@juw%+si_xI0pp4%K>Qyg~EUAuP1M2-5Qg)NV7+*o&e
+zAA5wZV*cST)obrv)-$a5o8J6DfFtFVXUAnr?xrxd6{)h1boZ3MRdM^$;PhM7OZ&6R
+zW4^+0y~KkIpDtfG-q%0L=8w#y-|L(#4NG2hr{7bXxb)(Yv~|b&mabk><SU*rX(h|{
+zz0X*gZ4ZU-|8>>J-+y-Ltv{0juRjR>>}qrV=(i->aK@~iU#}?mgokf2*>XbphTeP~
+z0Y(Lbd$re&t8SYcX2E~FHK^q&)6zFuFI&1(wIBL4IfgPaR3wW}-1C9;$g+8DMZ$rW
+zM+^iEH#}W$s$y2jQ=Y*lyUl}5Km5nV=)8pcR}#LlY{;E`JAeP(J;LFqW^LwLwlIj(
+zbGdNEMvFw}Yq@uIYPu`_tv&PY`rdr;Yx>h%6_^|XTtn8|ZW3PA`F#HCGmfu=Qugli
+zH+@(A*Pq)f5;SBl>(#i1frD+{1~!e;s%DivPg>8b*L|32q1+ze$5Yb5*W7X9RX|ro
+zxwC}8>>Vumk1kz%B7ed0MC0Gddp@6CFL6TgUdd%&o9{c%o4&Wx&`Wk=YGC3pQ5Wx0
+z5h~O<p4)Zz`qq}YXQ#1Uz50AnIp@lJy=z`7S4?GB&%Go3CewqjVZnEXn!SPdHlM4w
+z@{M)H+BY}VqJPYhYSeU{5Pe90nuUqvbR{jO<UA)?HjSqbmVAHA_g4Ljcgs_q#KNfy
+zb~JtKZmDBrl9vrxbbU?xc8!qONn36;-;ejm`4qJ0r1$GXby15Vp2_A{Xx9JvfB*2|
+z{`qn<0(Y%DU48#|T+ZzcZAEpGU6RgP430ZxjCRMU8BTP#nHR#kqHj-r%R3V_j`oFW
+zG5oJHRX*)n7LrjaKTEhPQ&s8O_sMqP{=Qz-gE?CN-Yh8PE%JWwJEqV=mGc18=XZ9p
+zE=L1&#H|hcCeK;%>_7$w^OkQH>m+5TaB5d>iI4if@~@JWhWk&J!~kLOHLD)Q<c0(r
+zJ=5lPj6Cu^w$-{SQN-!$S5-yfWamH6=l>6k`@Z>qYJwKiUeIQ?W77F1?>Fh|xOpCE
+zYhh@O5^hseR(6iq<||RMZvTC=IqlyPZP(7KH~sZt8vm&``$5Is*%Ky3jmJ*SUaR&y
+zba7&!>3jF$_6N(3CD@km<Xz>A(9~FaCi!+jfs)=u0j9%88}cG@gEgKmOxk#&VfD$c
+zv(>f!iZ3{v(VE~Z&{D@3t0@%5HPPZjcWC1S=BnmDTCGVF!UPwE3R~NG<^1w`bLEHI
+z&hv3`u{y=Cx#yqT|7+p&kN;~weXgxHm9eXt5&!>dy!mIZcw5oA*1}RxG+p<JOwweL
+z@l;!M>H6&eHj$|IuWM#^Nfq5U>RFL?birB=Q0w|l=!&RScOQKWOLYjnZnR*nS9{rm
+zzjI#*M72)|n{Htu`}`Gmuz-iZ^TB%}Y+IXlzth_mGv#g5^e&Ft(lFCkEK*Jngxmfd
+z%W_ope=+^S)0!=-9*8ThadAqreeV#u)3=_3MV3wDwxU_3NdBLs4R?Ge{xAK(xc_T$
+z{<FsRzRz2K@4vsl?^fZD3+;ACCMvu0?3u$HQFUofodnmj@Y843PxDyPexd7IXv3~2
+z3|H1OTxnt5%EO<fE7mYA(MgE`)V6u<<r*bab=Otkz_lul6$T3XP0q6(mV4QvY<rfq
+zX&O`F+)w7!Ri}?_k}VLv(#p2>tUy>eyVL#<QI6IO)kNJpC-mJaITBU9g4S^xN4>tb
+zojK7hYH?}9rr0|Zohu%@Z+v|Cg~1!mH_Nw9;E?R9yz}?<`v=eF|MQirew7nH@8b8p
+z?`!wGD_w8=xhU3_cW31Wo|D-dMDN>&Drm6u^zfNaEX+{*v33>1)=#s2&zqVsWpB^-
+zS9Ah(BKEpJsIFUN_3`?RkgeiH_os;55eUChq&C^jbs<NyQR^A5=`pho73r3^iZnQE
+z5H;FcCTw=E+AA{Q_=dR^a~&?c-pIme^+CB%V9KHoO8cdfo`^5Luy}z;=tIuGU$3v+
+zHMLnTOmNll6{Q_PW??$5ljj|jwCWI*?_zP3nDaY4@S|l}ihTV?Yy0DC|39<;eC3T(
+z{M=RZf32MVsP=vJ{GHPu-E2R*Xo=UxDJvH^cc=>8&Hi&ajkV$1LdUl(j@$hXY&HI`
+z!~_ca*<w7i-?Hq9Rdfhsa+r4Lm67{0^@CxxcRq$HNPMu~n>%Bo(@nWk9~&0Vy3?3t
+z*U0z!vp`d?%F_)}X-obJW$eH8XH8?DhW4wTH&qdFT-J77b7hYA^)|e9N%Xnx@aMH#
+zwASY@-u)k5-metTulnBpD^2x*?E4CK`Ck{>&#eBnx$TY28k<bFH}%cu4{!Srbl6n1
+z!E7e;f@&T9sN()I5pE$S&~lrM+_kf6YJUH{mC9zm@12Y{hp8%~cDKU*E<I7pG6PjH
+z9|eo`Oo@-vFYk?-+#ayKE8wi=g@y5=oJ%vNF7SFWb<=^Oz&`O#p3^s1SnpvzvOmw|
+zsL}a-k2LB(PmF)0e(!($&sW>!?AG7^P<`*SoZW{;{u$o?wz}DW^%n@~5oTC$aI2)0
+zWZ$WpOKl5YS2e|jKW+bZwdz(YhiNEh)|#LD<)k#u1uOI(V9}NMl{TyHrCi<nZ~tb=
+zmAeV1iC>s%<m|~F$iU=i&)uSxdEIgA%$f0P&#w=h*8KF?>dn6=TfD5bcv*X6rRJL>
+z8q;QX962EM^7?M!SIfOq`($T5tgm|^UU{5<|DQciEd70b3%}njFMd9^e3th=MlreO
+zsgv0z)kmE9k#Kv*#vfJx_q~l_TrvOXb=`kkuSB190#5=hzgu$q+T&ebyJk-pzAp5~
+zs<VCTyF*!jZC|;zXMMD~x|4NRP{^ik4U@y1?mROb5?UNqsC|63;Mx1n<;AbN&Sxkc
+zbFX_^X7~5t{O6w*vzNc!oWJ*L*uFnc^*>MBzUSzh%kifc%-?f<#;*Up6%RUj@^tzp
+zOJw=~c{zo7LH4P#Yi9qm6ostHc=P54H-OJ@IGDE9;j~clRz-%pMpLWaMP2%J`R^H<
+zk2}sTWuGL_!70qaVx1s%SfDGl?!nUYPqhF4{rl&a_5BkMYad&GtGpgptt<ck$MK)1
+z_y6(M+yAF%^Zq**-0i=KYCJ!q`S<37<ywv>0<8R$W~%T+?>-dvZhfA7?BjTA6Q=Cv
+zZrSDh(sR~V_%VViQs$HImkJl?r#fuc<+R|@SgSLs=jIaOZ4riz4jVR?ZHP#-nff5S
+z?iKrwlh^l6=>PkE{YUlxzq3KDs^>X%G1s5AN#{Mt&99cuuQ)92u{5aqakXuo{u&$B
+zZQ0Kln9n9Hb5fE#Tr_8$@%O!FZj_%@e6du$VcmIQf$y3Ej0%41IJ<b61E;^g?JRj=
+zuC-aK=oHO$dPN0B2d{K!|2@OXbnx8mg$6B7oijTH>prgC{wcrihuXf64}|}mwf+8i
+zX};Zw?|t*rGEJ{vuJ-lwD|$LL{L`lCdwXW*@0*!!_jzW-wR@2r*ZuFYr^_2n`=iZT
+zXZhq}aOI@MlQnK<a$R=(zR%!ZS?Pkab#KGCvx>jn{#gqeZ=L6o>+^4?;qSg$hFxzi
+zpWXB-Xx^PuM(lmZHpX(l?UoegVA<^w*DTOv#CiOo>-h>P{i<)GEUiN7&%=NG`*^wL
+z{}-F|b9x&mXa-)<yX8H>i_h53^z1@q@uHI(y)DaLrpnBid8;};PGW)o9q!Hivo3#F
+z&HG2-k3vdG3Crn?D?+T+Fl?Br@*wN!+N|^krps@w6*l1YJn+aCbjVe#XU*zU^P-hL
+zKEK4l(;9y!;LH<?UG;1-p#JVO2ZbB4zgL(}S<I%gtx4H9S;o@f<msH%_o^cOw(R6A
+zNP4hCz>c-J`+?fx<9Aa`r1P>YcpNO->;A0XP@?qeae|SEh!^9`rt^&<YpV9<sB-Q&
+zZpYA@QvcU-ucE-U$z9Rhte~k|gMVUgc6S>k>~(zac4ES+$~|5`wyUx`fL0y;P@Pv-
+z;&G^+g~?IAgHeHF@!F{euP}6fUE>=X9;0h5#NlUiYmds2pa)9>;;e)?;<SX=`;J$x
+z^sHJJVI_F>k9hbQ_5Ut>1$j%){PCKZeSJ5>>uoNzf2Fc6p6EVyeM{lZ*;=b(?|T1Y
+z01aDM75!f(!%*eTb5C)%m*(c4*9VIAWG8YtFf}f?fAhgHqcrPg$*=_>ZI`%G%vqY)
+z0?J%w<?`RD2o+eO+$iAfzM4JGC@OZt-hZoB1jjhe-zEP{zSpMh>6@9sajV*v@%8tW
+z`F&V=nu}qtD&zK7EO%a&bAp!^e9__BCd9O5t|ddS=YfO&Q{Ve0r+8o9v+sWOwHwOc
+zt3SWnT2fki{SA-t-89j(Gzsam4ZJs)ytf$~Vq%N@mvnQID)-I!+?)-%%E|`E%!H&4
+zCM;%bOpHjI6**&R;<k6M)-8Q~Ew-q;*824CUxzIP3zZ(Zq@>*2^W81XZhugSi`yKF
+ziRMO+D(C<Io%2@NYhKd!XI)=~SRNWH30)~tUZLEvcuDFqPiZTu)<6}${ZE$&HaRH?
+z{o&e?`axS`{hVczqLY*3T7~b~AC;-qmHZ^id--~Z`K$Lg<&R1*w<ZbluHMbCv5uEv
+zb<2^8vu7;J>Nagy!oaD-(DFJptan*?*_pSw^Y_l;jyf}4fy3NUA!Yq@u8iKc0*;3a
+zzcy#Ou}yUmIF{*_r`Rd=<EF-;9ef9Or^q%nCbC=k8>Y)UKi53+&}8q+Wr^B$HD(HY
+zynYK!UN<~1Wjyun&hwJDC)0N6Wxuujmw45O;aUIGr@^3=CX0=H8zxC}O?_izcyDRA
+zadzM~-W85#pZ%JB=I_m043}cHjcYY0?+GgMS$3oR*)-4mqk@jVTcU5X*4#hl!8JjF
+z<It964!R$IJz`iS$TO>$sWEfmrpJwwUARNE1SGgwZqHrA^1|ZgP5H8f3rD{APyX{S
+z<A_h}VcuodJ%Q_dHwGP)xTN9m>Hd>#h9{GcE!a9!<fY#_<G4R1>h-(c<{OC~P@8;t
+zeXry4{+C~jbS3=a+?53x99bGR)cB`AYKYGiUmzawz~@H#jl9DDy-Am<oLL$aI1X8{
+znFw-fzZP(kC=E&v^lxq5bm<n;)Q>8rozd2HF?TDL+k59rBwL!rZS1(Vemk4O?!4zq
+zWjK`>SRO9zY`0M?Ed01Y;e{aYt|{HS*QasKRNy$&E6Bl6RyQl~T9)=y5%uKLx3{&d
+zw|$p*lW$sd%&cj~k6YHCdVap*>*`w#e&^;-&QobVz#_<S$g90J&vJ&%H>=$YzH!$#
+z88nMs%<$Oy;?9~`Mvek34{xnm@i)+C<&($a-r-V=5uwZ*-t739abOciqXLt|j+0sm
+zk(>Y7^#4&k!x&-P<*@KKZ->&o>WGP4YK{UdiOSb68C<H^*Z#KZwCrc`Su8&96bw$h
+z{4@EsZAMhF!krwQO751_Duwfg@!KXRT(kZ7r(4H2Z;suvh84A4YkBy;b9??;sld^s
+zki)@cu<+Sz|KC4am2SlCyKJ|eZ`K^s!hO5XTQwg@dmkO+bN;oEN(X~L-kO&|GjE5h
+z%bnqB-ny^Cpy!r)#k{kJo13;Uh_W~enB__KCOa>e4_r58V+{Y_ASH&hH1+vAI}U8J
+z-P-Dyu&JkuVZ!zYX_M0n)U5eGKRo==Iqj$4k<fPrKD^;)R@_afKb^e&Ro7D?kWu-z
+zzPEFKEmb-d6mG>?v39}F7?Fp2);TqCFgTtl-?RS0#QFB`Z#@s=67GFrcJ9Xd-&aoe
+zMd*V9<?#izP9}@iQz_eg^SaJi#WqCDdu6;oFx{wJulU1ROM7l5hL+hc-md?4pqS5p
+znNJ^ki=^?sxjX{1W76u*MH!k_-|PGsY<Vom(In+Y=Erw`xpqurVPJ6-XgTYo$>!)&
+zE)jTtrTXdnm4XeS(|3v}JmJ!8gslbmRQ5g6=kq}wZ5gwfUlaownm8Cf{-6F<XM%i|
+zjlc1lVCI6r#Zq6RT<*%1mvJX}@&|z2dzpn{PMMR`+zCZXHx;qlS3ge@ESPnBe$^*6
+z<Jacfd0)h=|G%d+x_iI=6NOxdqghX_K0bCo_xh*({Zq#8zg0d@f0`X}!TNBRqWy>1
+z-A0TN0xXU<Y;wBef4Q|gnjg}>Zdm2Y@<7P-fKD!RmYQvy&$DlbcFmqC+2F$@=EA^X
+z9L<`2hEd}CFY}pVbJc3+&8ol0`iwzGRNTujNABURw%yhHN*KWL!Oz<4(3~86^IqgV
+z#tzdX2PQ4L8`^vz!d+*^=aeP|CI<mCkGV7MX)?@HmdtKa;5d|KByse?4Uz7ntsDn7
+z-KmYZ^z`_dXJ029Kgcdy8uRDpo=UqW4u*$ryRR49uP6z>r}OSkzr1mp)yMLiKSjj-
+zRcE;~zL>G0)@kdD0Nq<jJ3-;!`((9zX+U3h(cW&+Uz_4?p9|G>RNS9nk*@_UJ8h;{
+zU%Ht7YR78PzTHv#*%T%VnfOT>B_~c?%^-3_adFw?-PWw%vW%D=Kw;#<(;VotGUkA8
+z=!IfIhQEhQ87}MDrR@GWVQ1UUtcI8V2K7A!mnY8Qdf23vcd=tmdVroiyTigojE?Ki
+z{+rhRHUjFV7@6wB9Z46Dm+qBWK8IEP&XY36Q*VlA&UwDUtz2>17LL}Nzd&VGL38f3
+zolRy7(%#kFoR(6_mV36vWwA)rm8JLJe)=}I$cWkDUkWJH*cOVsnE34V{BIw*?IO;7
+ziv3@z%&=y<)0S1=|G%l4<0cTMzZ(>6ZTTr{a#hYqZP))aYjcwG!41wbJr%FZJawii
+za5Qb0=&~_U<j53lQJv#+zuenj!rKtJxmRQL^PfJ~ZtOXj1Tx^*`*?%1H}21Ij6SuA
+zV>d5{^1U6gBHgN>vOvXgjb!Vrprt(59v%6$r*rRP_D@#KXYKPPjr-SkaQMi@@6iO6
+z1WJ{x?lU5pH*Rn~_$g$5>*US5nh#bU)0NxuF{a{mSzucOXOjYl^b1eTzFCU?=iMq=
+zADxj}nI6>WbL^&nP?3pvFT;#8TO+NN4E9RQWKm$a#Og7l{6_JvFFr|3**+h3<w#$s
+zG5I?=U8H9A-dXC=VxYirGvYGcXf|b)Xit>Pxvz^%87A0s<kTtLu*!8<$`HZO$-tpM
+z<5O{{DZ|d^*9;dwGb}IXzH_TAm1_eyP)=uvsLPdYjEUUEw@&)+yq5x7j?A22CUENZ
+z<M_pD4*#;u<vJPe6rADm++e_wb8_P|t|dnfWoxu@v6r0p+wp%z%k!I)m{dRkBscBR
+z;pfbYCLa6dJ$cLgj}Ojpm$O)<3q;(@Ju%;E&zEfq^3j#tE!P#T&dpX_5HKULf5rWW
+z<+Z=JLCZ+tr5WFpdV)k&e{GdycrEgA-R<-Bkr(yT_FiX}WK&b|U~xEM%GW7e_wml(
+zJyH!b*+Z-BCR>)DJLnd<!ckb5XUEp3-CMyqQY@F}hFIN3i@T}e+PCWGi8G#f{nWm`
+zI`3|*Dd&$n;QZxiasFWZhwH{#j;UpKSI#tQsmFWh+SJ!LYjWSscM=KukW=}X)ls0O
+zSG9{b!t9vt*(dLxTYi3g&c5ng=={Pf&$AfLbcM{D`C9e(t1o<>j6yC99G7DocIN)x
+zn7{AAoBm>{t5+_bx6^;T|GC9C@xOaTc2zfJYs<-rEMWkbLlL+Ba$NuX!Ao?D-<+JS
+zDoh1&v*)LpGMv8lq1*Jq1hEB891M!*C+$g)zOdDmeKmKFXxoP3uD2R_`M;GQC9cas
+zPwfL=V`BCf{40sqt82XawV3;JW!N3D|M3Eh3Tx7DhTWN-!8mpE=LKPN0(CD6UY<Xt
+zvvU{kw=B8cq2Wo>K#Atqr8lh)eo5Sp_BbE;nyHw1UmAPeMn5ir)w@}qa<V^srWD)I
+z!oBgF-;t>ueHIB9Y?AlC+Z<YUBngy!XLp*-*~YAORcl*##IE?#iFf~fzV@)&CO<M=
+z(UGO0;IQnkm#(SnLf@TV^8KvE>+s$nfnJG{-8Jv>IG;udF$jRFu@Hs>pO1BTZEZ=t
+znKAd<-}7tMOP%xQjjEjK#=7a~p4Ty-xSCxVIg}V$u5^a$pIvA!e&?@&S7MXg;kfqQ
+z)vg<+{^@Kvf6d%ab4u#M9O<VPm%DS-zia<I!+mJ$554HF%V`Jl?cO~UJuPAS`o-%#
+ziV1s896jU1P&cud(_DHbqrm5{htBPtRs7|1+{2{O!(A0OniU@GWf$ETawz@K!{gf~
+zcV9blSn+V(`~~;bd6-H>lC90QJ$?|X^`n)^Z(+kG-3@Pi{yUuAakOLNh8YSuM}(>_
+zaarWD-?@G3*ovE9KW=*c>Q7F?Q&WaYR`%!B|C4N41R2a_J~zqMhCGwWy7y?Mca%e_
+zp!xiy*&Wr@`$QPHuU|JWklB#ilsElxzx}h9*Y7|7ahN~TuHI|^RW+`*7aGShnm37h
+zY2I-XTpzJ;Pw?`Py9<jpIB(tOU0L5=wAXKC*kS$YA8X`K7f+sIxm4{?f|8JfOOwJL
+zp+^2`tXHE_cdaveK6!mC%bq>FFDhO4t!8gL>&C<4$kOoP(X|I%&lxlnGUOgtb-A;<
+zb{vi2ynaUULyXUw%3uG?fBZWCPv`!xSK*oRw#r<==?DGTpRPP}r`O`7aG$j-+grY~
+z%l*^K{!HQBmithohHEKT-CDQG>Ta*v>8B3zP5s69^l$E|sZw=&y$*gatg-*-GsSCf
+zr-^0cB95j4(}=F)%atEZJXZF%)iHXy7{hBHrgM@kWp&a4KktEBBE6z2hJmjwr)~NW
+zs~Ie~ZsOzj77`B*$N$pW|LOZbJO8@R*E^deZhOwDyB@!`CiI(CIm0$JDc%=+>?MAE
+zmX|iy?#&g~Ieu7Q{G+#N*X^$%5^sX;-dwh4vv=xlw~aA}*H8Ok%l~v)Ad3g9lbeb{
+zAd90#IKv#CPSYPxZ!P&zzG;r)&Yw*j42i<EZ+ky4m?XAf@i$F=zOFm>zNK)?*zmJ&
+zf6#+!nc5G6_P@>R=k(YAoUX?A(`)(vN%4Xr8rh!W?6L+q>^xDrQuFJYE?$;(N^N`_
+zWf3>gX=zXV%|&~{mj~TnT$J6OmD_&l9^cd~*8NdO^(!pqO~0boquVx3qe<aR%~O*H
+zx29xmJ(>5fo1>wdk16{3$LZI%MGG)0aD+d;w_uTC;eOYZ&jLQ^Yz#Y;R-Yu>uF>`5
+z>Hfd}KXluFEa&*eEc1VBUF)Px3=wj!991R$)g^uX7QfOqeY8JTbfB>IPEe=QQm?}7
+z*{{xtJ$+ld>UZ>%?PZgHwG^?gk2+Q!JLR=bzmkM<eBwjnv+L{b_+Hr>95H80H7Ec7
+zr^^^TBj+kGIo$Bb_eyk=WxLDweqT8I^+POC_rw#8?bogIe!k|Q{V(tOnf>)YS6i^g
+zt^d6L-}RhSk%KP;7oY1$-0k@I<My;g92x~S+{d*ahMyKW9X;jSwiVaPHRRs}-oCeJ
+z%Vy`DVG9FRJ`$~!InJv7HcjNXz;Pi<0Xt)pU5e}8KNLF^F2pDR>OlCGtPE%t`<QWL
+z`u+{3cSA*5e19*gl2gC`t7ZT9=l_+`{q2tG)-BuDmhB?At3^H5%Kf}yWgyG><GRx{
+z!%mB2@6M5Zx3T)W9((@Yv+w3cS3E6x^sZ%M2jj!2<er5AA3k;+EuLHND8Q(Y)Acf{
+zXz#M=2e`ip##$^r^kud{+nejQKR<Iwzy4$Y`_}J2PyYW9e_?uVoz40GQG3`|dPJD{
+zT{`ku<B(+f{F+0L>*umC$lPDFZTtDR<@*lYzW+aZ=l^@+1zfBg&OOsI<`=9jF;cry
+zQ(|)Dt8LF)T^EK=VRynqnF}t8#tJYh+*vWVTimd&ZR**7SC{&E-N}AX*|nYDTcF!n
+zA?L=T_q*oU)t&MG*Sg<hePP?%Q`MW^?4Bd<dSOf7yy9<9EcgFB|Bv%`zRi=p_di!x
+zJok=2v_4FcLq$m;X7>3Ck*s;<ZX#a0BR*R*K5u1+`*b{}tD!a2qu=#mYtQLZGRHn|
+zGn&@XwV~MS;MN=KcPFiEIUDspcXr+8llDKl{|n!}99;NMfA@zax`Dakes;fR%>Q+|
+zeyaTc;`+Y(KUU87+9oP<bGFdB>sb*xq8nwt|EZaudiz)SRV9yWKA<kD=c5OAayt#9
+zj5EwE?tHXd;msY8IC)QfYgkwPulhfweRjWC+>NfROA{<Q@NvP%m%{({@Bgy@WBLC-
+z{}0@}yj<h{baVF`6|*nAaFa20-_d%>>Fh1-)r<zubq=go{H4&rAh2%k>VHMQgxBz}
+z_`C~QQNniM?OZ0-`(nzfIp?C@@BH)2{@3w6|MlzMxjp-{pGz@e_lJl2f4S;k@Bf+q
+z^H=!3rcZxUjx{OdED3B#(_eJ8TO({$=l}d`{0w{6NHS*Y9%;G}Q^|egfBcTPnX8IR
+zeb0*VOb>dIaA3jZXKSrf3#Q)COf<e$d3)K{Hy!i;ew05x>CKesU5^iLxcp51&-wq{
+z_W!rnGd;FYVrn_Nm6uD0^{5x?;<*0&+MC-JgL-i;4*NFOr|xWhEy^IVG+;5`#|5)R
+z7?ivBZP1Kcd07A7-T%|$HaDw=eSWI%W2Uk6r}+Qx_n*xFGj)Gkn3qe#hKVmqq_%zP
+z`jiH$J72G6K6h8K;-PNK(^XEIu6Jx(4IbQ!bNr`p$Zdg4`}6qf`S<^%+xKc${$KyD
+zHvECugVpu_<v*SOe|~>sVeCw9rJOtMB_dfo55iw%uU)xGTEBxq!0hl#^R|!mosyS~
+z(=tEqH?{s7b7E0%ym#U*cLCQQ>r~SMZ}8;IuK(L#-&G*s5%9|Nf#}2Vx=-&v7u)~a
+z9ym|KAaODa!<H(+TN++hUoBbtEroNBgW@~wm5@Bm?ZI~K)$>Zt=&TMa^&9Js?!D`@
+z$d%<`>ALsRT%W(_=->BCf9dP<*+)J;6#sYa{-f9NKP_MKspL#xUuu!XcEs>T+{>=;
+zBi(CH>DRY{dU1!2Y?yKKUhTVohh23ic6M4Xub6lCZfty11J`=_>rW5I{}ioCkDU^6
+z`nvj&kRag?=l|b|U;Oin=BaH@eFe>$-1J>`%K7ayvyQl|b93$f6EY3jLTr`Gr(6x4
+zpz6El$JJ?v*3{3+xfHOe)_&iNk|!Gy)!eLhA6fjU!SVGJbAE4`oYOoEiOl=t0*|!s
+z|Ir=vV>f5_RNlRAljr~3|BuZri?O9QU|GQ}zK=EiPAhFh8Peu%E#i&;ugb$TIRw;<
+zGT7}qac|naNOS%D+!KNXcwcP4U2}c5X_shvnYpV#+}B%qktP1;Eq*;?zx1ovxuE99
+z1M&Ka`Tq{>pHjt;s9aHFbfidT%3GZ$U*gNA+UOsTpHl&9o0Tdth;`MR?U6Koa?Iqq
+zN!rgQWo4rPfiInGw(s7HF1g+Q;n&7oKl{ov8*WeTf82I+b^Xusx~2>ZA#24waa$JN
+z<SqQ8bmQI|q4KBNCI8;O`FD5cS<7j2LqJ89&-MDdD_eJdKjY4>cUvl?@tyg_#e(_w
+zH9HH1%nn#Z$<%&ew3@a(X>rL+W_S6TGv@U#rw6Rl&hPjT6~M6Y;a_#zS6{jMUi(fv
+z99s9|bky<bYj19v!llH}GCia0+U#Guzi3RZ6KR*#QQ|A-^7z;P;g|irwr8J{Gym@F
+zJU6{5{%`w#0a>?CX&md%R%d;8o;RoOLpSS&HCuxk;-2O-w2E5IeyCmV_><#ww1VHc
+zLt9UZz4beLBFg!Y+DcpT_zQ=>aavu9cvQeS+d<^Ao!!w%ZN}2=Zx3z$zW?CoetS2|
+zpaqJ1<V1h15&X2q@R0sghn0WMt`+w<Tq$YF5M&Q3aN?G~I<Z$j%Qk)YyN~DY3LQyW
+z)N+0Ij@KG05@o6k8&>|(>G=8JdA*!WV8)@>n}pexF4(nIHMfaXkl|42m*dYDF&NkF
+znt6=x?3=J-Ti!mmjOOJ&*^&0{CR@pg1(m1f-euzd#(jw?q+;)DD}h$ULW4;n3wV!~
+zJ(yhob@h?vg?l6qWq+LKcU#fw%8u4YkKX;6WXW(-;rFDarHQlu?NNI0c^5k;s5P^d
+zFX61od{wqrf4(euQ~E4psRCc;Z(l7}@!MfZTU&TH^obqo_`ZK*y_~d^zx~pme|GY)
+z3CDHU{&;Y+LF3AfrLPWEm5b&&#2=Gk0M&~z6H|6@on9QU*zB<1Y<;^G3u3%;W_-96
+z*zmNY^Uf3d0FjnCwv|ju3@z8UvfL7T8da<OJM4r?0;u#q<S@g8WoA6foEA;}NzXRd
+z={KJY7MYPayTW3@gPR_r8$R6HFMcecS}ty*2JcEU3E9IZkKY%Xt++>Qo+<MN9i8=4
+zUWe?@NSD`S5{py2WasE{w((TVbNgu$y)PeU9nCy*hcWBsX+{n1%hrcm6yx{Ai@jFK
+zVVU+gU`_bb&pQrka7X#icU<%ItU#P){QoWd+j?Wy_?dH^dDR%h{golx;>oi;w~aV_
+zcASw?&u`ptMd8UYe*NI2l7Ii)?^w24Jp0zCU(cRsydihh@9h^JMdz(!2)K~Fb)x;G
+z4^|hBJ*d*F+i3E3X`$!;U#^Q-jW~P+7!~$3T+g32W8w6CClR*0)`!35+}jm9<*rSl
+z^FFDzxzXF7*4{{AOmMW25oj0m@|2qJp^LTQn#H>AqCMK>uO2>K!oYb*!jn;`s9bQ_
+zxu2h!&+KUCSF<<NsD7hzSmWgXnU?GOB+dLar_1E!|5o_7e*@<c!{7aKiPmDD7T!sj
+zyX^85r^3#b@ZF9AZfx5Fj(qCM4!^0F%Y5o;^^eN6o~c3`4BV6$9(^@7{%F2^#djsK
+zmy4?9xRxrj%@y1KwYZe;dri+71_3h{hBtOQ-2Z;FvzoR&`SIBqE(|T<e-^&xRqk4<
+zwC(v>i>uF4YxYgQv+oU;E{76Bim>u=g_QPM-~Xpe-#qs(2t2(=q=lJntr&m4sN*d?
+zF6qyA4Jw`*wZE^MXff$~a`4;f!5=o{RNp%3BM@iAWw7yKWO7TiMnmdzwaal=PVUcP
+zaL8f+wfI&?6cziPI?CRd>XUilcu&=y;_W*5>o-JZoQ=N!*ES+a)BKvu&Z9!ply9y%
+zv^ta_afRh;mLF54vi9+=JsB^4cGmotOSxC`FbTUbaD?w_I=7tBcM{9=H=p98OrE^)
+zjNrO!eUwG{-5aqd=M{6r0*~zdzVE=fzq==~ZRxyr+M%>O`ci#M_&SEB0AntbsZpY-
+zYxmpCyS}h^u891{&!BvKwX=cs^5!2mYLqTCSsJC~zD_Zccf6bZ;8vS?zPRJ3|E;}6
+z2E2JIkBHY_f3L*%^zRK9#tpR<;VcawR{gE7Iy@syf6g`rQ_I)4MZZ4UpTi3sh@5_J
+zrp5OK;zH6VUCaG9<lfM-R$^#5tIYHB&-8lft<ABS=KC|bXYg9LmrwlA^I?_k^38c3
+z`4W$(y?$=>c6#BbR8<id1`hrEuj99dCWL7+M40`l*;iAslkLKbJm!EMK@2)MkHTHD
+zy{fJMOq2gB_{ia2fA7!T5*lHv-`MV8pUA=RFm%z2eiIGX((LRqPvf7fpPnvxB_3BS
+zGvR#9`Rl43hXjs1-u3a{{+T=8RH~g$={q@<DUx|}j&$<M837uyLS^T6><xaf;GL&_
+zexk8t?~g<8f5^)0``x#MDVM{l>FsWQjr{y%6%*w>N#|cKkri-zute9PSp0<QxvF<E
+z4R2H)`mC>8$tVEwK``qR={4G~^)|S0YA8q<y)wDEwko81+nHz~v(MT|JnP<n-2MMY
+zeamBUgHM*Vf0-N(N8kS(tMQUSWlz?WM>|B-lnw4a(yEUKnRPvo@xW8>o@>8<tXyz>
+z!|kWs{8}34g_N~&-fdUmv8;G382|74zm7Ak6>pn(yuKRc*Zt3L4RA6#v|5bef~?Dp
+zdEN_SA~|B_U*A|fcWOoGLw(ERo`M@dvl4D@A&G3dhaBh6?c$zR@=3t#&PSQvAM51*
+zDeimBUa$W!;9mcASD6Eg-~ZFg`u%&-Kjl4QtiQJUS6i&>ek`g|94f%55aaJ`=I7$G
+z?#ve>W9f#S$4h7JSTR%NuT(R5mS^LaLSs9(<;#8I^Dne%JhHyG;?%U30^1Iyy5I7@
+z7w`F6dtX`U!PXl(1vTyY|M%KAY)KW0GxcheJNoC!{;UV$HU-N}8IGM1z45GtA+65D
+za`(5JP4`On9-XoC(7l&`Pg*W-Wu3gWY*|x&l%P%JI-MO#3{P|g;^r%cy37sMN#3#f
+zwKwC20^2|SYYS!C<^KfNcWvMIzuJ{$PtqZVdq3vAfBNlqezMZZqe5}*ybNo3j}}QD
+z*IsvN)%qpe6F@bjUgp^|kFFg~5l`M1dhifq_KfYRZyR_P`!!c@=dStrxwPYm4cGN2
+z+QP>xSm(?C+Gu~a`v0@{YBHU5wV{3CE90L1{(nJ!%H8^hTLoR(90eYWb9oB>nk3c0
+zUArx^-m2i<YY*NAP$X=*xbw{8=i7h9^j$Jse60A}YrCzRl;x%ryme{FzWwK({ZI8D
+zZ|mRmFZ!^=^@X>Z%)#>ix9ty|YyLeWqUt~Q`oq~lHn}V|c5)A<dnH(I+6`**u3OC#
+zu`PVVuATo^Nisg~W^V0tXPL{EFE?#NjQ5}Vhrep8x3p<I+WzOo`{(Zey8qAF+nz7T
+zlUn>MRe<%wv+s54_y6Yq6-ZMNzS(m9M`Vv_l=P{sQm4XpYQNf5%wSM_{^UyWhO4{(
+zic9TR=1^j2S!(s5b<OcvlN+WU;;L%dYj$;#_I#Izzv@bR4)(a+seaG>XW{=}`=6Bm
+zVXvPOl-pjw5oNY=eTzlQ+QZIu=jZ?E->B=osP#~`>&hpO#Jo=0%zjh!Q%a5T`LlmI
+zm4!1|bb2OoY8|?v>>vB}=3O4so%uPo&!S3KdGDLXWSg_NSutPs-o7)PEQy=<xjKUO
+zQ%sZp`?u!b_S(+)|I7dPtpEGP|8m7I9-bR~8iKpT%l|2BT+8}%Vg6s^kg{@v#wU@S
+z>jk;{q7@4z9#6?Cjw^lFpS`|k`bx%%iPu5J(4nPfl43_0Pj2gobe7TJ&c4xP@Sx!M
+zbo1~ZIW_J*jTbw-_MZFxclUq3`yZR_4{ZPUb^WK_^?$hM)qbx1wN|WfN{z3McA?s_
+z-JOSup8x;;_s0B(*P`=1UiEKaWODfU@!|xH3sYWyy|cA&YPkL52eYTY-myMdK?gJ@
+zza@IU)kn9+S+|b`Xz^}e{dw-MtxFDv7`&)sPV&9E{popynr-_+qYh`d9Q<DS{B-=I
+zx$pnmRrRthpI>+C^Y{G+UoM}2!Ok-E!W#je-7J3vt@_k8oxM~qGEEibF!xb$VGQ~H
+z?Z?CaUykqid(L{sMGw1(Lv9O15+W^HFL}q$y$<c#XbbUtKDXyoC!fxBN#VU0vmg8x
+zo4-H0DPomc>-h)Uk4kV%ihW(Q*RL|Yo&EmLxd}X0T^#JrZHE~Tr?tl|cm2M@b9<@N
+z_a&a|3*GkLO}X+;sHdvsFoW=H&tJcL95&cl2eKq9NF97=J^wNLzc2GsexH*q{MYJR
+z^q(`Cd0TJn3ca`U=9XU3k7Z7{wj(9p`10E5t_D!0mGyfOqxQ|e;it|#`?2~;V_@g;
+zb)RB>v)U#U?fLI|-bK>)hTY-^x8GdblajDOp=R0s?5bt96PW%q^~dW3+`sEv)O76j
+z-(wBeToPSwyf>EMku-@a*{!?ly!4kS^%B2XUuG}=a$B}3Z+gKMWhqzBazR^Z*9~i)
+zu$srJ98rwuJN^C7i}#Oz|9{Z`K$L5S!=<{Gvq>UHG|n#!Sa;Uqj{YX+|EsbXRH{IQ
+zN8H-a#`+8;2R7V&a4xU0d6#yqZOiPRdnLXz$6PYM!Z^pPGifW+_V2;@c3+=tJ$S@0
+zQ9$U+?=QcZ+tPil-m2YQ?4nZAKbz-PdZ)*W(#|Hv!Uf9%Sxlu}D`J%t`GhYPJ?D;p
+zaQgp0`DgFM@3k6C@!WsNt>_l##$5K>pY?2FPk)e7XF2VW<jB%skS#b#wr;ZS3t8(|
+z#+BA*O08z}^BqX?-*V<|+m>SooQ^8H-BpWbms^+J=_u5adMHv_p-olS)%NzG)uAh|
+zWEXrl=v7&AuXfGFLLUPjj$gJ_cjcNxRKE22z1-&aa_$z1E$1alcD4MK3$*ZIo0S^e
+zyUCQZIR5kLMUR)9xLzjGKEJ*_|NlYxC&l-_?~T}|t7(78?eoLWjML&BDvwTOJ+QOy
+z-zwdI-sc!2GVLcQftuO{``Bj0-grLikIFrVI^F|SX&SYCOtx<f-+Zb3UcD_~UazF*
+z;S$FkSFT@A5vng<_E>Ad151%Vx>>t#e>m10>2KH9d8i}7BIU~Ki|<Qb&YyQN)AWVx
+z+>5#DN{KhJjoy@Swlgm>a7j0NzP6A>F}T|x+3HwhpT*8?vMb)o7rei{Z|?cppWb(B
+zpBG20oBifj`=w{WH(uz=%&l`-8g%Gu_fJ!Xm|U(4yZY+xz3yHNE^1xW&sd9jx3XxL
+zG;Z49mV0KydFk!%PjE0eR)i`!I>%`oWSo=K7_{@qx3$a_&)*(dEnh!<afbm12b(k7
+zT)w|$?e|_v-hC!H_i^yAx5ib=ecS%>IqsicW?~e<rE~k(*IKTtQeT^yzsc`C_|W?O
+zhW{TJ>(;VGB_9eX`rG=tv2C-T!@`Ken{tziH<~Tb77qpWa`r^6xBGghxU1o$2;=&1
+zuhMm+;*<ivJ>O8wR(NLjckd(?)<oqq4JUgQdJ1LPw}&l_S?|j|O;_9Vo;jN>m+-_3
+z?*;qZUPLU`X?<%^u~aB-VMDNn%K3{@i#&pATe4e&1lnh*FL!=(Nw;T{7+XVPn11H;
+zm5dhKIV$SrK^uV2_5WPXt)3dpoM4n`_sZt<mOM9s1=h!NuIBFh{#MH65|f93*}bqi
+z)3Z`mdWJ7vlA(|+f9bhbRe!-<PN%a4BEgnx7VDUDu9#^$_ir~>@l0k=ZZZq9^WpB;
+ztd&q&HNj}shSEcMXOlsrB8Spl6@8RBn?6LkXtFgfGw#_Ltf#tm({!EQ@F3<5&tw`}
+zg$=a5RDOG$I6P^)!;TAiM=QiH%<w)gIJM94FWb80$5viG6BRg`3V2x<Om->u=5@Rk
+zFIs%}HB%-#D{L*mlFu=v(icLl9KymuT|q;(DHRSkvIF&Z@93*xVRaN}dA+fYw@D&-
+zLB!hbc3sd=p7G;7_s*E6ef*d6@BNpVtIPG(*i+6g4@jK9;QrIOyHj<}PwHU=Eg6yG
+zU~pY6E}ZSWF=XDl*vggWug@_?OuV<*k8Q#gR#4R{evMJb*w6b-$Un<XNs7-smL^<L
+zl;OL%y4rKKqoV+e;|?~t%a1QB2C|&e*0s2&mTnnie*Jl<FT2=6g`SB@2@hF)Paayb
+zVd^iY)I>I2ABj)*n!6&DKsL`>V3FJY;Kq-quO5BcdaUZ3Q5Hkk-fKOV?Zsn34Nmhr
+zt?^HH>D$?r_n-XoH)cEUiv_)FdA@(IeJP>D(WDR~{(pY_|0V6I);n60E?w=r8rTs2
+z@<lUbA;NS6S+(OKI@>;nJeQe}UlQ_c;)2?)#}PJn^qq8`d4e77(so?kS>`<J_6hH=
+z#6NuZ>sG9Tz5z$hOC?a~<?Rp)u(Y2)|Ka9sCj!_O<#jjjI(=}Ox|;`RuD@cE<^e-_
+zo43Jwq6OSbryA$1OW|u!*yFN<BVx|Kqp!V91n1eET{5v{&(FtPiv<5Zll<D{zBR)e
+zw6LkEz;>GV<TZtH3me{6oHoCDwrKf3CsT&$nanBIqF1wmhMHd1cD<?JnU?x5Z)w2A
+zh7GmHZkM03n5X-1KPZK)4QY5f-C&#f>o59(jM{U5eV+4&d(ElWS#6)|Y(bhI&-s<A
+zmiX%iS9twLlS+1tR>>`$Rkn8Z>v{Sh^Tq4fZ#7(N3tHOr^oFtZUvJj~qE8;qE}m06
+zVQwu*f8h1|Gfvjk%{w~l-Pia8^W>w)eR-oboa&x$&sDz`0-Azc*UWIC&ES%VSE^38
+zr?`UNgWI#cV~*Su2lX~QS$mEinDcPwCV{0hBfKu#9^K0OyEH$QaVmIK5Rcc#J(3@u
+z<aC7J-F4!Wdh6apZc4EYM}D4{*r95_`t&@5>P1fsFXuA^e9<v%2hFv9J<#+|L#>DB
+z>f5=Q?m3&QzTQ5f8Xp$t$kK4&>U7q%0o-njt9f6kw(p&#Eyw^$P`3;?OpZ0gYn@v+
+z?KAKDbvGjSdoV8uZLD5bu~mHC-esaK;fls0FD3+TKbdzndHEwRZqSOEhgAvMc2#x?
+zJiOcD<L(+auU^Sm!O6X`g`tI0h*4nOnRRQN7{g=)zFOtH-DR;Z!yjbPt_2xil?r6I
+zuKw~l8?$b5t*GDL7KWDT9Tka>cC0t?d45ZNa^92q*-J!NYJc73o4-H$;3P=~u$Mmm
+zf60?9bN!&ch*;V0v#E2whs!Yuv}g)33QYTE<d=JIr(5COTvk!u3yudCN4Ii|iE)Fp
+zy?#2||98U81nbq)F7?L0bB*RuVql4j6x@(1_<fc@+n(zEN@Ad-xx>wS>B76*nj+jc
+z;tDfaej7<zi=TZmkw@X7)&voShgWZ&ca%QgxShXSp!=sFi=)6gPARMA89^&M9{>DQ
+z$8lY*lc6KJ?rSxZ<?=u`W2@?}_mL+B3~ttg<DHS~!o+8bpEJwUvoFqxJOmn9DE<CF
+zzKP+4a$n$G;S!OHuX+sFS*K(#ecKrF>C!EgiHylh9KaLz608EQZH@xLE2al*Yc@-`
+zv^DGN(K9iVQm?NmwNI(HdtW){_nx1>K@F?kZP{v%f2~gxJT|#;^Yzcss+LuUGJ5}?
+z+s}AZtNurQ?YYL^jJNB~H1B2l&VTC8J<Si-5<AWFM0f0dywFBlbK5C3gIAHKwZ3@^
+zusBwTwoFWu0IgfupyRWp@ALi&PnmC`-zU#Mtq&^IRv%^1O0K<jgEO+=Uud7hiAu%V
+z*S33Z-#-><@St+LW5Fj~w*9}P3%(eBiFP<scJ*=hcdnY_&fV43cKzRE_{wv>Y3c2@
+zzCESe^^~go@y`L<c(sC$31u5pU7CO8gjl-*N7IKz5nYqZPJBMrQNAzWlup@e-Ay<D
+zAN#JOdpC9wgP6<VJBpxnPCFJb7zE45&E33u-t!OZH`!(RiN6q7EYkP-;k$baH`Vjs
+z`zw@oMK#M-)#6vj!HdWLoO$g3b7p+DgFplC3bEABnp>Ub&$50{a6CPI^|`lEt<~GN
+zTiEP5oVWFebouuc*H^u{(lw=9bxLw`Ze!5pg{+e`n*4fK&G2&+U`aG>b`U<wwm)X>
+z%*MsnZ+<=h`SbK&ztXlk%m`<BX*F;DE92SAST-{`frh9vzFY}5SG#+|fBVPd%zM_9
+z?5=;~ao+l8+RiYAaN{Ea**$)8fpMJwuUY?Se;;HlCH$pRYQ9m;r_#3b`#djLEW5tn
+zS6|{&$%Tj6y>=|=0(A^B{^z1fbZhQEewWue_ie7+n`t}izl;6;YShnHeq-I$9b03U
+z#jOrl8>0DB&+j1f?Rk~_7pk&u3Qh!-fQthKmcMpf8FbR(6?fjx5E-9!pOqQZN-w4F
+z{T%tf?pWgf5S9ej;DE?$E(|B46?}RcjaKKLFlvw2m0L9}^5UKA*Cf_DY6mQs!}RZM
+z`3HV`|Je2;d({$+dj)L%PI&Of^5cg27OyT!wzvz(8FI|#*~L8TuJDf^D&McJ-sieA
+zW=W9V=J;<F74I9?M)jV*fBWHwZ;a*JPT#q8e`%Q3hEVN?)pDmw51eul+7!ql2wL(n
+zzmRc(MJB7uM8@@7>Wb?&2{yQ{uiMCWV2vQ-jL$C<&0IB}CxY5bPk!8&6kh1FPkjF}
+z(a2f<>J2rSGD_A2@6Jw~US5#RK1IIP{C1(k72D*JFN}xN@28af(RBPgrQ$}j1%p$E
+zlz?6P!{iIiGmE#o&-%84J>B*m`@T=J`_tp@GkLl8S6zHsP~W|_sIz^0_M5kF3U<Uk
+zK3CUzdpqBabs;;pMlTFn8So`$%JXyAlv5USOrEf&<_@T2kQJ+`u~F$exc-{(=6w$q
+z&A!9I;H}J1{L-<YjwRt;PWK^&$;DIb9D^EI1R0$E9dq0E-+$L^TS@-(O@|cj{xa9v
+zyK<U4^O;H^$EOy5H_uXj?77^{N8S2EL-gIlYws`mwNpQFkznBWDHkugf0@7M{D&99
+zhsuOyZ5j^k7TB)vu0itP3qzN?Pv&@Ea3~kJAj?uyb?tOKx5$sav;WFwW-UGR_pVVn
+ze|};5>LZ7Dv%k5v`i}jI;PuyUtQ6Cn-t}YO{7#i6|6f#2RG8ZfS~OF%^v_g&tAywu
+zON)Y>wyk1)F^6Nu{g>zMHe5JYeD2_RuJ)gY8dH@Tdo&^g#3nI;7N#z<W{Y&U-)R(?
+zZ==te5y#)dA8*XF;nvIe+CA3{Uq~!<xXE|#n&Q8AwOQ}~mHAvy&aq3c_#@byE`PE9
+zn_=SeR!(P)I>8e8MaeJfWfz%E-`I5PfI`pDYk|^zxBlE>XLx^J=CL)`{m(a6@5spy
+zy>au_vjss9-nwrGv3jFT-^txeTOO5=zS`|z@y8l{&6qGr)@8;{j#ko~O$vLal@=Lv
+z9V{~_Q(S(&KJMNBEo=$<GRn=ark~5S-_Cs@$t5vu>X~Y}ONJf-j0!q8wr<&Bo~;xX
+z{vj?Reu-|Ik$&bf{mOIePOn*ZqO$3lgo)en1}96qe+Q*S^7fy-wmtL92ImVEhaTKC
+ze`)`B!o!oshu+B@+snUex(nMPHJ0-V@0vOt`r~f+^eG+Ikh=J;|G^4wn`nz;r8!xw
+z?RVcweO+|^@L}0)S)uoKgg#BEpB^1;%2$5+&HML(y3<!qt(oJb*r^newaQH_DzM=Q
+zXxZ61zO}r03mbxU)CFHwN@q`tKX3hTGvBX8)pdFQ{vGnxzx`7FKhw|s{h%?bht|@a
+ztJf~ueOkNtzkZO!1YhA<vow}|YIVH#-b^|m;JI9KkK=K+rH@liY=~c0@|}Ci`@QUH
+zD(}iA=GJ<>znp*J_m|qX<>x!tm^Jn=Tlv%(-ep(nh;raaR9>li;qaG_3_d>&y|0lt
+zI;SkzZ?~uV;`krG9=9gjaBDqPQoaB9U)|Kddt=|dol^1T0pIp4(RcSfcS*m!?j53)
+zdWu#4cyU0V_1q0MVr(1d>97fbT9^^@Bc%T{wZHz^$q*66Vl#i)<`oRjq8rXF`*h|T
+z|6HGUtvgE;K6N*w#~nW7*(EAn+r+`}kd2FB@~#V6cesMr7Mw19Hd9NG&-?C=Ow)~?
+zu5SMfv!3mEbKW>AG3iu@TU*4<8;9l?1T08ST0Hp_^U@7mrl-Dd*RcP?=kc1oO?|#m
+zmW}GGa*o})iyWtCTu^^gelf9uuX)LV2=|lvi<k{oa$LCk#41bmV)Ks49Gu1~Z;O99
+zu}Gb>Vm@cZEH{5k!_Gyitn+d=2Y+1|a_UWZP2Stko40R14O@D|I$vf(eZhf;VV%+J
+zyF<EIPr1rJO|g>h4e$Qxd0I(`#c{_&jRP&SzR&+s*d5yQb`h`2#^+n+a9{d;>Ghe^
+zU61X;S>~MmKVO=4PPDj<x|UdQ$Fwhx&-pS6-PY@15O{1>HYGiaaow$&XO=HMmw7$i
+zvt{Py<g6ek8?%gSlZt2U+;Q;8i<uI#M;9nf39{JAoE2TZ;n-%rOW)>M$t-lYedO4_
+z;l9!<Q_fw!hw>(GxUMEu!pUCy=wgQj$A!QNZ#EoXTyo+DgU_6IhuQ_?mLEN#cw}!+
+zM}^_U1-v|qXQ=nunf$7$Jz41L9=JaIre5Wpy?YP)Z9Ox)yzIu^dygK*P2IaU_uHjK
+zPpkGiZ45Y4CR;G~iLA`~ip;q$b5tg>I11SP=2Gb5S^idV>aW@<j~!Fay}e|4w`11p
+zACrskI6ZuKhGnCw_KPz=i<DSS_lbT7EjaAqJ-%aaty;AD&-*H_>2*u;zg4Z<?60={
+zehSO6RWlA*l^#CbXXq^#{`0qmF~1b^3yHO+YMg>9A6ZyW={~4(-E)gk^|X^_YmnC3
+z34MlEhgy^$6}Z^E5#s;l^4HAq`IH6M6*J@nzgV^W)w{UCU&cm>ulY!0U$cwM3q^sY
+zTR9Sgniu>&`FGd+kDuH<OCGXHxU?P2oSnY>gY<lza~=}qW~;<yw{2S$a#~dGZTODz
+z?-LHcHJV@lm~Z!2t@diuRZqFDE^=Qu!A&Tqduj8PC7UNIa9o#J%UhVEG1Xh+G~1!0
+zp&6c1`%YH;-z?aW$@uZmn+D1Ibuy|6w@f>pnzBxw5}jNW)DZDP0aV=Ptz+_7A95`F
+zoFCJ?+xjys{%4(gZDu*|N9FGSKl}Ze1wX%Z{rP;xb(PcS%qx%Xte+k@`G2aElIo%Z
+z0*gzO3WNkFED=hyjM&#5yJFERb`6~=sf%@5m-2YIYsfm8DEKLJ2JUygkSka+yJwef
+zQ(k-E_OmPQtIK@hY<FIy&|uMI5t}e&u87w0w@;j=l;|5h+@g2zh<?mugLgS59Le*x
+zx*y=&|3R8zzt!h^x#3(>y6oDcRm;k@?FiK_dVfvqcXjof>smH8caqA>r>`w)yu0?*
+zmdz7Wb-x{%?9rsaF}p8lPN~y8Q+Jz+-8(M)b$`C~pUUmF%Q|NmXMex*ywx#I^uw9h
+zV)mJzr+xpk8PqJ5)@L|o{V(&~{+XE<H|sD>DC0NEy13l@^X~tr-(321sv+k1+&z-1
+zX(xYPz4Oz!tw=3m;Uz=%$~Kee=7hBKv)$}^0yP#-mT2djJmpu2Mnr@~o#^t2<F~?Y
+zY&#UBmHDXIapB}$O%@L9%!}$~2W~&Oq4wB<(nAYMk8QY|b|ceJs)vJ3x#{8rjUL0m
+zDIBcA%P+P#M$NzAUAFv@W7K>B$19%ee5EQY7*|$YlP$U?`{~CHR-0IhV_^>}^|mfL
+z{qUdJ?x{-it1AxtyJnVuZ{_CgyHCGeYh-;pH0!C+)J5}Mgzjv~sQh#M<T5Ew+a?8$
+z^}Y-atK|(Pj_tVm>(GVuozb~IdH3s+KgpI&p8nF<+(IXsWlrw0jWdE$(xO_<?fCWC
+zn0bO;VG{>K;-1M1!Yb}r9xFIG?e`joh{ETqrp%uivSjDuGk^Xt8k?WcaW^<)XQr)u
+z?A_l-#p&mF{rJ5?@?+w(J++>vYI=;UJhhEF8w|L7toYAt)6v=9@OY}mweKsU#kMWo
+zAfmA}(CXL`Wgin2sc#)@v2J_K7W*|jF85tu=(GLig8O-w^S4XzF*OA`NF2!&o#i#R
+zZZcN`L&xO|r#WJ}{F4qnwUC{(%sGtLJK8lT!GKG$$7!DVWRqp}UryhjVR>x(!XT{x
+zJ+T|>cgVcS-@JG0*}rpz^6hpV&s%$BcKP>};j7<V?V94HDs#Q@vl8c|JQa>Z-U1AP
+zb8;#|S6@B)@Bitxdc)k0mhy}<O0S*ukv^~b^1tNr`%jjLoYi;OY<AIuYk~rkLxdjF
+zwX8Gsg{Nm~8(gV5c<@Z|r(gfnBi*&!Yf^4EtYX#NsN*!D^ugrYS&FqMbawpN%(rjW
+zoMc_mDO@vdPSH;G35s9+XvyLhKe<hpLzKN6Q-AO9W8A-GZWnWFYV?h37IwnPiv+D?
+z1bD4@cKfo;HU72M_}5wEU2EC)hE0y!?Y;hX@&#!lsdqvwhH73{Lxk)+7F%VWZIo<$
+zr^2L^<#)O7k)xJKlXtC_n_-WYv!Au|zEYN&f;|O2&m%-)rr+MJx^0!|yZ6&9_v}6H
+zxb{%<ZPT*yvK#BK-@LE2aqni|ljR?e-|d}n&aFuyMsV7r=;O+V93G4P*}3m;rM3O$
+zO7q}!`}*UjXY3J9P2xGtRUsbrclI9^dE?!yPMUQpFgbY4jhMUa;F(>AJ<t8V)93U~
+z?_ZAKhc|weX1*D_!WSO<t~vE_$oXxot#dRF-}GQu-Q7I>3)8Gh_GQ0+p84B-<qTi9
+zsj}!A)ljy}CJQs`(~W&?rQ8`W#mB8a+3DE4R3t(xd5v)30^Me>>T{U~`YvlUdCg1K
+z6yN?JP$M_cx}qaj^G!+Ij6)5b27wKH?Jb8@x-MkTy<l1E_xsI^vd2^W7CUagyYTi)
+z;}`uBe6~#+W_7SUS4{BdKCC<WioC{LF@63?Nl#ZyU8d4&E$cd6D}hhRSD-h;UXGEs
+zuCDXrs_C&=Tcx5?`_13WZU|rh@!Q_qZ{^>2?2k^YuWx_r)wwpSGihVP+g+Y2j%WFU
+zE?*X_0oBzfbYz#mW#~PmHO1Kae_EbZejQ7~rnVPn*jfxTjAuV%-u!%y)w{H185Z@s
+z)<>S;HadNT3DQ0ea$a(U_1nMVIUg#Mcm7Gq>O8!s;>e;4Ckp>v{j@P<^{M{Nixljg
+z7Nn{1ow>p=<IjwPXI`(EQy*ydXZ5p1VxL(P(_-2UtLM+MoO_BT{F1AS`lACgRL**+
+zM=9-$5Zm_l@ebCmskv)vxvg^_EIt<HbNoeyi^&_oFSox~^H!}5w(1qWm9D-;YWWsF
+z|BQL28RphsehW4`x_AhNu&&vXyP_zFb!mgiB!@X&&0Bb1RlF*?Ggr(oeuJGNlV7#s
+z^1Z<fbw8!MO*vW5FMMYG=55H0bzwU<hd%i5jjww5?>jfOK0Z6_yiIHBmfe9fgATe@
+z=1t1lBH($!c&-JD;|@u#1d+^~^9w^(F4`LD^M9r|i=?2z%iH;B-L;!vHyM7Ootvh%
+zV1hn}ks#BvqJOHapeFblZ6-BMhswUaQ4jyDwiLIyo@{Qsu4LcseOdDMrKgU|y|2id
+z8K~Vq|8J>SGHaUa$_=Lijnm%TNw4dDv%lV|*W&TC{_?UbNs6Um5juZ<pZyZJ_*w7o
+zh?Esa!>;_i#hhF+>FWC9OzM7rZiTpLYHRv!)1B|M)nVzr^Y`w$C`3H&W=d-Ab7MKI
+za&^URtEJa1mX?;eeEu@y*-g%~myKujs=W<s_bd0P7Z7A=&|@$y;5+zP=->jMq9j|U
+zLn>JU%L7|hOx@<fD|FGo(>kjDsT7;wVTDI4j9L7O`akA$|9xw8HK?<?TJ+oZvK_la
+zAN{+_{4Fc=-ThS?_lBnLj#?V$$F@$>+}I=6Mjq68Ih0=5_(a;DEn*w<w%NwJQ#}va
+z8UOqF=x>^#Y`UApnYq`W?76b2z(SwZqYAuvmGyN(n(eXH<YP<+qpJB1<WvP*`xD_E
+z`#)8bk<C~)I6$XFD^`v5+;om^*8N$n3qxk!sWtWFnYB9NL@&b(9~K2cPOntwooc0D
+zt|nzoJjwHB?oa8nf3-z7uXJ`ho3-UkrutfcQSRP(7ue=<u`CW%>zc4c`ler_*ItL*
+z^!d)ei+5ZznbhES?YM=6q0~2tueVBWr*ApeXK7n?=;LL7%gTQ(n=c1TrR!SFwcC5I
+z<KPK_7Oo`m5YZ0@c5<Kco%_b3a`U6Os@?O?cm)`~*s|c}l1vY`<wwuG7CbV`-`~oi
+z{r;b8#Sdm1_up=KZapP-`rlpW53a4<=Iwf~w&cLUdwTtOS9fgPe?D&OfpcZOK?j$I
+ze7JPZO>&}vpXsDUsg66s=4@k@InTO&hYD+l=u3yqnbv1?CmuVqjLr9b`lg8nH$9}D
+zf6#xyd$?xlN1s_2?(lB3Y2sjL{3&PoJTFRX^A_$4OOBPk3|aqF(?RR`w>S6p&eW9)
+z>$YBVGxpD#%d5|R37i_p_gMCC;kHvdHVcFq?Z~O&Gd;Iga{G6gZaLGk1<PMLc&Rcs
+zhDM!Oeb&OiUQ1NR*+{z~v#T$N%ey&OTV|?7@3c(;V#Y6RPOi^0nC7J2YFqf=xV}jk
+z&&!Qk(koB!v|VhwVKn20ivPw*?j~%hJkzAk$NAlwsx|4iPU_PA)whm`%-v#Q+O{Y?
+zaIHw8OnXy)pnm9v@2f1X)ymvHv@vv&;u4-Hcb3D7bDweE{U&*Kb8uAp@;P&5ip&1Y
+z`F66n<i<h$>mR#IW!85UoswAXvOL`)vvrOco6P)emf2-5zp{O)vgL3SU==8v{EOu-
+zD^tRhCDNL6`Qo~-t@H0_JgAXm&}H$G??<oy?32v)wzkJMiG<!yTphPC?#qtd@yWaQ
+z9lg6&shoei<&FJE9rqqtyu12}R_LpzOmP?8Z<?(L3CW&0QGsLj4wtr#%Yrl??T}Mm
+zYv^|V>mT#YEA1r>4NCt#m#N)svHg0A?7y8!kKe?q-IgoSk%-7JvAS$k^37F6NTGva
+z$Hx~lW1C7ga0VYQzw}PN*@$cDmm>ucE1h#ftX_uu&Mh!4oUokrXx5_+t+cM5=O#|q
+zer~&@uJ-q{s8^(Ld*ssZ3nyvaicsHuWb&8KCRqu~C)eb9tM2^pSkKBU@wVq}-`m^N
+zShog>ELyDL+3k5gQL`Y2`}U?u*|%r?dlRv;*?M0?uI8bO6Eq}}q7$?y$3#E4#dUmJ
+zfh_m+Z69Q~&zHXVZY5(|f9&OF<zILC7GG@8;0RE2TexwG=Pu^N4HsTkXL$rAKYEgs
+z)Z<xargp5!)3G4wYw4wFBF%=G-IqK~4kwh%iRp1WezLSE{?(i1yKj1(?cHV4R&??C
+z+wF1>ezU&2W0_K4KYwji@9pj1HGihAx+>N8_(4_b0bl*l2fg0)b?t{I+)FqTx%hPE
+z=HnkdXRDu|ZDZ}VZoW-^QPHi3Kh`*JzPj|fw9%V##U6z>>ax8dx5Pp-4Qve#Z+RRz
+zKl9ebSKC%ZNk=tLxVC`t!2Vw!D&G}uo#cM<`_Aq0spaXj*>{V+lani`-hJlp?cHy#
+zWXZglvNH5k$SGB>b<LmlZc%GoX>p<I*zE~NV+7X8P1T#^@8@n2C%Aad%{0c(&bxj7
+zv0V@9uZ{_xGI>F=n9ctl<N4DIQ_eVTS1?v)dKT1jB%^}?v}bv9xQwq%n)c%m>u*1j
+z9^dMm{Q8zzUvhG!m{;Tr3#XYM{mM3Z=V<q4OUrnxo-fp~iGH{<+5P&l?>RQtkCn>i
+zoL1{o>hYZ8ZJk@2sok6{og<xd+OK~4kwm{a>8-CLEVlK&t%#WBE7O`#vTJpo+V0n#
+zkJoRwEcbh|_p1Z_`Oz!WE*7?2d;EDtC&PxdFMk`0sfc<0`*Y^^^nLSh{g8<DmHoPs
+zV-^qhY>q`GD-BZ*6|_J6z#FyJY;WH5{F=wLzy8|o|ChbrZ}sJ6cXKYv^GNXgVsUKf
+zD^)tT=E?n}$grT?iJa419Hv}8n3=|N+lfOhn04Y$%X4<u&zx(_=Cl5D=e(@y%fOev
+zpY7D!_dZZdd}Wwc#k}M9?#b<Y|MA#j_bI1S?^Qh3)j6H?|AE=O_YZgdyEXs5)4`<y
+z1vl@m`>-=ry5iUcd6trDXFuuKb5geRWVcuR+H>^sVzK#l*&p8QID0a)ee!0rx91x2
+z*87{ha1>F!*y0&|rBFn1?x~zM&$&!iYm*~<cgtUR$8M8d(xBeWb~EUTx8BsE&Z?b9
+z*3LS<clY+2tHORfI$X<_fB(@rznOpU=B{#`@3phzt;NYLPd!x{O?b1UJSS*0Da80O
+z9%+2`@}|K4E#7PP+;qCX=6(LNRfW&Ld!&7?5(_R#NStx~%uAzrzt5aEW<GQ#N&3<o
+z&lH{+2Koi9vrn7f|8M$OBzs3I*S5DyBUM&@&RN;>dCr@8(JO`57_Ds%d8h7q(*5lz
+z!;;;$yXNYxE$e=Me*WbQlZrn-438f_Zd3iOCvCCk{`=~E$w|V=OZ^fj?Mhyn<hu5A
+zQ1~bH)7!RRw(>RZDy^D-Y}1+)p$$QA-oFjf_+e8~z<>Q~Wx@XmMN575?mPSKo7vW^
+zxj{Rdp8u|h`*`a9U5jg9*csRQ&A+@^PrX;~d|#A}b=Jo(m6MO3pCu!^-O}!L!L1h;
+z-txWtRyE@x!y|!1e!Fgcci<0@yRpnyq;1Nd85XaE+Z6k{E?T)A_x@Ejzxln!s;5G?
+zRr?P&=Wf$hm6OfexP9~Cxo?fi`L^A-doy))(4&OqPAfwWeU&Mg<D&9}CqQ_j0*58v
+zq$Yz)HP8ENTYt@d|M92%&&PANF)QURmYJ?#)UwfW_LBL<LeZfaivvzA=$W_VbB68w
+z*YmeAnHJ|ds52$z2^n18)$I8zz|6OxZpV!!@6Md@QJz<(($xQd_xF@UF-C<uA@lxz
+z{(m>3uRVCx<9yi%`S*|M<u=Do>OXF(%)!*x-~X~~w@uxj8E%^oURL+d+!`e#D|<1s
+z{KdCjJZ#Kcu1%g>b$groqCDNgf~%X<VvkI^uQ_vG&Y3OG4i?Jf++G%<1L_S|&At0p
+zmXGh-&f@QUQ;Ry;`R^Yo%=yOutx$&jy!PHB-z^u}b7X9(nq#(W&YZGITNXbydHW)A
+z^5e^V$Ct}Wo#ngxuOq=kL5g?sFBVaTz)58(N;)PL+_1F(-?qhio$IiWdbD$v2G<8!
+z4maDXzk<_@c-obJ{Y{v(sa$T`QjJ}F+sm{=v_<7)Lv|Lw7UTbR%4S#niMYLo=Ki(1
+zTGYDMtI_G;@sE49%(4!iY~W{lsp?t2Du=l%!;xDba_e8E|F~%X!TRU<x;Ok6-tb7e
+za3yP=yXEX>&3N|!)Ah$&u0G#kxa9U_8|l!WCU?AFU-yYJH+a1vd(+Q<GY=)5S#)?_
+z;WPEVe`kIgoj=RfzVlb}n~n1Szbi4gFmRYp^RIige#XYaLo-y&?`c1pmc3)D?4473
+zd8P8pBfNj@=Dr>#Q?fgD*IhmTc{U3#W_<YfJAV1?*Pk!8%Nxn?N%F9<I68=^Y6c`b
+zP7vi--~C1@qeo57dYMGd=|i7wWp1aHmrI}jyrZ~+`}Ri5J+<uDKkq1h&Ue+THF`V0
+zrkMB3brlbn{yW#4=&;`Y(VB~ox7>WHA<E%DfBU4@i^C?BU3qco-4_WSW&^`Ok)ZVz
+z6=5BZwdCZ&B)?d{$^D%(RkYcWUAEVtMc`}2pC6JFuf51{*?e`;?UzP8N^XlQmPTk;
+z1n7zF4E=ud-l~n;w;oO0dth;Ud(QP&dkS}-d$^W)n>K6NwpBmobwAyiaC0W#{+p7V
+zMjpODdMrJ}Oso~(|51;Bxc?Xb{<-$Q-R~uvbV>N9&M}$h@piJ=EQ@OvYLC|ck80ij
+z;pF=zFQR&0uU0!8t#<r;UHYcJzbZ@z-thfjvi-l0;D&QM^Q|0mzSX1!`RFh`NK=-Z
+zJE3g*M&a3vE{hc(7BDRLXKa1CW5-gd*0r{KZZYPiil1J;C@22j?(C-Lm2cj>*|2%@
+z;bwMzh93{*|0VwTe|z_51<&)p>>k{IUVDGv`IqyG%fohCP3)Mk)S~4ulTRX(T55}S
+zDo?6pc++XW4O~sJQxB_@sTL-M%NT@MDq0+4^hrvV?osTs<Z0rVU~xoIal)3}R%Kg_
+zt-qJ}-@p6*_mlqbZ{Iz)-JM?MHtX%bx`Zve-<NzZ+5dUZ`QLN)%Quwm?ycI}w|B4Y
+zn)T}!2d#YY=xFziJ9m!Ux+P_1ZXUS)df@u&?B?Rt`Yq39Sz4UpYx@1wH2!GntZ%*F
+zXL?UpR4w@SC-@xi<$Z=ye(GxTPao=#oS{8EP)Dq=sFHJOkmOM(Id5-ngCxT#Ud0_p
+zAD>uKd}`U(zuu~kJyajh(0%G8pX}M0wz)ZLZRgszQros=@7R<0-aBIFo^J2yZ+p-5
+zrt$K}XDo`#Uzq(&u>a+SmLoZuyt?`uw?rH`c~hh+P5Sy=EvKm5B|;8XiWgSoF21;8
+z@!hON+rp2YdZqR1E1T9-+coQQA0%z<ESA=Ou|=O{-*G3W!!bKMip*N2{mv(Ei#YIA
+zJ<Y&A`q(2MzT%}kU9C!+R*GzTX|cscsF~OF%tVLq?`H+SPHWw}taIm_wz9QdVb^bR
+zif;4?y3U$rEVWMa%Z04(7v9X6pu`r;^mZNR<xR{{5fdg%vlfzHV9CfiC-TBU4Li2)
+zFA`f8Ot|sChsos)!-a#^EZ=6iRTms|S-z{cES1}-nrD_^^E?mbX?hBQF%CBN{K~N{
+z20=FE;R{`q8eNncgI2a&Uhcm;UpXkLyj=WimF)BL^W9fpJv7<ht}|<E*V?tZAzD)p
+zo^jfKz4_*A%W7AX^vzq|?ehF3<m#T*cQ2m(;J%NqnpgQ+>=bR8Y$`cn#Z~DEK}p%!
+z;?uS?u)mqTGB4xXvXa>Ci{GnE);M=YL9YAZE#vfrBRnzH&!SQ`N9xSA=&Z15jM3x1
+z+Yx{9_q7%WwYd&za}QjqG5k_!8@%Y|tAy>hjy&78cTYxXuK4t@@(r7|HK&J_eR$Ez
+zwXIzG$8C1Aiy37KCe^}qMv})*9yJmwlr^6-^LX!R&NJth6sGO$2wUCxbg53u&12WD
+zwHY%696YtOdq+j4@Y^!x=;-Jhx9&ME-PEgZSHpNUOSac7`$P6+#*|BiPcD1TiPT6+
+ztmC_WCav)9OW_EOl)|%}MqN8)(zr8IE@i3+8(L4Cwa%JX^JQn=krQquIk*0=*j~-R
+z@~n$9{Y<>HrP_sekrh|Dy(*siiv?zv1mu6c(Cn}{HL-SiW0p6QA@l6rzH9Q#1K&$t
+zc<h-IDs^Ms)`Wu&yR|ojPJfZL($PfzJ5NJ7^Tv{No@s|aEcvJ5@P<)fI)m@t?(hF5
+z_Grl%eVAe7s;O#nxM8A?;yhi&dGlR$qT43UYn*n1&q~mwQs=bO;)@Q8FCO^y%c`ub
+ztl;4x)-~(aC6$(n?%pl>=H0tR>E9A&sV#ZgGl!GMit{kr?#lt;-g73ut(@Q<#geNl
+z?x(USF-O_dc}qx<3D3J~uSMJbz2-l5Qe{r&&xdKLmyPD0YyCT~c&AQ@@8Ls-WP)Cb
+z`042?PWE0LqNO}vTWR*$q`We|&J>}WIduY-*%wxnwmvO5w8JUZO?Z!Gxqzcrv0n?D
+zy2xbNZ&zQHUCh{WF=NYy&B2GSm5FA*-o0bXu3m3#>xjtp4<A+WN?YsZye|#Ro|W;v
+zAwr4K_i~_~_y&vV?q-t@e9oWas+Rj;S1XIyC#gqmM~XOKT>0Km##_DncEs&f3F+nB
+z{x+L?zrK~7vwuTduNSX)xLH7UX{@Dd3B%{3BA<53_)WbW5v7s1GUnLHB&q8$n;T|6
+z;t@-~G(&s(1ivE_eN-C+C-&a(T%eq<aMZNsS!3y+EA<r|{D1yw7kqwcQ)T<o%ZYPG
+zvAtLNm3tn~C(Mc6;%s)hj^kOK>XrR@x*n&SQavN4wfe1Z_gl|?dCP_D(ht@AM?Q9*
+zy)AhC&-d8-yXshU7$?0FQu;5nfO~(r_U(q?9%BX(ueLIdHqVW}lzH#EG0&~yO?u0u
+zVDjQ4OVUgxq1MPFpSe3yf6Fq7?etujDYfaQ&Ze6>&z?WOo9gZrvby@l?bWxWCw%`_
+z@bgpZn>TL~YHMX*zm{GRroCfNndGIQV@rQYH!c00mi{%r;#}{h{hc>A>Fh3Ec<f}D
+z`;jRVjWy>!_dfm4XzulmDn6%W_AL9ZG+|wDg;3i07FFFZKEi41*-vk|u=$MRrd<_E
+zZ9Z15AzGa^`x?ssev&S{zB;ZYY`3uw-;-`pj@?tUcP7{IALdx4+1_Fuzoq1wqV-Qh
+zApwhpoI2+jqC6d{>o^5ApG%*fQSM`6t(J9GuIzi&jaAz=?z?^LRhqE&Y~D3F`H!W)
+z+cvKCVz=I^_sUmT_OjEN4bua4rv=S8dDPH+@{wNkb<WEwl;7<!ZN9F;vdL3nUFn4!
+z^NV+GAN-ZayL<QTi2FAVv~IP{c^6iYmn(hWqFVB5)#=hzkEH^%o&}s!D@?0od|D%A
+zK5v$D<+6_KXGJsS>n5trc3e5ZNo}&D(nFP?%X3Alr-{nk?U=3=+nDCABzZaD#Id&7
+zA8c>FtM$%lX}Gy&;m<RXUlaH3UipD1lY{ZdT<L5r-9Rs?eWrguT#;Hg|23DWR<k%q
+zA*aAbW(RgTQBE6+JMIh&Y0G&x?`?bbP0QpX$CnBjH!XJMXeS%<{)&4yBi0<faa5|d
+zZ2dkXB^It$8?IKHY160I-d`W0RdG7{UQ_k{iu?yv1>X(J7ysLlU4HAv?bVk5cXdon
+zk7HR~$z8RUuchPH+U^5>=2Kc~4!iRTn{%j6cd3tTNcFPLJp4e^_j>m-VJjm~S#>W>
+z4&C(UTMOcjO%j^My2VOumMnL5uim!ryKby0*|6{Ou~T8(tD}9_<ZLbY&wp)W=-Wj>
+z?-yNsbFj(b&;^0+mll?@-K=IFec4*6bM|gqw14J~JVVCK*BuR&FJy*oyq>ct?Cud`
+z>CiRn*FRi&+Iq#Cw+|cJ<(!w^bUj}(zrTg;jMyZN>1hU&&p!Ai>^dhV>PV7dv$UW7
+z!YSvI7S3_jo9w72>aH`fAwXIB>vxq1o_epxci-scY?<IKePZdGV?Q3u3RxfXo~Pln
+z?ZV85q5C`bDM$DntEg6RPOzw4kn(@(yhg5y&&)qAF}1vtQYd4{kdj_#w5M*8#Jcs<
+zlxM9An3tTsS4iNT(1N(--Er02Md`v$HhgD04thMFaN_3aww@fxs#P3kJ+#(8I&Wru
+z<I0n+c?!19(tgWsAH2k6d8W)dB0pzm{=a6;t98?2tUtfqFzxN};%#k#{%aCh*en*G
+zE>LphnYVbK{PP)qD>T-p)~im>Z=V=Hqbq2-k6PisKb2pq_ICbXvumC9@2r?`&y@0j
+zigjAnKWA-L@#2XVxD+|_&i~-r+S2NU0d*6u#=m39zF-~@%+Ja3VwZzis=|D;f-JkG
+zDUapi+-xs9ZBAZz(=2dh`Nr6{Nt-Vnd-_&PFL!G}<?7a{Yt`g-Z|Huzm+zaDt;ub%
+z67`kwYPkt3P5MJ>1h4DfYZKSup0eqH&!+aY<-Jaux=+2+%X+Jpbv4&!bDZnasDrIr
+zb7NxeADh0v{9L(Q`X<gNmo(?-q#K6oJv`#Wb=o`i%-Ja$LQXt5a)~Fc%UC0Avc|K`
+z7m^Is|E&DrV)n>~$(rGS@buXlX~`Z(OrDB8$ve1vo!N5s1#yd;4=FQA{Z|y<$CA*I
+zc*5^GPlM3={qgJ$onP&DNLM-4@2XSbHnC=~VZH2ox#ytU$-1(ri}`!FcW-;OHF|@O
+zuv12ZT8!{?M`lUK<QvV`-}L82h*?!zzX;jhIJH<{7N6}rC#CR~WiJ~{=6*f<_t-Ae
+zHFwq|vLAS5ek%6sN**aWNwvFE=PeXmF?H8|_L8T{YE1ujH$1;Rt@TGz`YtW`WUtlo
+z4^6I2eWbwNTk`U4E&uxY2a8)*f9N<6r0TTZ)xTU}$>GL>&m4ofW=#9S!_9M)m$!39
+zTaaGg>*;UK+-O#C@QdDcd$ToXZy3MzR=I88t!~`NOfKF1^o+)q4_~U7XP?`&*zL5_
+z?rcT5%Ze^iPiq*Do-s1=l)XN;@A0hX<%aV&U&woR&?x%F74wZ-ue+=dK6>sOpINr9
+z&F0X9<>%v_RzJ?)qyCufS&^rX{@KKB6Atz+e`aVNe4y0Zb&9vDj)<{_=;ss5f=?`Y
+zbm6ff$Ki%-uHz={@&Y|MCMzE&_ipRFStHZAqp!@L&uGW*?+hGU|Gv*l>23%#5-dFY
+zCO-Pthh4$j`F9+9XT#a?_x~rJyOoQ$1g#lNmOlG`&z_~_Sqa0IME3>z9|w4qNbk<b
+zUB6)K=BBv4OslWAnr2*)&zZbFw$tkJC%@Jk*`^9rvM+W$%WUs{Fi|)>_f_5vkFB#W
+z<)8Rnr8_Sw(&PMn*Z=?Ld4>FVFVx6e>mu`=hcPptO5^f{k0tpG^R~IUCI|`{EeNp;
+zcliH1aUuIvQ>TUYDRbVp+S;vHvwO05q~PZ!Cx(+d`a+zJ#~8kJ>DaWn_j~-|O)62b
+zongma)?Pg9w>DYd`c`i8)t4%3a<+c>;l+LXDxVgw@Y-z-=e?BDVwf2_i|#q-<SsPP
+zHkds*W9ux7K%pCVZ#FJ054?Z-P}<hMv{LTr<*zG#++j6|QqwtaeNN5fiBaa0U{9TM
+zO9J%HF9^|ia3+TBdQ7p<(-^7i`sWwUIK6m+ufj|pCy8D4Y6qvPH_mNY?dSh!W4ctt
+zEMLpiuQ&hxm2A5t8P2x&k6^<TspK`P4lZvPHZUwXtt>CxpDw7cr>yTg<7{lnce4xk
+zVqJG{>dZ^dx3Df~-T0t&!*w4n-|hKRloIZT1Ux=;b)MkCw=!RAIVEp3R^<7Hvnz<r
+ze)Lz~=+XN_zn6cJeeKW3bByh%U7INX(m5w<ZNui4Y*uKG7P6^L_T@;KWVK0CRy}R<
+zg*gX1>K>n-)R5`5#Y!wnR(R^K4U0EyyL;%=w7q{aN>{gjz00>Pn@uk6<-)6x1#$I~
+zv(zS@j`mn$Wij#HqU-A%FZ+lH>4vNd&3TuTP+QEswM=;RiiaD$8450bU%APX`K61D
+zdRp-eO_9PZvtHru&k-6a8}>vTdE>*md8bL5cVx<D%OygFFFJP!|GV<@%&Q`&XC4-9
+z*H<3NTikB#)j8p#WaWp~o^CzrmeY%UirY5Ea2}e&uIb2kh3DX7UB*Wu3>%pperL^p
+zb>VXAi<d@|xXqcv#P8k`yR}<8<NdmY(f3<#=C$gGd@$eHx?E|B*V5P7$t}lJrp{X#
+zwscbQykzq!DGyF}Ovt>{aDy+|r0!dB&93bD*y|I0)RsT{?A5ce{g`y3%dT6B&3qe0
+ziUQ8G8gEvONxin4{lIRSj2+nyKdu=bE{&;*Qhj{RP-cs~VMi+80iIcr#Z|U#dJ~Gj
+zsn3b?;7t>05om4;xIQIgtFOtFzns$N{<U0vYj$nh?TEX1$*XT2^;_Hh`K#WoX)fk>
+zS)bi*c*7LNJ;8QCc;UZ0%xA0=cCXm_Js^8##QHUi5!`<&BxN<81fNJNo^e*S@a-p?
+zQ$KC;>}<P#-Zb(%`z%1~=5N8GnIb|Tcg$6Gylm5X#h|C?h~J^j#k++aR_7+Izj*jj
+z&t~)7g8hQ)xUWt<<*k)!x?<z|y^d|Z65Q35vVztOB`(Y|YIioCxXQauC`sU-z~LQ-
+z&S^9Y2u11iUHOx_BuzYVo7RhW>k{*yDplRhdy?be;9`<05YH35tXeBY^3rUMHQ7_e
+zx(e17OjEo&F;Q1nsXR;eppe1?5960|?w7AH27Ko9ei;3>`JYgdqO#W<<2U#H3)&7A
+zw^<4;S)QrKv`#r+BCx)*=U?=XiOlmPBu!lu{)!v7dG;wV1|Ry@U-i&hT}AHlgpSu5
+z&mZr2*wV1K*Hh!Su!>b|wb{a}6Dyu{n*O<z|F7JnY*xcW#xEiZQW<QSGdvY4c@>fx
+zF0@zouer8i^M%`+|KD595GGx^x$~DF^NpJaAHR5%ZC{Wc-N&ggwQJ#&zT|B&2Yk$$
+zpWfto_Wab0xtfVPryP74?0sTsaKx;$%Ck=@Of*n<WLVz%;`BD1gLa3eerMSBy(;4N
+z+k};K3euJyT~M*|=@ofakCu3yq@LTIpJ(jQoAQb8x{*=+5&2Ti3H5H7J8C+r89HPc
+zm;(O(OMlqCBbil2rKtB@WtpO8_VZRXHp7!oJF07M@HFtuWSk(Vufcrl!7GOzo(zu4
+zx>cXP1g=)?Phv~>^=adg#~)w*Sa3;vk#!ZD!lEr4ns=iko)owxRK&dG;>hQmJa1iI
+zK&MPSn}hAU`GOM3eF|?}D%w4q%R>%{Prm!xM04rpWASa@948gZ8t;^lvkgCbN>#nA
+z`og@L#2fKZLKhx2Ok?_DvS8_3``)I%d#{w1xjXh|q?s|y_{P(8lVOe7uDh`%)wUtq
+zvn#TSxeuhK8>D$KPcUd`4dUCGBewi`@r>DXkFG3YOZU@F)SG|w<WHtgKW(~Zifo$6
+zB6M=fUUkRU>Oqg|TAE+X`er#xTWyZv#z13+SKs+8m=}onILo^+aQ8ATDQVlu(s6@v
+z!N$nmuKm{pFD_QvcWv9I-DLu6)E~G$>A3ypVc)%;jQ;A^8J1Q2>uf$P`&ClPbm`@n
+zkeYLDt7Roh)9qzDHgYdB-#333pWdg|Ckv<9*OxyuurIkWwPM4q6oUk=#?9h-{S^i0
+z|80u8czvV68yWQ|CIQZ+lP7FS7fw>$y?8?3?S9!W5p%9jQ%eYAT+O>W+<o)*_T}4l
+zAE;vGx8KP5pzylCkCcN^;({4H$?K*#?zHK?86#yrH}Xi#%9d<#?isUnlg;M48P0dL
+z5^SH?!MN^(o8RIKTV^OTGL$rS&({6o(^+K4cY4y}t9PAtv2FcUE2{DP=B~M7XXbJ0
+zrm@6JFEnO&pq7xt-ryE$7WH98%lCh;ZnbN$<<>pqs@176p8GrRTUSHiq!qQj>q`GU
+z)X%H0x3D(+6KB6}*MSuYXCIzc<V)wgu*H{Y%IT*of6Tc(b=G<jmT3z%s5&q*u1ay3
+zAERN-_-kqGj;d`JxvN~BY?a)`qVYp8T!4!qIYqMYe{98}nw7JcUwtWL`REhthZn-<
+zW&FOomoaXB-Sf-+%3gyxGh15zE=_+E+4`@?Nrzv>@8(?2h1zR(@+E9#T+RGtRYs)k
+zmMYOVVY4f;cC*g0<*!zIc<^9<ccz14?t+LDiDt8pd`jZnd{oKreELR<_+v4ZV#PZ}
+zrirCb^i-XAUL{dQ=$lTHn8?kHL)M&3H&&G`e9dHhb4GoF_uUHpX7-CNH;x*f>k49U
+zikfh#rG>BbXJ5VWhU`sp%{~YI@*Y~Z>7=T|5k3Z9H*J<Ft-W5ZPxdAAJ(AY$FKxZn
+z(jt<y#&FMxz6PEj#wEf9528!&cTZ(&{IYLefY3@FzfPH)H9YI4r#gryUYT-uMRL-s
+zDu&CK7%N^~lG4fSy~CojBt5k;s_p9WirrI-Do%^9Q@5yQjS<{>WlEys?1og2>817F
+z4Jt}X-}|y``oHd7FfVAo;j%ujo^{uM<?bw7-Yq|8_lGy4JeiCy7}D4cvIRvK=hbI&
+zI;c$TbGr2J@(C;1j?3qAn)(iITKuc;@2@c7*v)-sw{@PK%60Cf+=m;i4E+cBPNvMC
+zEYaX(*B4^bXx!~O<+QPd?eya-m%5%258CnUh)vf{o@ZT>Pc}s^naug3@bEm(3nt}E
+zTMq_ZT3xbpB7;`1+$K-ipCxC`Sw8l<Cup>6-IqJ;Pvhm*oOnG;=>KJ5kpuGEm_D>i
+zbJ(3ZX1|fyLE@d92&1y_JJX)S`<e<&|FAZtGw>Nntym(@F`tv;6-&z>f%gxV^H@Kt
+zoFtLV=I|ryy7ml4ff=i87#Jp;f4=-t@x1*NlD%Q<ZE9@hd4fgteRo*i%zPV^&dWBv
+zvt!q{Hr9BSJ>2E&2XCv|-r#AFSpA3j;pY5*yubeO9xC`gCx%~;vGT{CY7P_MgyMAm
+z^!ag?ZKYc>>my|uss*Q}*Vi{0&t9PVQ9J+t^cnFH$9^uqzHw*l;bYh2^wz&$bTcct
+ze0x{iZr+mH4$Ij*gkx8?ops}0QC?8EnJIzwKqNyfgDuAm>0s}j5}Rh4q#0|@nQ=NH
+zGm~@kPno=3X=0y?KSyXRGYr>LoZX{5+3%L;l|!3!qyPH6Jiea!!->nLB1UYJIBhG~
+z9N2v9yBqeq^?Y)#^%tL~b7kJSDKa}*Jm#_%<g=yeH{4)c@Zo6VrTgI=vJIb8O?l;W
+zIc~RDWN@6E@ZD5t?ygxjrV2OLzusxIAXl$;t@O)zQw0_u^IvDeqmj;_b}@MRwT(Mt
+z4_=DloVJB8uE~wZqU!Xn)yi*sB5oxbJymE~C-Bbg|Av!tQ~pQYmC`vjgK@&X4(G$l
+zL6z55obu@VSeyEGLHU#TKD(2<mOZ|6S$oHxjm4tZAHVy{Y3O{|`ra?EI~A98o7*F%
+zwYqI?j@sM1^{m#at898}-#)tZG&bk`l@CWQ&%Uwt%En!R2cLzB_NGbip30T7oqNmd
+z33sh-8ElMN%}{MSXX~p2k3$)v8Gdb+P&49etTF2?I(DG5Rp``CopW<$9E@4nGx@2G
+zSX#Hn^ivwkglEh>dAsvU(yqzMjyz^stA7i=G5YsrTh!}Z?xis@oip0{OyBLBlK7Ip
+z!_W5LTb2gJHy$+si{5`d-&`$ha3`_}QZ0Op`kxekzkdze`W<0{kM};UHEH>FUuOEl
+ztGi10wd7tkT%PilF(N8zR@eERTX(k?i-#3v74j`hwRM;M{m@Q4|J|DxFSjnRa)`OO
+zRp<CB&u_mi4_k2_Osw16Z(733|L?({&A)$JCbcGU&dfPj>T}s7#n>~&*i+}6xYPXG
+zZ)awhS+BS@E8_l|MNzqrUQW$jlOM8i-_~|@{hS56t{+-@`u2^rR{~d?2d)ia+|0fu
+zYsL3lE5f5A?%q87UH=P1&VhNp8O#|>vm9c!Pw3B%n5C~U+wb8oVb(cOQHM?jv0c~E
+zUo^${@sS$AnI%%KB|@DkOouvd8gu@=zfiTkQs_$Gp~N{3!H*uLadRKF;Bj_dZhVf{
+zoo&kT=F3}G><+$AJ>lLAms2OC_<o;KE@OD{O6}PHe-GKXEHggW?-8HKUeVLBLiYF@
+zW!6-Ff#m%!U%p~IbLNc0Ws?ZuD=)a-iFnt1Z})$s9#^z`@1&&twI2@eV7XGZK_alv
+z`F=moOOY1ctSY@zn>$`?XelqMTGsk||L+$rQ+F5b?3p=pCbO-1+KY~-K_{LEMZ{^f
+z+O50$a^cli3Ck}XI2I;4HA~n(?#_{KezMcAl@)%xWTsWkYqNP*Z`9h(S8=jm_ex!O
+zz3B3)q|Mh4KV!AldG)uygfV7Az3Q*S4c8nErQNM&9ynRVX51?BY_s8<S>6eSiE^8d
+zGM&>&F$~vRFr#zfjMEBYn-@!Q#xm>*(!8y?qP_dMdruQL!-j_C*P|;wo^|z~(2>6W
+ze_lpIgXx*Wi+g_jUi^2*^uU!njdp-r85h5w5p2wIl0N-v|5BNoWn#Z`H}q#M=)cU@
+zk;PxpY;D1Qbt%{1t3vzc@@2`foR^l#=lyb#UBb5S*|TR8PCpG;8KU-YbKT>I$1lE~
+zdGKgZPuFStD$b4BFK2IJIrp{7X;=4}&1cTW9b1#b5q9ldcSm>TA6tf3g&WU%WzO+Z
+zSdt`>(-3wj=GP$^?-#TBwyuq}`SG_{IP{s{T+qmB=@NToLGuY6(i%@LTNG!ReJMN}
+zCcZX|J=)qd=iQYJTlcnePcI8tX|`eG-uAC&Z9~4#T45TsBIMPLwPqJ`$}i@XZwy_X
+z{Ip2A;uwq1<$0+a%ouZS&b;zSic7QcXAxuPj=eF@ztjjlt&#bBlx14lqZwz97o^#B
+zI^8-Dqu7_@<*u~M@rcRyysD*>FT9P)DA(0FqcVrj;eyk4!~E#P?LC6x+ZQs<nqbgA
+zef6YnceZC|0yi;e^wvM!9Rr$y3i#o1Z^gyE8y-JCe)Q(`z4b0E3j+7{u2}Bwo-%nK
+z+uw=hN0xc43~^c*Fr$m_KzaQS7PB%f4bdX^?Ps1W5T89Ob^CsM2N%(Eg>K)E3f9gD
+z<o>bbzwIu)l9et@1xoi{Snd1V{5c}_{;U;7<<HK{O#U1fbW$Sdq(oYm<eh@IPEV43
+zFS{(i?7TgF(cO0m<=eYnU6a}-U(GPLud`}(^W7}zuX-0=MPzLA4av@3lm9kxJ8Mbx
+zfvBa8>iXe<Ys~{zmtJgcj5yPfn4z(RXUQX`;#Lc>bfFn%)eGMyNj<IMIlbBQ%(KTY
+zzUcfp^!_hHzg^tXOVZ~K?Ehn*6FJjn&uRyzHnjzujKNjX-xIGld|~|;{);<2EL6an
+z!6b7};^znZ3fofePH{Zm{P{(n*L<t(iSHN~<f}bh97B}cb1zA6)h{?w>>e`xpg+I#
+z0{JE4a(z!c9=<d9k<a^1gYR3z5}9qgRTyHMFFXzo{RA2KFMN2Ywe$a)>DRV>xRC7s
+zP(7~7`b?kkQvE3skCOhMy?0@gjG$t1fiKUg^(E=2!VU>?YEC(Qt8P+2(kpKsd*?4|
+z319#6$eZSw^%l0v|Kb0XCKUE~oAys3lLw#Uf1f*I+BNU{p69Vs-$!3BT@qv!#4y1-
+zId2<BOthPFrJz%k0F!_dPg>URn;U=6%wMXS=-D|hbJ69Oi!K{pG*qox=Cb^@^WK{W
+z;}&;Ut!_`d?Xoy^(M`jTXZ+Y#Pqi}96zqTfqf=h@(bVl{AH28CXPY}urZ9c7;`L?4
+zwI?1tZuZuAQe{^1FlPR>2al%Q`+X~6!TrrF9D&{qH@Fqb7+##X_UhgH(xZiTriqtX
+z6c>82-_`KXQ~IjEF7sg>M}Y6_b*GLSY}m7>C%^V}wDA8(UCob2*W0($e@HIZc<SAg
+zceQ(ipT;rn$=1hSYdbcw9dCL4oW12?QEA*Ev)gW^$$a~wpFQ~6x}R}*rqniV(>uSv
+zwyUo@bGPKOukh!{Gku+Y*EcPe>D|5BOQJ)aM`hAqqsKbg!bt&7xt8m2n+i?aVlB{?
+zX20+9)E6_`ZL`&nX{|N9JCCuz^~c0!3HyI0`z5xrWLyYN`aS;!<AMcZ`5EhidiLM+
+zmwBNse>zz3N}T}59MuVo%MA>k%wE0MWG}Z-|7D}r#ov~$x9`c?+gWi&qU{5>Z-U^*
+z_l4iLyKUXSc%SH$(le#86`KWmrNv$+bTg?QyWM9}XS+z}zhOzu=ZBju$`ex;or*G=
+zdF1Q$c>7542@QMQ?(a@lOJF;@F3h&@<M+sKyV?UZ+ovBl^m>)RIYIV~$LG5_SL(e|
+zkJx8%PWV#Jk&%^Y!)g+j?Ih#nT%Y83wBva9itDl)IV)#@uHg>;99jS4h^x()8<RUE
+zt3G_%Whni+J!su=OPj3U{`IpQSakaZl<j&frt~ZD{aJPH6Sv}rll%9|Pcx15UG(#3
+zrH;P7e?YCyF)e{`f1Rx#@1@oYZxCk7ka+1XSs-=fZh+Z$FBW~qqFmMl{RUZvc}!9~
+zi!0h!{x+{%$fLNTU(}H|TJq*QQOCClf-;&9FT4sDythJJY0pOeJ>TUX_6a=sJ$n{!
+z<cj%`EheFh<PCY%@}?L$ZBKu6`FkDnu4O-)FIJqM+o7ea{A(2>uhPTFQ_ptAv{nb5
+z-YUAFzSb%}=tks$*!#@|M^6P^|I6;m6=dJsBatMa+$Ov3P1VE;rM%j&qkp^!-)B4V
+z`c;+GTXIX53x|h0$9p{7uh+Ufr&=%X>yFG>FSb~JOPB9?@qKd5*XciZi2dDBtaPH`
+z3`3SjU=n-7ve+BTmaWh@`8aL6tY~KX6?1-z1|z>1SHTT0!*^~z(J)`V`Cf;R-bV*>
+z)k4#|m-w#FG)|x3w|x1t&;RD@*9uEphh{jjsI3uhue40=nf7_#cis~R^j1gx`!2oq
+zyMX=A8KP}}&pp~GVfTA#e)89>bN{3tZM&UU>=f=7CH~;Y-sLa4Pj0rTpTGKnNyLO{
+zoewMa@$A{LMBB3A%l(6@G56Ci&%eQ_z|yblCM&)C=)?0d7Fmu57Mc|`TwM4)cIqRE
+zw+koyn@}AU$~LDn-M;b6)s)Q4%q$}&<^z+@uX%WnUCv2Ktk`$W%I~F>4Ug<TF&gdI
+z(_ibzrYaG%d7joy|J0Bl`kH({7?0)l^lnb`ci?DrTit8_@5*$wO>^$n{eCN4G21Fn
+zcGgFImC_PBgR+1V!KRArod=c_{av-0;ZpVAopIs2<oWd&mC6`A);8G$cdmPUY4WWY
+zHq(x|3ro~<7EHPLmfz*iUyoPM3Lj1K`o1z?{}P^+Cm%-sdlRzb-I_0l&qiLldLnpL
+zvgKaWLc96LdCl(_gwFrDc>X@|xpDecvHk~GA4?tiES4`AxrTYR)}`AU_$$_I+Hynm
+z!|{9UIyKh~my{f;Kb81Tx72mh1jhI25++wBZ_@a*clUmE_ah$V^{Xn*90-^D!?^F~
+zg~!6-`;s<F<n4aDty6l1ki`1MHFL6puLoHz)fc`YF#X@_7;zz|sC8UUY<Wz4kxU{c
+zI;D5~gf=oe9AA5i>6`t-s))rE=MO$OTX)~@g3lX?PJSin*x+4)KUnoE4u;g;`~Q8d
+z`-cb0&jq?A&!0;z?a+Ul`-b02Ju79w0aJ&?MUwrWchv6N-;wUE`SIZXA9pUQrdIRm
+z>gxKYu`JNuvpBXlH!gPbbjHX{`xzrvovisgyVhNgF$vs<VK(J=)Ah4h^=AI@Cy(X7
+zyzTpFVR&?D&ZBACJr`bn`|!}eu2A5<bkUx3$uHJ~U6}AgaC=ovcNSZ3z2Jol1;=b^
+zFY_gyoVw)y&V`=SQ&RYCR#*%6AOG;RUGDhveZSsz>cnrqQ^d{HdZ?v#)#01UTj#4x
+zJzsj?^_w-rEK!3~`mymryQVL0(`Wp&#$2V0q2t)PgG!4TPHv3XGH3{JICf-l=GvIV
+zUR$1ep&yPd>5<0`9`dlwY&e>5cu9qrxs#m#_Ip*@k3POU)%542zD+~>dAr^SANjqS
+z<t{fOAL^FR+hn1|c6G<`rblmA2R8p&Ib}&e-_B_VSH3^~f7Rh^M~(l}7^VAK)$6AH
+z{~0JaZHel~ef<ALqu#!AnYLDZ?+e$-mBLcWcb>nf$bR^J;bJ-ONs8C~uB2aRX;5sb
+zuk=6gdKdqx4`(f2eUnXMZ@6)Ye~sDi@@z}3%uborthTE@*={;jac6JT;zz%C`%Nyn
+z{!ID&dYKZoU%pB|*W7RGTb{jsub8_3yg94R$E-E|&}jd+M^-3Am#N4ll1C%|lb8PA
+zzh7=O-)r73;lB3WME0Eq{OhGWjwJ7Rf6)Dd`FC53jj69y^(#-d@HzR$*=oAi1Yc(<
+zIqR9V%;m$!_woU0%uRC24{s(P0FRfn_9=V#x82$hu#l1W(S)wlD_>UI@GVz-<y&oT
+zr(DyZ`ljQHNrQ?+zvcY%kEccF&D?eV@ALV8wdAV)XddA`e1GPY<QRwc!oP3SnI_2W
+zm*V&%$f&vT>BHJd7tO5|FT5-JIN$z9VM+BfmuV}DcG@&bH?)6UJLiDE=+-EIVWu`c
+zn?M`e-df9D2jy$mtCul!7@X7S77~c>s=cmlv?w;0|C3B};Jl4aT3+8@c5xIx;a;LL
+zf34d2tB+gtYaU*yeHOL2^Ly=+;C~+!5~nBKc>Jw!ui_ee=`x=_@m}_M-bn&8Jx<DN
+zu&r1B^*Qm|{VP1nihgjtTj752Vq=r>^b-fp&-FR-;p6!_(fD7#4hu&w%iI6=TPM$I
+zX)zV;ijv!ZPxIeaVs^<tXt}0Q>peq%L$z;RK+&Fm)0f@+&5#hej(1<<d*ub<3e9%5
+z&F2NJ8J?`0)O1aO#pIatbmmUx|4&wL)2w;0;O*i%_RHx;*LC~9eLR1+U*GP7z@(26
+z6+b5?f0?IzYH<yp9=Af4_k|M@w(sKlCUoST>gCf|^IA%8ZSKSE_8*=L$IgrUwrRR=
+z1k;APL@S5C6&}kUdQD%|*Oe_=TKmdLVOi$G-rD%4^$pn$nIF7QS~7r!4!5ODO?F&a
+zy?1t9t4#Knx|A-%%F?@gTu#U_3T}GrbJu>&JW<1^svq3zp12!WTU(dT-+lY_L;Jc1
+z=L530yjkJk@TIO{MeJ_I+$AginkDBli9M7StF^zk*)v${x?}yJf)6sKY7Srar>no1
+zw9fayE3?Xn)>>0~IS*~`t@x3C#^A$l`9Cc4D$;U`@}JFWlmGuwe*T?q)ePYc!DVc-
+z?`{0=dw}WTLCwBp+z<6{-<$d2pjra2!Iy_}4Rsm;k|Lkg73zEUAC#XeIN=7P!l4z4
+zT!IGw^=u-yEZQyg@Nrpq_)-;Tx8!D_u9c@{?kw+Gc~e|myzuqf?S4<w{~vSif6V{?
+zPqD{0WkpwB!M;;nPkpsSgg*LLZU6D$!!(A2)n{g(@!^~P>WlD8&Q8b2ZeQGurylG3
+zB^-NJ-t^thDUFj=PP*{K@AzN+<3fC0;-b?RXBwv$9G5NkDR>?KqkZ|3Nj-sV`n*<o
+z-VG15k3L+#o|Dnn<xVK`y_64sO;XYtZZIlrd)NQZ(*3X3@gMs{P3NdYFfmqt`E<_u
+z{hV9p|G(p}6}oT#+vJhq;rh@H!*z=Soo8QsyK=GS=VTk50@m0IrouO*CSSamsFLtP
+z%B+0VkMQ^Z1a8fJ=Q4ev_4_@-KWpkXy}sD|rmx;F-{%w8JXOYs7iCrjyt^vhzcWAn
+z^V@u(=X>#d>pky3iTGF-R``oP4%d39=y>#M<*7r@CLDg}dwK5@`wQA}AG=P*?6+xq
+zdrI!#)oQz*u;t9Ymk-?*NOEcHIknn!QSPSsHVlsa;)#C+1^>vH{@z;t^6-QEhc>e=
+z*dO9y)m=a3UXy^+%{U!JmIc{T|L)fR4YnzIcj(CUh1d6e+d8>+eh}B>YR(G<xl60=
+z?AFPM_ii|n*t%M*k=y3)>Dx_tyyujcyo~y$yw{fTyoq~&vwg+9##n|jh7P6t_m55P
+zuV3@=T^3JAa*@?B+tkN%7A*)9{duSGxNPureuuBE?EBik*Zm0ga8Y%=?f&EJiqjEa
+zq%XJ6IBWH3C!=h_bup!<yFRG>kdhO*nD4>2TTsYBYw7{{|5x|^SlnM<_vp0W&X{AT
+z<Ntlq+~F^~X4gI`yU+_uS8+NtKixlVkGGfL)eHO;kEX_5KElV~+a)-=;jotI%gn|%
+z$@zf~7?#?&El-|vS#;Y9lNW}I#iE5zJvEB^b!ocaSIdg;?RK5}cfODIP<?!m)xSmL
+z!isH$7xvzNS<3GEiC1S;QjaZz;`Q<e#ZNxivc&6M+8gh{$(q&Q#`WBE%GGm!ziX&Y
+z`e?E5=ZDBWulLr!c_Ta{N5Ar<_p()=-*DD#-fzor>F@KzH;f%w4W|!?{`?oq@NU!l
+z77kG%rfKOW_BlKKFNiqQ=krcy5VU64a(>&p;-6W<t}>UB)$aKJd*bi+^?CkQ>x$?3
+z{}s>K?S1ryonzOwBR{6kvsvUFDd$-Fu=khb)t!R#<~1A1NOem_+`Vzk{_olUU2jj_
+z3z;(e`u=}k*Vyo_wvn5@mSvMYa{`|+WBc0Y{1KlH8>%I-Hyq0-mMh_$@cqM!oZiH2
+z1NQ$D!oPO%%s)Rh=Slx#(e)LqT&;&f<~MV%mj02t{A1ROUArCLKL0gAu=hn^wdT=|
+zTMj+qPJtDCJLWyEym;^)!`F?A<c&f&RadoL{@S8!#v|JsCY}Gg{Qdl{(*F%}J%3+a
+zU-$LO-R)Nl76k1$e1=W7`IC%bNLy>Yrj)@wr|TDLjV|py7k_i3&_;F#-XiS<j(ri&
+zHs9Cd+|7Q3kAd-D#G&TJ|G1J;R-7|jcFX-;ph)=JPMMDf7x~K?Gu}8i$I^IeWaD1B
+zANP_gp1=R2ShehB4p&&vE4Qc58Qk3eSvt6^+IXnJEr!q0yY`Bz6o=Kj$W;nXW|rUL
+zov)ijOlyt*JD2}aas1zNSEfvr|GiQE@XO1~mp^G!txfefQD<@U;rAAqx}T>qZU`wz
+z2I!?0NFM9RK3J<RYiF3jDd03eIsKH!0(KYO?;m4Cj6R(%ehV5d*z0nl;#kGby5>!M
+zCnqYK-?KmZWZs>NbEU4IVX$U&;?PSksCo4H`{V2Pe+$0YRba(<NZu;_j#y2Ec4`Q>
+z-J_}BO_>G0$f$a8JN2!uuK&$BzokH3W3t~Cc}13gPwRgQ{JXw<ze(uRC%ySKkH5H_
+z=aSeu-N_==+2tGqkCIQXG4q4Uo~Rk$O_>+m^F7L##?a!Rl;*1ceWJ|e<;{i_T+5>C
+zx5fY6{9oVj+Gb}dVdZ&+ET?t*pP!Wd?Y!yZ{qMJ~?-Sb@!&hBh9bB(x_hI9C&{(JW
+z{cmaqZt}c{U;KD)m!ORK-RmAa6*U=Kv@+Z8h%nj*Rc3~31PJ~x`nO%fscub2#p_ew
+zOMROeKD^%lUGUGr`L$)MP8~mV=upYq*%J@V)rqTGq|05uar!-_cR3E?^L#(N`snC>
+zu=vc?#(;axA_u4Y)?e0Bu-V@7!Pd4&;MBE${%0=S+@M~@@WO*Fgz29Md%dCIFGa?)
+zqG1JZSa|Lf9OkX~*d5<<zW(258%c(Hf9?MZ%~Ja?d;h1j8Pi%)BbC=ZDm*<!;(zL)
+zsF%NE{Yp-_##}e?@c8rkdkxF~xAp(OUYXi^ea|z~h=_<8lXhLq>s;*|eD6ibq1%ES
+zFD`$R{;;pD=71c7W>aybORQ92YhA_t;&jt8`&)m1>{#gNl|AEY)GArl?^3EOT}~fT
+zFy3aJHJ`<qVPda$!?HQm6QXuGeK=^YXQ-v4!Dqs(uvc{HoI~+V7Zh&%+wR>c@Z;tD
+zf0^?*j=rz^ApFDp{cjBu#Rad|Y-6lGoPXWqW8eQD?7=sGTsPq@zhC=Z<SKVrw@rrp
+z$%QS9yf>H?Qa-#^e3bqpKj&hiL-YGBe+?Em#E9o?5VmIclGC$^rLWLI_TKb`g@Q*O
+z?(5ZD`9(#=M44~l@dy^#_0@M@2WU;LP!f6n_e1<c+5a#3FJzSq7%!{-WG2|3xIOBy
+z{lDw)kGB8&#2sA82WnMmdi+~@Pk7xTgTnSLJAEA#Bri|7_;1451ML5l${0F)>-_hs
+zD#=TWopO7(+pBYp`tnSdIfwu2E%%>)Y<1jMt$7^%_P>5S|2VDwqg>3r8*WB|^G_8|
+z@KgJ6__O%O{(Jv!|F|N)-)?K_L*M)=VWG|=SMF~3H8H;R%l$1iifOjewTllmtnzNI
+zIo;B-iBtBWefgc3qe(~RmTeG>U|^c2{^Y7+ouD;?OM6n!uaqZQsn<N8RD7O&|IB28
+z2gdO~&EEZ*djF8Qe4Wh8l%y=B0~xd0LX`UU|GEA9<FD<1*=rszJidGzk4U%cpEKwG
+zoGID*r}>?f<L_Jj59EZzG`!!v7X3DPZT=3y8*fUNE6q0D$n0=FaQ5B3YVmEy{_w3^
+z_vFUjhKYjgtly?L&sDny@+&AY+6XerS(Y=F?|r-d!$13<`!BROoVlR>>$BP;LzC#-
+zKfkK&n|A*{y1OtlH+xn6f6$HJ1<%gReEI9bxxEYL3;1#U_|Cv0V}C-9;o(i@2WPbz
+zo<>}F{iA-xZsy15(jL4&%Cm@_^MJs$jvN0Dum9-&4>GrMAZ?#S@svj$t0opcdglK|
+zw(r-cpEh;xp4auMD;@FM+E)MX_J8L8Kd#^J?w)Qwan^yG46&CdcpWSJUoLl4y6)-r
+z5A**2^!!rwEad;a(%9qC_kUf}{PQHddfJJO!-^j_va;};J+veH*YTh8vn2&LGCMqx
+zPU~E=^pN)UzhRn<{nHf_PaR>b6L`I2^{w;&|D0bOq4UYb<;Rcb``WJW`Dza8W-<nO
+zsXPk*pH`&E5_Hm{?E9-9+u#4zsC$+BUyi@#z2U!2jCU%Z&jn>;o78gEhwHERZ^-LE
+z^{sk?_>{+W0rl<v71#d9KWu;g12nz4?w6a!)iobnmD;qk7k&si^N7nW%_ZRNl4U=?
+zTs!fb*P>)9j})h(1*5=&U$566e;xPTYF>w+-kQ7z)9W99|9GtapY@Mp&i%?WJL0FF
+zZfaqe^ig8TlpmA#|EsS!8(q)5|Mx-v1s8KZPk&SK`}Tdl<XejzIv>_L{#>2k{(fo>
+zQ{NeuH!1VwvV}K%XJ@<i_7wN8cfp6>b23)5IYb@yJF<YaUUhc;O;!aprp3=^$ZS7&
+z?%2mGzmCTLajkiiEZ>|t%SKYU=3n;xqv8AhI`4V9F8tB_y+2EL{JfR=#YgyV^1d85
+zjz*U|4%@RI<-h;0cklDU{fG9(*LUm>=(m2iBe~1^NYaeb@+)<>oOi`n2*tJE+wF3s
+zxH;ap=daf~n*&B!(wpu)pMQjp;bL+8TK;6Y6PmeiHa82uO4YBH1hse`?fd=i@kt5i
+z%~y}H+kKP#^D}*4llk6vPk*TYe{uDPwRsFP=Yq>`Wmk77?OLWNXMQ1L>&KhxYuM#~
+zT;6~1`MzJWGxp^iXJPn$r<i}z$tNZE)NPud9^WZhJ;V2{#4lrpQ+gR&nHT(vX8UvH
+zqIP+wEW<1}p|Y&f-FJ28s>I(*c`9*)Rm$#K{htM*-S0JnZf)JGKY7uPO>UnH-^F-*
+zV{p>eJbXa^?<M_>%p3e~PnG(2d;XvJnlG2*55126`Tb+D{ny7854rPP%qF|7zwUhA
+zWd7vZhFNL?#ylBL38l%>^Z%YI|8RW%F7f!^-}rCnb$<Bs++IGv=CSnhFPHfjecgS!
+z<IDZCdz`;rs@@-vCb%SBA#QGLfvwxF)mix`vfjVuxZdsc{rCsdOLLq5R^L<jGGT6s
+zabiUCdEIZq9U)b_6ek%o9N}YdH9NR;`Bok0sEdkgGYci&E9-bSd^YBvB`_)X&FX8h
+z<#$_W=kJs3xBI2xf6Oj4n-}c-|Nma=KkkcOcieyfFV%{-r|U$_V>Y*x81>D|T$CQQ
+zp)cb~EC*xk<phgrp>5jLKfWnH|M;?cf8Y5#-*aOk?mp1Z<N*cvrkig><})@P)cNQV
+z`r%Uj>(G6o{h5aqtt`*|o$OuTA<J+p{HT_*R<PhDMUE~pl|O&mnZrAjmN-AMHF?B-
+zazcN>oOhzl-w(@q&4|%!uYR|a9b~BgF~-PgN1FTR90uX{e-6e!aQ}bqYsF9Q{G)U0
+zzyI9v^jENkXi<lxm5yejl`PY0`S_YMZTkco)L2Sl+n3$somREEb-Di9$GiLO8ujZx
+z{|1d=6ntAL`p@ax!)3GcX1$xR<502pq~tBl$8GCAsQtcCzVYMy7jt(_=#buJ{P;oK
+zC*|g847_sBYjrD4)SGTFF5pybofL1o;-dUjkG+SUS}ybta{sq<(qh?n_3c;pJ@UFQ
+zEGu4qzt;TT_kG_VzPY*CMlyWGwTwrn@Bgve_vh?;XJMx0{%0Ovo9*{_+w-{x&t9K<
+zXzOY2h&gi|6=%CC2{y0GykK&cGvkq8hRV{GOwW?twpU*1zIk`G@Z%>nx%y8+`+mO=
+zu6VI=dBMAvq9Iwl^L{W_J-5E!Sz~8^G~Hq4ne|QIR`cxccP)!+3eGvk`*fd8lJJI*
+z>Eb`9UC^rE#P9HiVM2ixOEp83(+(@f!;0byx2(D<u<(%aImPu~&T{aGhphT|?bl6_
+zSYhEu34zTw1b1kOa<SeiK5tub-1^?Z$%P#{njfDmHMObC<ek6oyEH>X#Tkc{GY&iL
+z>?l%fPqOQdQERO+YYj1C^jL8D?V@`*i?3xY3d&Ac9(4Fu7;E%Y+mLTrXN*fc^7j8N
+zyHor9u8rU;y$2hvE^<81thSv!+5O(uzo+&wd^LO}_5a_J&95cytQWraue?^wbZNm0
+zUN5D*41ugX8Ou%g1@3*=A5|4_gpa}2+ga3UEu-!6Z+r8e322EIHhi~Jj5X}~#=ZXo
+zcg6qT_s{QTa9?xz?ZZ#U`1JDMd`Pi5e(&qLa^Ih~{%>$wYjI2ZP+jr4gd@??rPVxl
+z!^F4UG*{tSv5CclO-_B2p`gU-VAX)eNjfoJ*9+R_+PmzUXKb;~&8k3EQ*wE|z{a>h
+z-!dbQ_;uH+jg&0AzCT_1yZWB~`|KFc`EGKK%R3luY-ZU1YxVw9!j8cYr>?J2eYfki
+z-aL*3i!8mVVLMmLiT~SHc*530tDbM(Dz`r$ZQN>YHJSP<>*u^rXLo(_(dK6L`N?Jd
+z3$DLCv`Oc==Bv+pJohsFlijvC!mEs<Lzdy%%0qHL#Q$<KR4dOHND46Y`eOb=b7sTQ
+z4Sr(HXIkf-ifZX!)zOeBCiq2R;j#n~MoF=&$F+{{S!~|?m~o}z)#Kmdl`~W__A9&p
+zu4MFM=y{u7|1G`nZt3-pE*FkmKfC{1_WrgAonw<Pu2*UPR$BSGutnzc{h~Jh;B7N`
+zH~nUldHw(P^xO!({Y~$+l^*y%JYV(xuN*_{WQH{jZT}_a&aF##ez|eQe`TdnFd70Q
+fG6byp{@H(c&F*tG>%e*j1_lOCS3j3^P6<r_a}XEL
+
+literal 0
+HcmV?d00001
+
+diff --git a/res/drawable-anydpi-v26/icon.xml b/res/drawable-anydpi-v26/icon.xml
+new file mode 100644
+index 0000000..323236d
+--- /dev/null
++++ b/res/drawable-anydpi-v26/icon.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<adaptive-icon
++  xmlns:android="http://schemas.android.com/apk/res/android">
++    <foreground android:drawable="@drawable/icon_adaptive" />
++    <background android:drawable="@android:color/transparent" />
++</adaptive-icon>
+diff --git a/smali/com/apportable/LibraryManager.smali b/smali/com/apportable/LibraryManager.smali
+index 2c4c5be..ffc5f69 100644
+--- a/smali/com/apportable/LibraryManager.smali
++++ b/smali/com/apportable/LibraryManager.smali
+@@ -2069,7 +2069,7 @@
+ 
+     move-result v1
+ 
+-    if-eqz v1, :cond_e
++    if-eqz v1, :cond_10
+ 
+     .line 622
+     const-string v0, "he_IL"
+@@ -2080,6 +2080,73 @@
+ 
+     .line 637
+     :cond_c
++    iget-object v7, p0, Lcom/apportable/LibraryManager;->mActivity:Landroid/app/Activity;
++
++    invoke-virtual {v7}, Landroid/app/Activity;->getWindowManager()Landroid/view/WindowManager;
++
++    move-result-object v7
++
++    invoke-interface {v7}, Landroid/view/WindowManager;->getDefaultDisplay()Landroid/view/Display;
++
++    move-result-object v7
++
++    new-instance v8, Landroid/util/DisplayMetrics;
++
++    invoke-direct {v8}, Landroid/util/DisplayMetrics;-><init>()V
++
++    invoke-virtual {v7, v8}, Landroid/view/Display;->getRealMetrics(Landroid/util/DisplayMetrics;)V
++
++    iget v2, v8, Landroid/util/DisplayMetrics;->widthPixels:I
++
++    iget v3, v8, Landroid/util/DisplayMetrics;->heightPixels:I
++
++    if-ge v2, v3, :cond_d
++
++    move v3, v2
++
++    :cond_d
++    move v9, v3
++
++    iget v8, v8, Landroid/util/DisplayMetrics;->density:F
++
++    int-to-float v3, v3
++
++    div-float v3, v3, v8
++
++    float-to-int v3, v3
++
++    invoke-static {v3}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
++
++    move-result-object v6
++
++    const-string v4, "DPIFIX_SWDP"
++
++    invoke-static {v4, v6}, Lcom/apportable/LibraryLoader;->setenv(Ljava/lang/String;Ljava/lang/String;)V
++
++    invoke-static {v9}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
++
++    move-result-object v6
++
++    const-string v4, "DPIFIX_SWPX"
++
++    invoke-static {v4, v6}, Lcom/apportable/LibraryLoader;->setenv(Ljava/lang/String;Ljava/lang/String;)V
++
++    const/16 v4, 0x258
++
++    if-ge v3, v4, :cond_e
++
++    const-string v7, "0"
++
++    goto :goto_5
++
++    :cond_e
++    const-string v7, "1"
++
++    :goto_5
++    const-string v4, "TABLET"
++
++    invoke-static {v4, v7}, Lcom/apportable/LibraryLoader;->setenv(Ljava/lang/String;Ljava/lang/String;)V
++
+     const-string v0, "LOCALE"
+ 
+     invoke-static {v0, v1}, Lcom/apportable/LibraryLoader;->setenv(Ljava/lang/String;Ljava/lang/String;)V
+@@ -2188,7 +2255,7 @@
+ 
+     const/16 v1, 0xb
+ 
+-    if-lt v0, v1, :cond_d
++    if-lt v0, v1, :cond_f
+ 
+     .line 649
+     const-string v0, "OBBDIR"
+@@ -2202,7 +2269,7 @@
+     invoke-static {v0, v1}, Lcom/apportable/LibraryManager;->setPath(Ljava/lang/String;Ljava/io/File;)V
+ 
+     .line 656
+-    :goto_5
++    :goto_6
+     const-string v0, "PACKAGE_CODE_PATH"
+ 
+     iget-object v1, p0, Lcom/apportable/LibraryManager;->mActivity:Landroid/app/Activity;
+@@ -2301,7 +2368,7 @@
+     return-void
+ 
+     .line 651
+-    :cond_d
++    :cond_f
+     new-instance v0, Ljava/io/File;
+ 
+     invoke-static {}, Landroid/os/Environment;->getExternalStorageDirectory()Ljava/io/File;
+@@ -2340,9 +2407,9 @@
+ 
+     invoke-static {v1, v0}, Lcom/apportable/LibraryManager;->setPath(Ljava/lang/String;Ljava/io/File;)V
+ 
+-    goto/16 :goto_5
++    goto/16 :goto_6
+ 
+-    :cond_e
++    :cond_10
+     move-object v1, v0
+ 
+     goto/16 :goto_3
+diff --git a/smali/com/apportable/Lifecycle$1.smali b/smali/com/apportable/Lifecycle$1.smali
+index 2549741..986c423 100644
+--- a/smali/com/apportable/Lifecycle$1.smali
++++ b/smali/com/apportable/Lifecycle$1.smali
+@@ -45,6 +45,15 @@
+ 
+     invoke-static {v0}, Lcom/apportable/app/SplashScreen;->hide(Landroid/widget/FrameLayout;)V
+ 
++    invoke-static {}, Lcom/apportable/activity/VerdeActivity;->getActivity()Lcom/apportable/activity/VerdeActivity;
++
++    move-result-object v0
++
++    if-eqz v0, :cond_0
++
++    invoke-virtual {v0}, Lcom/apportable/activity/VerdeActivity;->maybeRequestStoragePermission()V
++
+     .line 283
++    :cond_0
+     return-void
+ .end method
+diff --git a/smali/com/apportable/Lifecycle$3.smali b/smali/com/apportable/Lifecycle$3.smali
+index 9df446d..5a7cfef 100644
+--- a/smali/com/apportable/Lifecycle$3.smali
++++ b/smali/com/apportable/Lifecycle$3.smali
+@@ -37,7 +37,7 @@
+ 
+ # virtual methods
+ .method public run()V
+-    .locals 2
++    .locals 5
+ 
+     .prologue
+     .line 421
+@@ -45,15 +45,24 @@
+ 
+     move-result v0
+ 
+-    if-nez v0, :cond_0
++    if-nez v0, :cond_1
+ 
+     invoke-static {}, Lcom/apportable/Lifecycle;->access$200()Z
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_0
++    if-nez v0, :cond_0
++
++    iget-object v0, p0, Lcom/apportable/Lifecycle$3;->val$localActivity:Lcom/apportable/activity/VerdeActivity;
++
++    invoke-static {v0}, Lcom/apportable/utils/WindowState;->isMultiWindow(Landroid/app/Activity;)Z
++
++    move-result v0
++
++    if-eqz v0, :cond_1
+ 
+     .line 422
++    :cond_0
+     invoke-static {}, Lcom/apportable/Lifecycle;->access$100()Ljava/lang/String;
+ 
+     move-result-object v0
+@@ -75,6 +84,6 @@
+     invoke-static {v0}, Lcom/apportable/Lifecycle;->access$202(Z)Z
+ 
+     .line 426
+-    :cond_0
++    :cond_1
+     return-void
+ .end method
+diff --git a/smali/com/apportable/Lifecycle.smali b/smali/com/apportable/Lifecycle.smali
+index c104ed8..0a299f4 100644
+--- a/smali/com/apportable/Lifecycle.smali
++++ b/smali/com/apportable/Lifecycle.smali
+@@ -1311,10 +1311,12 @@
+     if-eqz v0, :cond_1
+ 
+     .line 378
+-    const/4 v0, 0x0
++    const/4 v0, 0x1
+ 
+     sput-boolean v0, Lcom/apportable/Lifecycle;->sNativeApplicationInBackground:Z
+ 
++    invoke-static {}, Lcom/apportable/Lifecycle;->testInBackground()V
++
+     .line 386
+     :cond_0
+     :goto_0
+diff --git a/smali/com/apportable/RotationCrashFilter.smali b/smali/com/apportable/RotationCrashFilter.smali
+new file mode 100644
+index 0000000..65ec1f6
+--- /dev/null
++++ b/smali/com/apportable/RotationCrashFilter.smali
+@@ -0,0 +1,243 @@
++.class public Lcom/apportable/RotationCrashFilter;
++.super Ljava/lang/Object;
++.source "RotationCrashFilter.java"
++
++# interfaces
++.implements Ljava/lang/Runnable;
++
++
++# static fields
++.field private static count:I
++
++.field private static hits:I
++
++.field private static windowStart:J
++
++
++# direct methods
++.method public constructor <init>()V
++    .locals 0
++
++    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
++
++    return-void
++.end method
++
++.method public static install()V
++    .locals 2
++
++    new-instance v0, Landroid/os/Handler;
++
++    invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
++
++    move-result-object v1
++
++    invoke-direct {v0, v1}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
++
++    new-instance v1, Lcom/apportable/RotationCrashFilter;
++
++    invoke-direct {v1}, Lcom/apportable/RotationCrashFilter;-><init>()V
++
++    invoke-virtual {v0, v1}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z
++
++    return-void
++.end method
++
++.method public static matches(Ljava/lang/Throwable;)Z
++    .locals 8
++
++    const/4 v0, 0x0
++
++    if-nez p0, :cond_0
++
++    return v0
++
++    :cond_0
++    invoke-virtual {p0}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
++
++    move-result-object v1
++
++    invoke-virtual {v1}, Ljava/lang/Class;->getName()Ljava/lang/String;
++
++    move-result-object v1
++
++    const-string v2, "android.view.ViewRootImpl$CalledFromWrongThreadException"
++
++    invoke-virtual {v2, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
++
++    move-result v1
++
++    if-nez v1, :cond_1
++
++    return v0
++
++    :cond_1
++    invoke-virtual {p0}, Ljava/lang/Throwable;->getStackTrace()[Ljava/lang/StackTraceElement;
++
++    move-result-object v1
++
++    const-string v2, "android.view.ViewRootImpl"
++
++    const-string v3, "checkThread"
++
++    invoke-static {v1, v2, v3}, Lcom/apportable/RotationCrashFilter;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
++
++    move-result v2
++
++    if-nez v2, :cond_2
++
++    return v0
++
++    :cond_2
++    const-string v2, "android.app.ActivityThread"
++
++    const-string v3, "handleActivityConfigurationChanged"
++
++    invoke-static {v1, v2, v3}, Lcom/apportable/RotationCrashFilter;->scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
++
++    move-result v2
++
++    if-nez v2, :cond_3
++
++    return v0
++
++    :cond_3
++    invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
++
++    move-result-wide v1
++
++    sget-wide v3, Lcom/apportable/RotationCrashFilter;->windowStart:J
++
++    sub-long v3, v1, v3
++
++    const-wide/16 v5, 0x7d0
++
++    cmp-long v7, v3, v5
++
++    if-lez v7, :cond_4
++
++    sput-wide v1, Lcom/apportable/RotationCrashFilter;->windowStart:J
++
++    sput v0, Lcom/apportable/RotationCrashFilter;->count:I
++
++    :cond_4
++    sget v1, Lcom/apportable/RotationCrashFilter;->count:I
++
++    add-int/lit8 v1, v1, 0x1
++
++    sput v1, Lcom/apportable/RotationCrashFilter;->count:I
++
++    const/16 v2, 0x8
++
++    if-le v1, v2, :cond_5
++
++    return v0
++
++    :cond_5
++    const/4 v0, 0x1
++
++    return v0
++.end method
++
++.method private static scan([Ljava/lang/StackTraceElement;Ljava/lang/String;Ljava/lang/String;)Z
++    .locals 6
++
++    const/4 v0, 0x0
++
++    if-nez p0, :cond_0
++
++    return v0
++
++    :cond_0
++    array-length v1, p0
++
++    const/4 v2, 0x0
++
++    :goto_0
++    if-lt v2, v1, :cond_1
++
++    return v0
++
++    :cond_1
++    aget-object v3, p0, v2
++
++    if-eqz v3, :cond_3
++
++    invoke-virtual {v3}, Ljava/lang/StackTraceElement;->getClassName()Ljava/lang/String;
++
++    move-result-object v4
++
++    invoke-virtual {p1, v4}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
++
++    move-result v5
++
++    if-eqz v5, :cond_3
++
++    if-nez p2, :cond_2
++
++    const/4 v0, 0x1
++
++    return v0
++
++    :cond_2
++    invoke-virtual {v3}, Ljava/lang/StackTraceElement;->getMethodName()Ljava/lang/String;
++
++    move-result-object v4
++
++    invoke-virtual {v4, p2}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
++
++    move-result v5
++
++    if-eqz v5, :cond_3
++
++    const/4 v0, 0x1
++
++    return v0
++
++    :cond_3
++    add-int/lit8 v2, v2, 0x1
++
++    goto :goto_0
++.end method
++
++
++# virtual methods
++.method public run()V
++    .locals 3
++
++    :goto_0
++    :try_start_0
++    invoke-static {}, Landroid/os/Looper;->loop()V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    goto :goto_0
++
++    :catch_0
++    move-exception v0
++
++    invoke-static {v0}, Lcom/apportable/RotationCrashFilter;->matches(Ljava/lang/Throwable;)Z
++
++    move-result v1
++
++    if-nez v1, :cond_0
++
++    throw v0
++
++    :cond_0
++    sget v1, Lcom/apportable/RotationCrashFilter;->hits:I
++
++    add-int/lit8 v1, v1, 0x1
++
++    sput v1, Lcom/apportable/RotationCrashFilter;->hits:I
++
++    const-string v2, "RotationCrashFilter"
++
++    invoke-static {v1}, Ljava/lang/String;->valueOf(I)Ljava/lang/String;
++
++    move-result-object v1
++
++    invoke-static {v2, v1}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
++
++    goto :goto_0
++.end method
+diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+index 468f98c..bc28949 100644
+--- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
++++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
+@@ -61,6 +61,48 @@
+     iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
+ 
+     invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
++
++    const-string v1, "audiofix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "dpifix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "joinlinkfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "paintmixfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "privacypopupfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "rotationfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "welcomefix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "worldselectionfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
++
++    invoke-static {v1}, Lcom/apportable/utils/WindowState;->isMultiWindow(Landroid/app/Activity;)Z
++
++    move-result v2
++
++    invoke-static {v2}, Lcom/apportable/utils/WindowState;->setMultiWindow(Z)V
++
++    invoke-static {}, Lcom/apportable/utils/WindowState;->seed()V
+     :try_end_0
+     .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
+ 
+diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
+index 7c1afc4..ebc5b0e 100644
+--- a/smali/com/apportable/activity/VerdeActivity.smali
++++ b/smali/com/apportable/activity/VerdeActivity.smali
+@@ -18,6 +18,8 @@
+ 
+ .field private static mOnCreateRestartAttempted:Z
+ 
++.field private static sWasMultiWindow:Z
++
+ .field private static theVerdeActivity:Lcom/apportable/activity/VerdeActivity;
+ 
+ 
+@@ -34,6 +36,8 @@
+ 
+ .field private mPaused:Z
+ 
++.field private mPermissionRequestAttempted:Z
++
+ .field private mRequestedOrientation:I
+ 
+ .field private mScalingFactor:F
+@@ -1167,6 +1171,43 @@
+     return v0
+ .end method
+ 
++.method public maybeRequestStoragePermission()V
++    .locals 3
++
++    iget-boolean v0, p0, Lcom/apportable/activity/VerdeActivity;->mPermissionRequestAttempted:Z
++
++    if-nez v0, :cond_0
++
++    const/4 v0, 0x1
++
++    iput-boolean v0, p0, Lcom/apportable/activity/VerdeActivity;->mPermissionRequestAttempted:Z
++
++    const-string v0, "android.permission.WRITE_EXTERNAL_STORAGE"
++
++    invoke-static {p0, v0}, Landroid/support/v4/content/ContextCompat;->checkSelfPermission(Landroid/content/Context;Ljava/lang/String;)I
++
++    move-result v0
++
++    if-eqz v0, :cond_0
++
++    const/4 v1, 0x1
++
++    new-array v0, v1, [Ljava/lang/String;
++
++    const/4 v1, 0x0
++
++    const-string v2, "android.permission.WRITE_EXTERNAL_STORAGE"
++
++    aput-object v2, v0, v1
++
++    const v1, 0x7f8d1e5
++
++    invoke-static {p0, v0, v1}, Landroid/support/v4/app/ActivityCompat;->requestPermissions(Landroid/app/Activity;[Ljava/lang/String;I)V
++
++    :cond_0
++    return-void
++.end method
++
+ .method protected onActivityResult(IILandroid/content/Intent;)V
+     .locals 5
+ 
+@@ -1332,12 +1373,47 @@
+ .end method
+ 
+ .method public onConfigurationChanged(Landroid/content/res/Configuration;)V
+-    .locals 2
++    .locals 6
+ 
+     .prologue
+     .line 588
+     invoke-super {p0, p1}, Landroid/app/Activity;->onConfigurationChanged(Landroid/content/res/Configuration;)V
+ 
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->isMultiWindow(Landroid/app/Activity;)Z
++
++    move-result v1
++
++    invoke-static {v1}, Lcom/apportable/utils/WindowState;->setMultiWindow(Z)V
++
++    if-eqz v1, :cond_0
++
++    const/4 v1, -0x1
++
++    invoke-super {p0, v1}, Landroid/app/Activity;->setRequestedOrientation(I)V
++
++    goto :goto_0
++
++    :cond_0
++    sget-boolean v2, Lcom/apportable/activity/VerdeActivity;->sWasMultiWindow:Z
++
++    if-eqz v2, :cond_1
++
++    sget v1, Lcom/apportable/utils/WindowState;->sDisplayOrient:I
++
++    if-lez v1, :cond_1
++
++    invoke-virtual {p0, v1}, Lcom/apportable/activity/VerdeActivity;->_setRequestedOrientation(I)V
++
++    :cond_1
++    :goto_0
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->isMultiWindow(Landroid/app/Activity;)Z
++
++    move-result v1
++
++    sput-boolean v1, Lcom/apportable/activity/VerdeActivity;->sWasMultiWindow:Z
++
++    invoke-static {}, Lcom/apportable/app/SplashScreen;->reselect()V
++
+     .line 590
+     iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+ 
+@@ -1345,7 +1421,27 @@
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_0
++    if-eqz v0, :cond_2
++
++    new-instance v1, Lcom/apportable/utils/WindowState;
++
++    const/4 v2, -0x1
++
++    const/4 v3, 0x0
++
++    invoke-direct {v1, p0, v2, v3}, Lcom/apportable/utils/WindowState;-><init>(Lcom/apportable/activity/VerdeActivity;II)V
++
++    invoke-virtual {p0}, Lcom/apportable/activity/VerdeActivity;->getWindow()Landroid/view/Window;
++
++    move-result-object v2
++
++    invoke-virtual {v2}, Landroid/view/Window;->getDecorView()Landroid/view/View;
++
++    move-result-object v2
++
++    const-wide/16 v4, 0x1f4
++
++    invoke-virtual {v2, v1, v4, v5}, Landroid/view/View;->postDelayed(Ljava/lang/Runnable;J)Z
+ 
+     .line 591
+     new-instance v0, Lcom/apportable/activity/VerdeActivity$12;
+@@ -1357,14 +1453,16 @@
+     invoke-virtual {p0, v0, v1}, Lcom/apportable/activity/VerdeActivity;->runOnThread(Ljava/lang/Runnable;I)V
+ 
+     .line 598
+-    :cond_0
++    :cond_2
+     return-void
+ .end method
+ 
+ .method protected onCreate(Landroid/os/Bundle;)V
+-    .locals 3
++    .locals 4
+ 
+     .prologue
++    invoke-static {}, Lcom/apportable/RotationCrashFilter;->install()V
++
+     const/16 v1, 0x400
+ 
+     const/4 v2, 0x1
+@@ -1438,6 +1536,28 @@
+ 
+     invoke-static {v0}, Lcom/apportable/app/SplashScreen;->show(Landroid/widget/FrameLayout;)V
+ 
++    invoke-virtual {p0}, Lcom/apportable/activity/VerdeActivity;->getWindow()Landroid/view/Window;
++
++    move-result-object v0
++
++    invoke-virtual {v0}, Landroid/view/Window;->getDecorView()Landroid/view/View;
++
++    move-result-object v0
++
++    invoke-virtual {v0}, Landroid/view/View;->getViewTreeObserver()Landroid/view/ViewTreeObserver;
++
++    move-result-object v0
++
++    new-instance v1, Lcom/apportable/utils/WindowState;
++
++    const/4 v2, -0x1
++
++    const/4 v3, 0x0
++
++    invoke-direct {v1, p0, v2, v3}, Lcom/apportable/utils/WindowState;-><init>(Lcom/apportable/activity/VerdeActivity;II)V
++
++    invoke-virtual {v0, v1}, Landroid/view/ViewTreeObserver;->addOnGlobalLayoutListener(Landroid/view/ViewTreeObserver$OnGlobalLayoutListener;)V
++
+     .line 182
+     invoke-static {p0}, Lcom/android/ViewServer;->get(Landroid/content/Context;)Lcom/android/ViewServer;
+ 
+@@ -1485,42 +1605,10 @@
+     :cond_1
+     invoke-static {}, Lcom/apportable/MainThread;->start()V
+ 
+-    .line 208
+-    const-string v0, "android.permission.WRITE_EXTERNAL_STORAGE"
+-
+-    invoke-static {p0, v0}, Landroid/support/v4/content/ContextCompat;->checkSelfPermission(Landroid/content/Context;Ljava/lang/String;)I
+-
+-    move-result v0
+-
+-    if-eqz v0, :cond_2
+-
+-    sget-object v0, Landroid/os/Build$VERSION;->RELEASE:Ljava/lang/String;
+-
+-    const-string v1, "6"
+-
+-    .line 209
+-    invoke-virtual {v0, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+-
+-    move-result v0
+-
+-    if-nez v0, :cond_3
+-
+-    sget-object v0, Landroid/os/Build$VERSION;->RELEASE:Ljava/lang/String;
+-
+-    const-string v1, "7.0"
+-
+-    invoke-virtual {v0, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+-
+-    move-result v0
+-
+-    if-nez v0, :cond_3
+-
+     .line 210
+-    :cond_2
+     invoke-virtual {p0, p1}, Lcom/apportable/activity/VerdeActivity;->startGame(Landroid/os/Bundle;)V
+ 
+     .line 220
+-    :goto_1
+     iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+ 
+     new-instance v1, Lcom/apportable/activity/VerdeActivity$3;
+@@ -1533,22 +1621,6 @@
+     invoke-direct {p0}, Lcom/apportable/activity/VerdeActivity;->hideSystemUI()V
+ 
+     goto :goto_0
+-
+-    .line 213
+-    :cond_3
+-    new-array v0, v2, [Ljava/lang/String;
+-
+-    const/4 v1, 0x0
+-
+-    const-string v2, "android.permission.WRITE_EXTERNAL_STORAGE"
+-
+-    aput-object v2, v0, v1
+-
+-    const v1, 0x7f8d1e5
+-
+-    invoke-static {p0, v0, v1}, Landroid/support/v4/app/ActivityCompat;->requestPermissions(Landroid/app/Activity;[Ljava/lang/String;I)V
+-
+-    goto :goto_1
+ .end method
+ 
+ .method protected onDestroy()V
+@@ -1626,35 +1698,20 @@
+     .line 464
+     invoke-super {p0}, Landroid/app/Activity;->onPause()V
+ 
+-    .line 466
+-    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
+-
+-    const/16 v1, 0x13
+-
+-    if-lt v0, v1, :cond_0
+-
+-    .line 471
+-    invoke-static {}, Lcom/apportable/MainThread;->getThread()Ljava/lang/Thread;
+-
+-    move-result-object v0
+-
+-    invoke-virtual {v0}, Ljava/lang/Thread;->interrupt()V
+-
+     .line 474
+-    :cond_0
+     iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+ 
+     invoke-virtual {v0}, Lcom/apportable/activity/BackgroundLibraryLoader;->isLoaded()Z
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_1
++    if-eqz v0, :cond_0
+ 
+     invoke-static {}, Lcom/apportable/app/SplashScreen;->isShown()Z
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_1
++    if-eqz v0, :cond_0
+ 
+     .line 483
+     const/4 v0, 0x0
+@@ -1662,7 +1719,7 @@
+     invoke-static {v0}, Ljava/lang/System;->exit(I)V
+ 
+     .line 486
+-    :cond_1
++    :cond_0
+     iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
+ 
+     new-instance v1, Lcom/apportable/activity/VerdeActivity$8;
+@@ -1703,10 +1760,6 @@
+     invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+ 
+     .line 355
+-    iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->m_savedInstanceState:Landroid/os/Bundle;
+-
+-    invoke-virtual {p0, v0}, Lcom/apportable/activity/VerdeActivity;->startGame(Landroid/os/Bundle;)V
+-
+     .line 369
+     :goto_0
+     return-void
+@@ -1733,10 +1786,6 @@
+     invoke-virtual {v0}, Landroid/widget/Toast;->show()V
+ 
+     .line 363
+-    iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->m_savedInstanceState:Landroid/os/Bundle;
+-
+-    invoke-virtual {p0, v0}, Lcom/apportable/activity/VerdeActivity;->startGame(Landroid/os/Bundle;)V
+-
+     goto :goto_0
+ 
+     .line 367
+@@ -1976,6 +2025,8 @@
+     invoke-direct {p0}, Lcom/apportable/activity/VerdeActivity;->hideSystemUI()V
+ 
+     .line 965
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->refreshAutoRotate(Landroid/app/Activity;)V
++
+     return-void
+ .end method
+ 
+@@ -2281,6 +2332,23 @@
+     return-void
+ .end method
+ 
++.method public setRequestedOrientation(I)V
++    .locals 1
++
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->isMultiWindow(Landroid/app/Activity;)Z
++
++    move-result v0
++
++    if-eqz v0, :cond_0
++
++    return-void
++
++    :cond_0
++    invoke-super {p0, p1}, Landroid/app/Activity;->setRequestedOrientation(I)V
++
++    return-void
++.end method
++
+ .method public startGame(Landroid/os/Bundle;)V
+     .locals 2
+ 
+diff --git a/smali/com/apportable/app/SplashScreen$1.smali b/smali/com/apportable/app/SplashScreen$1.smali
+index 754e6f3..d3b26b2 100644
+--- a/smali/com/apportable/app/SplashScreen$1.smali
++++ b/smali/com/apportable/app/SplashScreen$1.smali
+@@ -17,6 +17,8 @@
+ # instance fields
+ .field private currentOrientation:I
+ 
++.field private dispatched:Z
++
+ .field private lastEvent:J
+ 
+ .field private mCurrentOrientation:I
+@@ -70,7 +72,7 @@
+     .line 166
+     iget v2, p0, Lcom/apportable/app/SplashScreen$1;->mCurrentOrientation:I
+ 
+-    if-eq p1, v2, :cond_4
++    if-eq p1, v2, :cond_5
+ 
+     iget-wide v2, p0, Lcom/apportable/app/SplashScreen$1;->lastEvent:J
+ 
+@@ -80,7 +82,7 @@
+ 
+     cmp-long v2, v2, v4
+ 
+-    if-lez v2, :cond_4
++    if-lez v2, :cond_5
+ 
+     .line 167
+     iput-wide v0, p0, Lcom/apportable/app/SplashScreen$1;->lastEvent:J
+@@ -93,7 +95,7 @@
+ 
+     move-result v0
+ 
+-    if-eqz v0, :cond_8
++    if-eqz v0, :cond_9
+ 
+     .line 172
+     add-int/lit8 v0, p1, -0x5a
+@@ -121,7 +123,7 @@
+     .line 183
+     if-le v9, v0, :cond_2
+ 
+-    if-gt v0, v6, :cond_5
++    if-gt v0, v6, :cond_6
+ 
+     .line 185
+     :cond_2
+@@ -143,7 +145,22 @@
+     :goto_1
+     iget v0, p0, Lcom/apportable/app/SplashScreen$1;->currentOrientation:I
+ 
+-    if-eq v1, v0, :cond_4
++    if-eq v1, v0, :cond_5
++
++    iget-boolean v2, p0, Lcom/apportable/app/SplashScreen$1;->dispatched:Z
++
++    if-eqz v2, :cond_4
++
++    invoke-static {}, Lcom/apportable/app/SplashScreen;->isShown()Z
++
++    move-result v2
++
++    if-nez v2, :cond_5
++
++    :cond_4
++    const/4 v2, 0x1
++
++    iput-boolean v2, p0, Lcom/apportable/app/SplashScreen$1;->dispatched:Z
+ 
+     .line 207
+     invoke-static {}, Lcom/apportable/activity/VerdeActivity;->getActivity()Lcom/apportable/activity/VerdeActivity;
+@@ -152,17 +169,19 @@
+ 
+     iget v1, p0, Lcom/apportable/app/SplashScreen$1;->currentOrientation:I
+ 
++    invoke-static {v1}, Lcom/apportable/ui/Device;->nativeSetLockedOrientation(I)V
++
+     invoke-virtual {v0, v1}, Lcom/apportable/activity/VerdeActivity;->_setRequestedOrientation(I)V
+ 
+     .line 210
+-    :cond_4
++    :cond_5
+     return-void
+ 
+     .line 188
+-    :cond_5
+-    if-ge v6, v0, :cond_6
++    :cond_6
++    if-ge v6, v0, :cond_7
+ 
+-    if-ge v0, v7, :cond_6
++    if-ge v0, v7, :cond_7
+ 
+     .line 190
+     invoke-static {}, Lcom/apportable/app/SplashScreen;->access$100()I
+@@ -181,10 +200,10 @@
+     goto :goto_1
+ 
+     .line 193
+-    :cond_6
+-    if-gt v7, v0, :cond_7
++    :cond_7
++    if-gt v7, v0, :cond_8
+ 
+-    if-gt v0, v8, :cond_7
++    if-gt v0, v8, :cond_8
+ 
+     .line 195
+     invoke-static {}, Lcom/apportable/app/SplashScreen;->access$100()I
+@@ -203,7 +222,7 @@
+     goto :goto_1
+ 
+     .line 198
+-    :cond_7
++    :cond_8
+     if-ge v8, v0, :cond_3
+ 
+     if-ge v0, v9, :cond_3
+@@ -224,7 +243,7 @@
+ 
+     goto :goto_1
+ 
+-    :cond_8
++    :cond_9
+     move v0, p1
+ 
+     goto :goto_0
+diff --git a/smali/com/apportable/app/SplashScreen.smali b/smali/com/apportable/app/SplashScreen.smali
+index 304affe..c93711f 100644
+--- a/smali/com/apportable/app/SplashScreen.smali
++++ b/smali/com/apportable/app/SplashScreen.smali
+@@ -12,6 +12,10 @@
+ 
+ .field private static sAlreadyShown:Z
+ 
++.field private static sChosen:Ljava/lang/String;
++
++.field private static sImageView:Landroid/widget/ImageView;
++
+ .field private static sSplashLayout:Landroid/widget/FrameLayout;
+ 
+ 
+@@ -72,6 +76,120 @@
+     return v0
+ .end method
+ 
++.method private static applyLetterbox(Landroid/widget/ImageView;Landroid/graphics/Bitmap;Landroid/graphics/Paint;FF)V
++    .locals 10
++
++    invoke-virtual {p1}, Landroid/graphics/Bitmap;->getWidth()I
++
++    move-result v5
++
++    invoke-virtual {p1}, Landroid/graphics/Bitmap;->getHeight()I
++
++    move-result v6
++
++    float-to-int v0, p3
++
++    float-to-int v1, p4
++
++    sget-object v2, Landroid/graphics/Bitmap$Config;->ARGB_8888:Landroid/graphics/Bitmap$Config;
++
++    invoke-static {v0, v1, v2}, Landroid/graphics/Bitmap;->createBitmap(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;
++
++    move-result-object v0
++
++    new-instance v1, Landroid/graphics/Canvas;
++
++    invoke-direct {v1, v0}, Landroid/graphics/Canvas;-><init>(Landroid/graphics/Bitmap;)V
++
++    int-to-float v4, v6
++
++    int-to-float v2, v5
++
++    div-float v2, p3, v2
++
++    mul-float/2addr v4, v2
++
++    sub-float v7, p4, v4
++
++    const/high16 v2, 0x40000000    # 2.0f
++
++    div-float/2addr v7, v2
++
++    const/4 v2, 0x0
++
++    cmpl-float v2, v7, v2
++
++    if-lez v2, :cond_0
++
++    new-instance v2, Landroid/graphics/Rect;
++
++    const/4 v3, 0x0
++
++    const/4 v8, 0x0
++
++    const/4 v9, 0x1
++
++    invoke-direct {v2, v3, v8, v5, v9}, Landroid/graphics/Rect;-><init>(IIII)V
++
++    new-instance v3, Landroid/graphics/RectF;
++
++    const/4 v8, 0x0
++
++    const/4 v9, 0x0
++
++    invoke-direct {v3, v8, v9, p3, v7}, Landroid/graphics/RectF;-><init>(FFFF)V
++
++    invoke-virtual {v1, p1, v2, v3, p2}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/RectF;Landroid/graphics/Paint;)V
++
++    :cond_0
++    new-instance v2, Landroid/graphics/Rect;
++
++    const/4 v3, 0x0
++
++    const/4 v8, 0x0
++
++    invoke-direct {v2, v3, v8, v5, v6}, Landroid/graphics/Rect;-><init>(IIII)V
++
++    new-instance v3, Landroid/graphics/RectF;
++
++    const/4 v8, 0x0
++
++    add-float/2addr v4, v7
++
++    invoke-direct {v3, v8, v7, p3, v4}, Landroid/graphics/RectF;-><init>(FFFF)V
++
++    invoke-virtual {v1, p1, v2, v3, p2}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/RectF;Landroid/graphics/Paint;)V
++
++    const/4 v2, 0x0
++
++    cmpl-float v2, v7, v2
++
++    if-lez v2, :cond_1
++
++    new-instance v2, Landroid/graphics/Rect;
++
++    const/4 v3, 0x0
++
++    add-int/lit8 v8, v6, -0x1
++
++    invoke-direct {v2, v3, v8, v5, v6}, Landroid/graphics/Rect;-><init>(IIII)V
++
++    new-instance v3, Landroid/graphics/RectF;
++
++    const/4 v8, 0x0
++
++    sub-float v9, p4, v7
++
++    invoke-direct {v3, v8, v9, p3, p4}, Landroid/graphics/RectF;-><init>(FFFF)V
++
++    invoke-virtual {v1, p1, v2, v3, p2}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/RectF;Landroid/graphics/Paint;)V
++
++    :cond_1
++    invoke-virtual {p0, v0}, Landroid/widget/ImageView;->setImageBitmap(Landroid/graphics/Bitmap;)V
++
++    return-void
++.end method
++
+ .method private static getAsset(Ljava/lang/String;)Ljava/io/InputStream;
+     .locals 1
+ 
+@@ -109,76 +227,211 @@
+ .end method
+ 
+ .method private static getSplashScreen()Ljava/io/InputStream;
+-    .locals 1
++    .locals 6
+ 
+-    .prologue
+-    .line 63
+-    const-string v0, "Default-568h@2x.png"
++    invoke-static {}, Lcom/apportable/app/VerdeApplication;->getApplication()Lcom/apportable/app/VerdeApplication;
++
++    move-result-object v0
+ 
+-    invoke-static {v0}, Lcom/apportable/app/SplashScreen;->getAsset(Ljava/lang/String;)Ljava/io/InputStream;
++    invoke-virtual {v0}, Lcom/apportable/app/VerdeApplication;->getResources()Landroid/content/res/Resources;
+ 
+     move-result-object v0
+ 
+-    .line 64
+-    if-eqz v0, :cond_1
++    invoke-virtual {v0}, Landroid/content/res/Resources;->getConfiguration()Landroid/content/res/Configuration;
++
++    move-result-object v1
++
++    iget v2, v1, Landroid/content/res/Configuration;->smallestScreenWidthDp:I
++
++    const/16 v3, 0x258
++
++    if-lt v2, v3, :cond_0
++
++    const/4 v2, 0x1
++
++    goto :goto_0
+ 
+-    .line 93
+     :cond_0
++    const/4 v2, 0x0
++
+     :goto_0
+-    return-object v0
++    iget v1, v1, Landroid/content/res/Configuration;->orientation:I
++
++    const/4 v3, 0x2
++
++    if-ne v1, v3, :cond_1
++
++    const/4 v1, 0x1
++
++    goto :goto_1
+ 
+-    .line 68
+     :cond_1
+-    const-string v0, "Default-568h@2x~iphone.png"
++    const/4 v1, 0x0
+ 
+-    invoke-static {v0}, Lcom/apportable/app/SplashScreen;->getAsset(Ljava/lang/String;)Ljava/io/InputStream;
++    :goto_1
++    invoke-virtual {v0}, Landroid/content/res/Resources;->getDisplayMetrics()Landroid/util/DisplayMetrics;
+ 
+     move-result-object v0
+ 
+-    .line 69
+-    if-nez v0, :cond_0
++    iget v0, v0, Landroid/util/DisplayMetrics;->densityDpi:I
+ 
+-    .line 73
+-    const-string v0, "Default@2x.png"
++    const/16 v3, 0xa0
+ 
+-    invoke-static {v0}, Lcom/apportable/app/SplashScreen;->getAsset(Ljava/lang/String;)Ljava/io/InputStream;
++    if-le v0, v3, :cond_2
+ 
+-    move-result-object v0
++    const/4 v0, 0x1
+ 
+-    .line 74
+-    if-nez v0, :cond_0
++    goto :goto_2
+ 
+-    .line 78
+-    const-string v0, "Default@2x~iphone.png"
++    :cond_2
++    const/4 v0, 0x0
+ 
+-    invoke-static {v0}, Lcom/apportable/app/SplashScreen;->getAsset(Ljava/lang/String;)Ljava/io/InputStream;
++    :goto_2
++    const/4 v3, 0x4
+ 
+-    move-result-object v0
++    new-array v3, v3, [Ljava/lang/String;
+ 
+-    .line 79
+-    if-nez v0, :cond_0
++    if-eqz v1, :cond_4
+ 
+-    .line 83
+-    const-string v0, "Default.png"
++    if-eqz v0, :cond_3
+ 
+-    invoke-static {v0}, Lcom/apportable/app/SplashScreen;->getAsset(Ljava/lang/String;)Ljava/io/InputStream;
++    const-string v4, "Default-Landscape@2x~ipad.png"
+ 
+-    move-result-object v0
++    const-string v5, "Default-Landscape~ipad.png"
+ 
+-    .line 84
+-    if-nez v0, :cond_0
++    goto :goto_3
+ 
+-    .line 88
+-    const-string v0, "Default~iphone.png"
++    :cond_3
++    const-string v4, "Default-Landscape~ipad.png"
+ 
+-    invoke-static {v0}, Lcom/apportable/app/SplashScreen;->getAsset(Ljava/lang/String;)Ljava/io/InputStream;
++    const-string v5, "Default-Landscape@2x~ipad.png"
+ 
+-    move-result-object v0
++    :goto_3
++    const/4 v1, 0x0
+ 
+-    .line 89
+-    if-eqz v0, :cond_0
++    aput-object v4, v3, v1
+ 
+-    goto :goto_0
++    const/4 v1, 0x1
++
++    aput-object v5, v3, v1
++
++    const/4 v1, 0x2
++
++    const-string v4, "Default-568h@2x.png"
++
++    aput-object v4, v3, v1
++
++    const/4 v1, 0x3
++
++    const-string v4, "Default-568h.png"
++
++    aput-object v4, v3, v1
++
++    goto :goto_5
++
++    :cond_4
++    if-eqz v2, :cond_6
++
++    if-eqz v0, :cond_5
++
++    const-string v4, "Default-Portrait@2x~ipad.png"
++
++    const-string v5, "Default-Portrait~ipad.png"
++
++    goto :goto_4
++
++    :cond_5
++    const-string v4, "Default-Portrait~ipad.png"
++
++    const-string v5, "Default-Portrait@2x~ipad.png"
++
++    goto :goto_4
++
++    :cond_6
++    if-eqz v0, :cond_7
++
++    const-string v4, "Default-568h@2x.png"
++
++    const-string v5, "Default-568h.png"
++
++    goto :goto_4
++
++    :cond_7
++    const-string v4, "Default-568h.png"
++
++    const-string v5, "Default-568h@2x.png"
++
++    :goto_4
++    const/4 v1, 0x0
++
++    aput-object v4, v3, v1
++
++    const/4 v1, 0x1
++
++    aput-object v5, v3, v1
++
++    if-eqz v0, :cond_8
++
++    const/4 v1, 0x2
++
++    const-string v4, "Default@2x.png"
++
++    aput-object v4, v3, v1
++
++    const/4 v1, 0x3
++
++    const-string v4, "Default.png"
++
++    aput-object v4, v3, v1
++
++    goto :goto_5
++
++    :cond_8
++    const/4 v1, 0x2
++
++    const-string v4, "Default.png"
++
++    aput-object v4, v3, v1
++
++    const/4 v1, 0x3
++
++    const-string v4, "Default@2x.png"
++
++    aput-object v4, v3, v1
++
++    :goto_5
++    array-length v0, v3
++
++    const/4 v1, 0x0
++
++    :goto_6
++    if-ge v1, v0, :cond_a
++
++    aget-object v2, v3, v1
++
++    invoke-static {v2}, Lcom/apportable/app/SplashScreen;->getAsset(Ljava/lang/String;)Ljava/io/InputStream;
++
++    move-result-object v4
++
++    if-eqz v4, :cond_9
++
++    sput-object v2, Lcom/apportable/app/SplashScreen;->sChosen:Ljava/lang/String;
++
++    const-string v5, "SPLASHFIX"
++
++    invoke-static {v5, v2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
++
++    return-object v4
++
++    :cond_9
++    add-int/lit8 v1, v1, 0x1
++
++    goto :goto_6
++
++    :cond_a
++    const/4 v0, 0x0
++
++    return-object v0
+ .end method
+ 
+ .method public static hide(Landroid/widget/FrameLayout;)V
+@@ -222,6 +475,8 @@
+ 
+     sput-object v0, Lcom/apportable/app/SplashScreen;->sSplashLayout:Landroid/widget/FrameLayout;
+ 
++    sput-object v0, Lcom/apportable/app/SplashScreen;->sImageView:Landroid/widget/ImageView;
++
+     goto :goto_0
+ .end method
+ 
+@@ -245,6 +500,105 @@
+     goto :goto_0
+ .end method
+ 
++.method public static reselect()V
++    .locals 6
++
++    sget-object v0, Lcom/apportable/app/SplashScreen;->sImageView:Landroid/widget/ImageView;
++
++    if-eqz v0, :cond_0
++
++    sget-object v0, Lcom/apportable/app/SplashScreen;->sSplashLayout:Landroid/widget/FrameLayout;
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    sget-object v0, Lcom/apportable/app/SplashScreen;->sChosen:Ljava/lang/String;
++
++    invoke-static {}, Lcom/apportable/app/SplashScreen;->getSplashScreen()Ljava/io/InputStream;
++
++    move-result-object v1
++
++    if-eqz v1, :cond_0
++
++    sget-object v2, Lcom/apportable/app/SplashScreen;->sChosen:Ljava/lang/String;
++
++    invoke-virtual {v2, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
++
++    move-result v2
++
++    if-nez v2, :cond_0
++
++    invoke-static {v1}, Landroid/graphics/BitmapFactory;->decodeStream(Ljava/io/InputStream;)Landroid/graphics/Bitmap;
++
++    move-result-object v1
++
++    if-eqz v1, :cond_0
++
++    new-instance v2, Landroid/graphics/Paint;
++
++    invoke-direct {v2}, Landroid/graphics/Paint;-><init>()V
++
++    const/4 v3, 0x1
++
++    invoke-virtual {v2, v3}, Landroid/graphics/Paint;->setFilterBitmap(Z)V
++
++    const/4 v3, 0x0
++
++    invoke-virtual {v2, v3}, Landroid/graphics/Paint;->setDither(Z)V
++
++    invoke-static {}, Lcom/apportable/app/VerdeApplication;->getApplication()Lcom/apportable/app/VerdeApplication;
++
++    move-result-object v3
++
++    invoke-virtual {v3}, Lcom/apportable/app/VerdeApplication;->getWindowManager()Landroid/view/WindowManager;
++
++    move-result-object v4
++
++    invoke-interface {v4}, Landroid/view/WindowManager;->getDefaultDisplay()Landroid/view/Display;
++
++    move-result-object v4
++
++    invoke-virtual {v4}, Landroid/view/Display;->getWidth()I
++
++    move-result v4
++
++    int-to-float v4, v4
++
++    invoke-virtual {v3}, Lcom/apportable/app/VerdeApplication;->getWindowManager()Landroid/view/WindowManager;
++
++    move-result-object v5
++
++    invoke-interface {v5}, Landroid/view/WindowManager;->getDefaultDisplay()Landroid/view/Display;
++
++    move-result-object v5
++
++    invoke-virtual {v5}, Landroid/view/Display;->getHeight()I
++
++    move-result v5
++
++    int-to-float v5, v5
++
++    sget-object v3, Lcom/apportable/app/SplashScreen;->sImageView:Landroid/widget/ImageView;
++
++    invoke-static {v3, v1, v2, v4, v5}, Lcom/apportable/app/SplashScreen;->applyLetterbox(Landroid/widget/ImageView;Landroid/graphics/Bitmap;Landroid/graphics/Paint;FF)V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    :cond_0
++    return-void
++
++    :catch_0
++    move-exception v0
++
++    const-string v1, "SPLASHFIX"
++
++    const-string v2, "reselect failed"
++
++    invoke-static {v1, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
++
++    return-void
++.end method
++
+ .method public static show(Landroid/widget/FrameLayout;)V
+     .locals 15
+ 
+@@ -293,7 +647,7 @@
+     check-cast v1, Lcom/dd/plist/NSArray;
+ 
+     .line 106
+-    if-nez v1, :cond_1e
++    if-nez v1, :cond_1c
+ 
+     .line 107
+     const-string v1, "UISupportedInterfaceOrientations~iphone"
+@@ -653,7 +1007,7 @@
+     move-result-object v0
+ 
+     .line 219
+-    if-eqz v0, :cond_1d
++    if-eqz v0, :cond_1b
+ 
+     .line 220
+     invoke-static {v0}, Landroid/graphics/BitmapFactory;->decodeStream(Ljava/io/InputStream;)Landroid/graphics/Bitmap;
+@@ -661,7 +1015,7 @@
+     move-result-object v0
+ 
+     .line 221
+-    if-eqz v0, :cond_15
++    if-eqz v0, :cond_13
+ 
+     .line 222
+     invoke-static {}, Lcom/apportable/utils/MetaData;->getMetaData()Landroid/os/Bundle;
+@@ -696,7 +1050,7 @@
+ 
+     .line 230
+     :cond_f
+-    if-nez v2, :cond_16
++    if-nez v2, :cond_14
+ 
+     const/4 v2, 0x0
+ 
+@@ -803,7 +1157,7 @@
+ 
+     move-result v4
+ 
+-    if-eqz v4, :cond_18
++    if-eqz v4, :cond_16
+ 
+     .line 251
+     :cond_11
+@@ -811,128 +1165,23 @@
+ 
+     invoke-virtual {v9, v1}, Landroid/widget/ImageView;->setScaleType(Landroid/widget/ImageView$ScaleType;)V
+ 
+-    .line 252
+-    if-eqz v2, :cond_17
++    if-eqz v2, :cond_15
+ 
+-    .line 253
+-    float-to-int v1, v8
+-
+-    float-to-int v2, v7
+-
+-    sget-object v4, Landroid/graphics/Bitmap$Config;->ARGB_8888:Landroid/graphics/Bitmap$Config;
+-
+-    invoke-static {v1, v2, v4}, Landroid/graphics/Bitmap;->createBitmap(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;
+-
+-    move-result-object v1
+-
+-    .line 254
+-    new-instance v2, Landroid/graphics/Canvas;
+-
+-    invoke-direct {v2, v1}, Landroid/graphics/Canvas;-><init>(Landroid/graphics/Bitmap;)V
+-
+-    .line 255
+-    int-to-float v4, v6
+-
+-    int-to-float v10, v5
+-
+-    div-float v10, v8, v10
+-
+-    mul-float/2addr v4, v10
+-
+-    .line 256
+-    sub-float v10, v7, v4
+-
+-    const/high16 v11, 0x40000000    # 2.0f
+-
+-    div-float/2addr v10, v11
+-
+-    .line 258
+-    const/4 v11, 0x0
+-
+-    cmpl-float v11, v10, v11
+-
+-    if-lez v11, :cond_12
+-
+-    .line 259
+-    new-instance v11, Landroid/graphics/Rect;
+-
+-    const/4 v12, 0x0
+-
+-    const/4 v13, 0x0
+-
+-    const/4 v14, 0x1
+-
+-    invoke-direct {v11, v12, v13, v5, v14}, Landroid/graphics/Rect;-><init>(IIII)V
+-
+-    new-instance v12, Landroid/graphics/RectF;
+-
+-    const/4 v13, 0x0
+-
+-    const/4 v14, 0x0
+-
+-    invoke-direct {v12, v13, v14, v8, v10}, Landroid/graphics/RectF;-><init>(FFFF)V
+-
+-    invoke-virtual {v2, v0, v11, v12, v3}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/RectF;Landroid/graphics/Paint;)V
+-
+-    .line 260
+-    :cond_12
+-    new-instance v11, Landroid/graphics/Rect;
+-
+-    const/4 v12, 0x0
+-
+-    const/4 v13, 0x0
+-
+-    invoke-direct {v11, v12, v13, v5, v6}, Landroid/graphics/Rect;-><init>(IIII)V
++    sput-object v9, Lcom/apportable/app/SplashScreen;->sImageView:Landroid/widget/ImageView;
+ 
+-    new-instance v12, Landroid/graphics/RectF;
++    invoke-static {v9, v0, v3, v8, v7}, Lcom/apportable/app/SplashScreen;->applyLetterbox(Landroid/widget/ImageView;Landroid/graphics/Bitmap;Landroid/graphics/Paint;FF)V
+ 
+-    const/4 v13, 0x0
+-
+-    add-float/2addr v4, v10
+-
+-    invoke-direct {v12, v13, v10, v8, v4}, Landroid/graphics/RectF;-><init>(FFFF)V
+-
+-    invoke-virtual {v2, v0, v11, v12, v3}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/RectF;Landroid/graphics/Paint;)V
+-
+-    .line 262
+-    const/4 v4, 0x0
+-
+-    cmpl-float v4, v10, v4
+-
+-    if-lez v4, :cond_13
+-
+-    .line 263
+-    new-instance v4, Landroid/graphics/Rect;
+-
+-    const/4 v11, 0x0
+-
+-    add-int/lit8 v12, v6, -0x1
+-
+-    invoke-direct {v4, v11, v12, v5, v6}, Landroid/graphics/Rect;-><init>(IIII)V
+-
+-    new-instance v5, Landroid/graphics/RectF;
+-
+-    const/4 v6, 0x0
+-
+-    sub-float v10, v7, v10
+-
+-    invoke-direct {v5, v6, v10, v8, v7}, Landroid/graphics/RectF;-><init>(FFFF)V
+-
+-    invoke-virtual {v2, v0, v4, v5, v3}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/RectF;Landroid/graphics/Paint;)V
+-
+-    .line 264
+-    :cond_13
+-    invoke-virtual {v9, v1}, Landroid/widget/ImageView;->setImageBitmap(Landroid/graphics/Bitmap;)V
++    goto/16 :goto_5
+ 
+     .line 326
+-    :cond_14
++    :cond_12
+     :goto_5
+     sget-object v0, Lcom/apportable/app/SplashScreen;->sSplashLayout:Landroid/widget/FrameLayout;
+ 
+     invoke-virtual {v0, v9}, Landroid/widget/FrameLayout;->addView(Landroid/view/View;)V
+ 
+     .line 332
+-    :cond_15
++    :cond_13
+     :goto_6
+     sget-object v0, Lcom/apportable/app/SplashScreen;->sSplashLayout:Landroid/widget/FrameLayout;
+ 
+@@ -949,7 +1198,7 @@
+     goto/16 :goto_3
+ 
+     .line 230
+-    :cond_16
++    :cond_14
+     const-string v7, "portrait"
+ 
+     invoke-virtual {v2, v7}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+@@ -959,7 +1208,7 @@
+     goto/16 :goto_4
+ 
+     .line 277
+-    :cond_17
++    :cond_15
+     new-instance v1, Landroid/graphics/Matrix;
+ 
+     invoke-direct {v1}, Landroid/graphics/Matrix;-><init>()V
+@@ -1052,14 +1301,14 @@
+     goto :goto_5
+ 
+     .line 297
+-    :cond_18
++    :cond_16
+     const-string v4, "aspect_fit"
+ 
+     invoke-virtual {v1, v4}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+ 
+     move-result v4
+ 
+-    if-eqz v4, :cond_19
++    if-eqz v4, :cond_17
+ 
+     .line 298
+     sget-object v1, Landroid/widget/ImageView$ScaleType;->CENTER_CROP:Landroid/widget/ImageView$ScaleType;
+@@ -1136,14 +1385,14 @@
+     goto/16 :goto_5
+ 
+     .line 306
+-    :cond_19
++    :cond_17
+     const-string v3, "stretch"
+ 
+     invoke-virtual {v1, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+ 
+     move-result v3
+ 
+-    if-eqz v3, :cond_1b
++    if-eqz v3, :cond_19
+ 
+     .line 307
+     sget-object v1, Landroid/widget/ImageView$ScaleType;->FIT_XY:Landroid/widget/ImageView$ScaleType;
+@@ -1156,7 +1405,7 @@
+     invoke-direct {v5}, Landroid/graphics/Matrix;-><init>()V
+ 
+     .line 309
+-    if-nez v2, :cond_1a
++    if-nez v2, :cond_18
+ 
+     .line 310
+     const/high16 v1, -0x3d4c0000    # -90.0f
+@@ -1164,7 +1413,7 @@
+     invoke-virtual {v5, v1}, Landroid/graphics/Matrix;->postRotate(F)Z
+ 
+     .line 312
+-    :cond_1a
++    :cond_18
+     const/4 v1, 0x0
+ 
+     const/4 v2, 0x0
+@@ -1191,14 +1440,14 @@
+     goto/16 :goto_5
+ 
+     .line 315
+-    :cond_1b
++    :cond_19
+     const-string v2, "aspect_fill"
+ 
+     invoke-virtual {v1, v2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+ 
+     move-result v2
+ 
+-    if-eqz v2, :cond_1c
++    if-eqz v2, :cond_1a
+ 
+     .line 316
+     sget-object v1, Landroid/widget/ImageView$ScaleType;->CENTER_CROP:Landroid/widget/ImageView$ScaleType;
+@@ -1242,14 +1491,14 @@
+     goto/16 :goto_5
+ 
+     .line 322
+-    :cond_1c
++    :cond_1a
+     const-string v2, "native"
+ 
+     invoke-virtual {v1, v2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+ 
+     move-result v1
+ 
+-    if-eqz v1, :cond_14
++    if-eqz v1, :cond_12
+ 
+     .line 323
+     sget-object v1, Landroid/widget/ImageView$ScaleType;->CENTER:Landroid/widget/ImageView$ScaleType;
+@@ -1262,7 +1511,7 @@
+     goto/16 :goto_5
+ 
+     .line 329
+-    :cond_1d
++    :cond_1b
+     const-string v0, "VerdeDebug"
+ 
+     const-string v1, "Default.png not found for splash screen"
+@@ -1273,7 +1522,7 @@
+ 
+     goto/16 :goto_6
+ 
+-    :cond_1e
++    :cond_1c
+     move-object v2, v1
+ 
+     goto/16 :goto_0
+diff --git a/smali/com/apportable/gl/GLSurfaceView.smali b/smali/com/apportable/gl/GLSurfaceView.smali
+index 38c0a15..e60a515 100644
+--- a/smali/com/apportable/gl/GLSurfaceView.smali
++++ b/smali/com/apportable/gl/GLSurfaceView.smali
+@@ -289,6 +289,15 @@
+     return-object v0
+ .end method
+ 
++.method public static native dpifixMultiWindow(Z)V
++.end method
++
++.method public static native dpifixSetDisplayOrient(I)V
++.end method
++
++.method public static native dpifixWindowPx(II)V
++.end method
++
+ .method private static native nativeInit()V
+ .end method
+ 
+@@ -580,7 +589,7 @@
+ .end method
+ 
+ .method public readySurface()V
+-    .locals 7
++    .locals 13
+ 
+     .prologue
+     const/4 v3, 0x1
+@@ -593,6 +602,14 @@
+ 
+     monitor-enter v6
+ 
++    invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
++
++    move-result-wide v7
++
++    const-wide/16 v9, 0x10
++
++    add-long/2addr v7, v9
++
+     move v0, v4
+ 
+     move v1, v4
+@@ -720,7 +737,7 @@
+     .line 628
+     iget-boolean v5, p0, Lcom/apportable/gl/GLSurfaceView;->mSizeChanged:Z
+ 
+-    if-eqz v5, :cond_9
++    if-eqz v5, :cond_a
+ 
+     .line 630
+     iget v4, p0, Lcom/apportable/gl/GLSurfaceView;->mWidth:I
+@@ -749,7 +766,7 @@
+     .catchall {:try_start_2 .. :try_end_2} :catchall_0
+ 
+     .line 653
+-    if-eqz v1, :cond_7
++    if-eqz v1, :cond_8
+ 
+     .line 657
+     iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mEglHelper:Lcom/apportable/gl/GLSurfaceView$EglHelper;
+@@ -769,7 +786,7 @@
+     .line 658
+     iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mGL:Ljavax/microedition/khronos/opengles/GL10;
+ 
+-    if-nez v0, :cond_7
++    if-nez v0, :cond_8
+ 
+     .line 680
+     :cond_5
+@@ -797,15 +814,37 @@
+     .line 645
+     :cond_6
+     :try_start_4
++    invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
++
++    move-result-wide v9
++
++    sub-long v9, v7, v9
++
++    long-to-int v5, v9
++
++    if-lez v5, :cond_7
++
+     iget-object v5, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
+ 
+-    invoke-virtual {v5}, Ljava/lang/Object;->wait()V
++    invoke-virtual {v5, v9, v10}, Ljava/lang/Object;->wait(J)V
+     :try_end_4
+     .catch Ljava/lang/InterruptedException; {:try_start_4 .. :try_end_4} :catch_1
+     .catchall {:try_start_4 .. :try_end_4} :catchall_0
+ 
+     goto/16 :goto_0
+ 
++    :cond_7
++    :try_start_5
++    iget-object v5, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
++
++    invoke-virtual {v5}, Ljava/lang/Object;->notifyAll()V
++
++    monitor-exit v6
++    :try_end_5
++    .catchall {:try_start_5 .. :try_end_5} :catchall_0
++
++    return-void
++
+     .line 647
+     :catch_1
+     move-exception v5
+@@ -813,8 +852,8 @@
+     goto/16 :goto_0
+ 
+     .line 665
+-    :cond_7
+-    if-eqz v2, :cond_8
++    :cond_8
++    if-eqz v2, :cond_9
+ 
+     .line 669
+     iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mRenderer:Landroid/opengl/GLSurfaceView$Renderer;
+@@ -828,9 +867,13 @@
+     invoke-interface {v0, v1, v2}, Landroid/opengl/GLSurfaceView$Renderer;->onSurfaceCreated(Ljavax/microedition/khronos/opengles/GL10;Ljavax/microedition/khronos/egl/EGLConfig;)V
+ 
+     .line 673
+-    :cond_8
++    :cond_9
+     if-eqz v3, :cond_5
+ 
++    if-lez v5, :cond_5
++
++    if-lez v4, :cond_5
++
+     .line 677
+     iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mRenderer:Landroid/opengl/GLSurfaceView$Renderer;
+ 
+@@ -840,7 +883,7 @@
+ 
+     goto :goto_2
+ 
+-    :cond_9
++    :cond_a
+     move v3, v0
+ 
+     move v5, v4
+@@ -922,7 +965,7 @@
+ .end method
+ 
+ .method public surfaceCreated()V
+-    .locals 2
++    .locals 7
+ 
+     .prologue
+     .line 683
+@@ -930,6 +973,14 @@
+ 
+     monitor-enter v1
+ 
++    invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
++
++    move-result-wide v3
++
++    const-wide/16 v5, 0xfa
++
++    add-long/2addr v3, v5
++
+     .line 687
+     const/4 v0, 0x1
+ 
+@@ -955,9 +1006,19 @@
+ 
+     .line 691
+     :try_start_1
++    invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
++
++    move-result-wide v5
++
++    sub-long v5, v3, v5
++
++    long-to-int v0, v5
++
++    if-lez v0, :cond_0
++
+     iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
+ 
+-    invoke-virtual {v0}, Ljava/lang/Object;->wait()V
++    invoke-virtual {v0, v5, v6}, Ljava/lang/Object;->wait(J)V
+     :try_end_1
+     .catch Ljava/lang/InterruptedException; {:try_start_1 .. :try_end_1} :catch_0
+     .catchall {:try_start_1 .. :try_end_1} :catchall_0
+@@ -968,20 +1029,13 @@
+     :catch_0
+     move-exception v0
+ 
+-    .line 693
+-    :try_start_2
+-    invoke-static {}, Ljava/lang/Thread;->currentThread()Ljava/lang/Thread;
+-
+-    move-result-object v0
+-
+-    invoke-virtual {v0}, Ljava/lang/Thread;->interrupt()V
+-
+-    goto :goto_0
++    goto :goto_1
+ 
+     .line 696
+     :catchall_0
+     move-exception v0
+ 
++    :try_start_2
+     monitor-exit v1
+     :try_end_2
+     .catchall {:try_start_2 .. :try_end_2} :catchall_0
+@@ -989,6 +1043,7 @@
+     throw v0
+ 
+     :cond_0
++    :goto_1
+     :try_start_3
+     monitor-exit v1
+     :try_end_3
+@@ -1067,7 +1122,7 @@
+ .end method
+ 
+ .method public surfaceDestroyed()V
+-    .locals 2
++    .locals 7
+ 
+     .prologue
+     .line 700
+@@ -1075,6 +1130,14 @@
+ 
+     monitor-enter v1
+ 
++    invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
++
++    move-result-wide v3
++
++    const-wide/16 v5, 0xfa
++
++    add-long/2addr v3, v5
++
+     .line 704
+     const/4 v0, 0x0
+ 
+@@ -1100,9 +1163,19 @@
+ 
+     .line 709
+     :try_start_1
++    invoke-static {}, Landroid/os/SystemClock;->uptimeMillis()J
++
++    move-result-wide v5
++
++    sub-long v5, v3, v5
++
++    long-to-int v0, v5
++
++    if-lez v0, :cond_0
++
+     iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mLock:Ljava/lang/Object;
+ 
+-    invoke-virtual {v0}, Ljava/lang/Object;->wait()V
++    invoke-virtual {v0, v5, v6}, Ljava/lang/Object;->wait(J)V
+     :try_end_1
+     .catch Ljava/lang/InterruptedException; {:try_start_1 .. :try_end_1} :catch_0
+     .catchall {:try_start_1 .. :try_end_1} :catchall_0
+@@ -1113,20 +1186,13 @@
+     :catch_0
+     move-exception v0
+ 
+-    .line 711
+-    :try_start_2
+-    invoke-static {}, Ljava/lang/Thread;->currentThread()Ljava/lang/Thread;
+-
+-    move-result-object v0
+-
+-    invoke-virtual {v0}, Ljava/lang/Thread;->interrupt()V
+-
+-    goto :goto_0
++    goto :goto_1
+ 
+     .line 714
+     :catchall_0
+     move-exception v0
+ 
++    :try_start_2
+     monitor-exit v1
+     :try_end_2
+     .catchall {:try_start_2 .. :try_end_2} :catchall_0
+@@ -1134,6 +1200,7 @@
+     throw v0
+ 
+     :cond_0
++    :goto_1
+     :try_start_3
+     monitor-exit v1
+     :try_end_3
+diff --git a/smali/com/apportable/media/AudioPlayer.smali b/smali/com/apportable/media/AudioPlayer.smali
+index 433a381..1076342 100644
+--- a/smali/com/apportable/media/AudioPlayer.smali
++++ b/smali/com/apportable/media/AudioPlayer.smali
+@@ -1651,7 +1651,7 @@
+ 
+     iget-object v1, v0, Lcom/apportable/media/AudioPlayerItem;->player:Landroid/media/MediaPlayer;
+ 
+-    if-ne p1, v2, :cond_2
++    if-eqz p1, :cond_2
+ 
+     const/4 v0, 0x1
+ 
+diff --git a/smali/com/apportable/ui/Device.smali b/smali/com/apportable/ui/Device.smali
+index b6f1ed9..ccce1cf 100644
+--- a/smali/com/apportable/ui/Device.smali
++++ b/smali/com/apportable/ui/Device.smali
+@@ -393,6 +393,18 @@
+ .method private native nativeOnOrientationChanged(II)V
+ .end method
+ 
++.method public static native nativeRunPendingResync()V
++.end method
++
++.method public static native nativeSetAutoRotate(I)V
++.end method
++
++.method public static native nativeSetLockedOrientation(I)V
++.end method
++
++.method public static native nativeSetMultiWindow(Z)V
++.end method
++
+ 
+ # virtual methods
+ .method public disable()V
+diff --git a/smali/com/apportable/utils/WindowState.smali b/smali/com/apportable/utils/WindowState.smali
+new file mode 100644
+index 0000000..0bc0c74
+--- /dev/null
++++ b/smali/com/apportable/utils/WindowState.smali
+@@ -0,0 +1,688 @@
++.class public Lcom/apportable/utils/WindowState;
++.super Ljava/lang/Object;
++.source "WindowState.java"
++
++# interfaces
++.implements Ljava/lang/Runnable;
++.implements Landroid/view/ViewTreeObserver$OnGlobalLayoutListener;
++
++
++# static fields
++.field public static sDisplayOrient:I
++
++.field private static sDpiFix:Z
++
++.field private static sLastH:I
++
++.field private static sLastW:I
++
++.field private static sNaturalLandscape:I
++
++.field private static sRotationFix:Z
++
++.field public static sWindowOrientation:I
++
++
++# instance fields
++.field private final mActivity:Lcom/apportable/activity/VerdeActivity;
++
++.field private final mH:I
++
++.field private final mW:I
++
++
++# direct methods
++.method static constructor <clinit>()V
++    .locals 2
++
++    const/4 v0, -0x1
++
++    sput v0, Lcom/apportable/utils/WindowState;->sNaturalLandscape:I
++
++    const/4 v1, 0x1
++
++    sput-boolean v1, Lcom/apportable/utils/WindowState;->sRotationFix:Z
++
++    sput-boolean v1, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    return-void
++.end method
++
++.method public constructor <init>(Lcom/apportable/activity/VerdeActivity;II)V
++    .locals 0
++
++    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
++
++    iput-object p1, p0, Lcom/apportable/utils/WindowState;->mActivity:Lcom/apportable/activity/VerdeActivity;
++
++    iput p2, p0, Lcom/apportable/utils/WindowState;->mW:I
++
++    iput p3, p0, Lcom/apportable/utils/WindowState;->mH:I
++
++    return-void
++.end method
++
++.method public static check(Lcom/apportable/activity/VerdeActivity;)V
++    .locals 6
++
++    invoke-virtual {p0}, Lcom/apportable/activity/VerdeActivity;->getWindowManager()Landroid/view/WindowManager;
++
++    move-result-object v0
++
++    invoke-interface {v0}, Landroid/view/WindowManager;->getDefaultDisplay()Landroid/view/Display;
++
++    move-result-object v0
++
++    new-instance v1, Landroid/util/DisplayMetrics;
++
++    invoke-direct {v1}, Landroid/util/DisplayMetrics;-><init>()V
++
++    invoke-virtual {v0, v1}, Landroid/view/Display;->getRealMetrics(Landroid/util/DisplayMetrics;)V
++
++    invoke-virtual {v0}, Landroid/view/Display;->getRotation()I
++
++    move-result v0
++
++    iget v2, v1, Landroid/util/DisplayMetrics;->widthPixels:I
++
++    iget v1, v1, Landroid/util/DisplayMetrics;->heightPixels:I
++
++    invoke-static {v0, v2, v1}, Lcom/apportable/utils/WindowState;->computeOrient(III)I
++
++    move-result v0
++
++    invoke-static {v0}, Lcom/apportable/utils/WindowState;->pushDisplayOrient(I)V
++
++    invoke-static {v0}, Lcom/apportable/utils/WindowState;->pushLockedOrientation(I)V
++
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->refreshAutoRotate(Landroid/app/Activity;)V
++
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->isMultiWindow(Landroid/app/Activity;)Z
++
++    move-result v5
++
++    if-nez v5, :cond_0
++
++    sput v0, Lcom/apportable/utils/WindowState;->sWindowOrientation:I
++
++    :cond_0
++    invoke-virtual {p0}, Lcom/apportable/activity/VerdeActivity;->getWindow()Landroid/view/Window;
++
++    move-result-object v2
++
++    invoke-virtual {v2}, Landroid/view/Window;->getDecorView()Landroid/view/View;
++
++    move-result-object v2
++
++    invoke-virtual {v2}, Landroid/view/View;->getWidth()I
++
++    move-result v3
++
++    invoke-virtual {v2}, Landroid/view/View;->getHeight()I
++
++    move-result v4
++
++    sget v5, Landroid/os/Build$VERSION;->SDK_INT:I
++
++    const/16 v0, 0x1e
++
++    if-lt v5, v0, :cond_1
++
++    invoke-static {v2}, Lcom/apportable/utils/WindowState;->insetWidth(Landroid/view/View;)I
++
++    move-result v5
++
++    sub-int/2addr v3, v5
++
++    invoke-static {v2}, Lcom/apportable/utils/WindowState;->insetHeight(Landroid/view/View;)I
++
++    move-result v5
++
++    sub-int/2addr v4, v5
++
++    goto :goto_0
++
++    :cond_1
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->isMultiWindow(Landroid/app/Activity;)Z
++
++    move-result v5
++
++    if-eqz v5, :cond_2
++
++    invoke-static {v2}, Lcom/apportable/utils/WindowState;->legacyInsetHeight(Landroid/view/View;)I
++
++    move-result v5
++
++    sub-int/2addr v4, v5
++
++    :cond_2
++    :goto_0
++    if-lez v3, :cond_4
++
++    if-lez v4, :cond_4
++
++    sget v0, Lcom/apportable/utils/WindowState;->sLastW:I
++
++    if-ne v0, v3, :cond_3
++
++    sget v0, Lcom/apportable/utils/WindowState;->sLastH:I
++
++    if-eq v0, v4, :cond_4
++
++    :cond_3
++    sput v3, Lcom/apportable/utils/WindowState;->sLastW:I
++
++    sput v4, Lcom/apportable/utils/WindowState;->sLastH:I
++
++    new-instance v5, Lcom/apportable/utils/WindowState;
++
++    invoke-direct {v5, p0, v3, v4}, Lcom/apportable/utils/WindowState;-><init>(Lcom/apportable/activity/VerdeActivity;II)V
++
++    const/4 v0, 0x1
++
++    invoke-virtual {p0, v5, v0}, Lcom/apportable/activity/VerdeActivity;->runOnThread(Ljava/lang/Runnable;I)V
++
++    :cond_4
++    return-void
++.end method
++
++.method public static computeOrient(III)I
++    .locals 6
++
++    if-ltz p0, :cond_d
++
++    const/4 v0, 0x3
++
++    if-gt p0, v0, :cond_d
++
++    if-lez p1, :cond_d
++
++    if-lez p2, :cond_d
++
++    const/4 v0, 0x0
++
++    if-eqz p0, :cond_0
++
++    const/4 v1, 0x2
++
++    if-ne p0, v1, :cond_1
++
++    :cond_0
++    const/4 v0, 0x1
++
++    :cond_1
++    const/4 v1, 0x0
++
++    if-le p1, p2, :cond_2
++
++    const/4 v1, 0x1
++
++    :cond_2
++    const/4 v2, 0x0
++
++    if-ne v0, v1, :cond_3
++
++    const/4 v2, 0x1
++
++    :cond_3
++    sget v3, Lcom/apportable/utils/WindowState;->sNaturalLandscape:I
++
++    if-gez v3, :cond_4
++
++    sput v2, Lcom/apportable/utils/WindowState;->sNaturalLandscape:I
++
++    move v3, v2
++
++    goto :goto_0
++
++    :cond_4
++    if-eq v2, v3, :cond_5
++
++    sget v4, Lcom/apportable/utils/WindowState;->sDisplayOrient:I
++
++    return v4
++
++    :cond_5
++    :goto_0
++    if-eqz v3, :cond_9
++
++    if-nez p0, :cond_6
++
++    const/4 v4, 0x3
++
++    goto :goto_1
++
++    :cond_6
++    const/4 v5, 0x1
++
++    if-ne p0, v5, :cond_7
++
++    const/4 v4, 0x2
++
++    goto :goto_1
++
++    :cond_7
++    const/4 v5, 0x2
++
++    if-ne p0, v5, :cond_8
++
++    const/4 v4, 0x4
++
++    goto :goto_1
++
++    :cond_8
++    const/4 v4, 0x1
++
++    goto :goto_1
++
++    :cond_9
++    if-nez p0, :cond_a
++
++    const/4 v4, 0x1
++
++    goto :goto_1
++
++    :cond_a
++    const/4 v5, 0x1
++
++    if-ne p0, v5, :cond_b
++
++    const/4 v4, 0x3
++
++    goto :goto_1
++
++    :cond_b
++    const/4 v5, 0x2
++
++    if-ne p0, v5, :cond_c
++
++    const/4 v4, 0x2
++
++    goto :goto_1
++
++    :cond_c
++    const/4 v4, 0x4
++
++    :goto_1
++    sput v4, Lcom/apportable/utils/WindowState;->sDisplayOrient:I
++
++    return v4
++
++    :cond_d
++    sget v0, Lcom/apportable/utils/WindowState;->sDisplayOrient:I
++
++    return v0
++.end method
++
++.method private static insetHeight(Landroid/view/View;)I
++    .locals 3
++
++    invoke-virtual {p0}, Landroid/view/View;->getRootWindowInsets()Landroid/view/WindowInsets;
++
++    move-result-object v0
++
++    if-nez v0, :cond_0
++
++    const/4 v0, 0x0
++
++    return v0
++
++    :cond_0
++    invoke-static {}, Landroid/view/WindowInsets$Type;->systemBars()I
++
++    move-result v1
++
++    invoke-virtual {v0, v1}, Landroid/view/WindowInsets;->getInsets(I)Landroid/graphics/Insets;
++
++    move-result-object v0
++
++    iget v1, v0, Landroid/graphics/Insets;->top:I
++
++    iget v2, v0, Landroid/graphics/Insets;->bottom:I
++
++    add-int/2addr v1, v2
++
++    return v1
++.end method
++
++.method private static insetWidth(Landroid/view/View;)I
++    .locals 3
++
++    invoke-virtual {p0}, Landroid/view/View;->getRootWindowInsets()Landroid/view/WindowInsets;
++
++    move-result-object v0
++
++    if-nez v0, :cond_0
++
++    const/4 v0, 0x0
++
++    return v0
++
++    :cond_0
++    invoke-static {}, Landroid/view/WindowInsets$Type;->systemBars()I
++
++    move-result v1
++
++    invoke-virtual {v0, v1}, Landroid/view/WindowInsets;->getInsets(I)Landroid/graphics/Insets;
++
++    move-result-object v0
++
++    iget v1, v0, Landroid/graphics/Insets;->left:I
++
++    iget v2, v0, Landroid/graphics/Insets;->right:I
++
++    add-int/2addr v1, v2
++
++    return v1
++.end method
++
++.method public static isMultiWindow(Landroid/app/Activity;)Z
++    .locals 2
++
++    sget v1, Landroid/os/Build$VERSION;->SDK_INT:I
++
++    const/16 v0, 0x18
++
++    if-lt v1, v0, :cond_0
++
++    invoke-virtual {p0}, Landroid/app/Activity;->isInMultiWindowMode()Z
++
++    move-result v0
++
++    return v0
++
++    :cond_0
++    const/4 v0, 0x0
++
++    return v0
++.end method
++
++.method private static legacyInsetHeight(Landroid/view/View;)I
++    .locals 3
++
++    invoke-virtual {p0}, Landroid/view/View;->getRootWindowInsets()Landroid/view/WindowInsets;
++
++    move-result-object v0
++
++    if-nez v0, :cond_0
++
++    const/4 v0, 0x0
++
++    return v0
++
++    :cond_0
++    invoke-virtual {v0}, Landroid/view/WindowInsets;->getSystemWindowInsetTop()I
++
++    move-result v1
++
++    invoke-virtual {v0}, Landroid/view/WindowInsets;->getSystemWindowInsetBottom()I
++
++    move-result v2
++
++    add-int/2addr v1, v2
++
++    return v1
++.end method
++
++.method private static pushAutoRotate(I)V
++    .locals 2
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    invoke-static {p0}, Lcom/apportable/ui/Device;->nativeSetAutoRotate(I)V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    :cond_0
++    return-void
++
++    :catch_0
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
++
++    return-void
++.end method
++
++.method private static pushDisplayOrient(I)V
++    .locals 2
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    invoke-static {p0}, Lcom/apportable/gl/GLSurfaceView;->dpifixSetDisplayOrient(I)V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    :cond_0
++    return-void
++
++    :catch_0
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    return-void
++.end method
++
++.method private static pushLockedOrientation(I)V
++    .locals 2
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    invoke-static {p0}, Lcom/apportable/ui/Device;->nativeSetLockedOrientation(I)V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    :cond_0
++    return-void
++
++    :catch_0
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
++
++    return-void
++.end method
++
++.method private static pushResync()V
++    .locals 2
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    invoke-static {}, Lcom/apportable/ui/Device;->nativeRunPendingResync()V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    :cond_0
++    return-void
++
++    :catch_0
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
++
++    return-void
++.end method
++
++.method private static pushWindowPx(II)V
++    .locals 2
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    invoke-static {p0, p1}, Lcom/apportable/gl/GLSurfaceView;->dpifixWindowPx(II)V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    :cond_0
++    return-void
++
++    :catch_0
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    return-void
++.end method
++
++.method public static refreshAutoRotate(Landroid/app/Activity;)V
++    .locals 3
++
++    invoke-virtual {p0}, Landroid/app/Activity;->getContentResolver()Landroid/content/ContentResolver;
++
++    move-result-object v0
++
++    const-string v1, "accelerometer_rotation"
++
++    const/4 v2, 0x0
++
++    invoke-static {v0, v1, v2}, Landroid/provider/Settings$System;->getInt(Landroid/content/ContentResolver;Ljava/lang/String;I)I
++
++    move-result v0
++
++    invoke-static {v0}, Lcom/apportable/utils/WindowState;->pushAutoRotate(I)V
++
++    return-void
++.end method
++
++.method public static seed()V
++    .locals 3
++
++    invoke-static {}, Lcom/apportable/activity/VerdeActivity;->getActivity()Lcom/apportable/activity/VerdeActivity;
++
++    move-result-object v0
++
++    if-nez v0, :cond_0
++
++    const-string v1, "WINDOWSTATE"
++
++    const-string v2, "no activity - orientation not seeded"
++
++    invoke-static {v1, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
++
++    return-void
++
++    :cond_0
++    invoke-static {v0}, Lcom/apportable/utils/WindowState;->check(Lcom/apportable/activity/VerdeActivity;)V
++
++    sget v1, Lcom/apportable/utils/WindowState;->sWindowOrientation:I
++
++    if-lez v1, :cond_1
++
++    invoke-static {v0}, Lcom/apportable/utils/WindowState;->isMultiWindow(Landroid/app/Activity;)Z
++
++    move-result v2
++
++    if-nez v2, :cond_1
++
++    invoke-virtual {v0, v1}, Lcom/apportable/activity/VerdeActivity;->_setRequestedOrientation(I)V
++
++    :cond_1
++    return-void
++.end method
++
++.method public static setMultiWindow(Z)V
++    .locals 2
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    invoke-static {p0}, Lcom/apportable/ui/Device;->nativeSetMultiWindow(Z)V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    goto :goto_0
++
++    :catch_0
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
++
++    :cond_0
++    :goto_0
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    if-eqz v0, :cond_1
++
++    :try_start_1
++    invoke-static {p0}, Lcom/apportable/gl/GLSurfaceView;->dpifixMultiWindow(Z)V
++    :try_end_1
++    .catch Ljava/lang/Throwable; {:try_start_1 .. :try_end_1} :catch_1
++
++    :cond_1
++    return-void
++
++    :catch_1
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    return-void
++.end method
++
++
++# virtual methods
++.method public onGlobalLayout()V
++    .locals 1
++
++    iget-object v0, p0, Lcom/apportable/utils/WindowState;->mActivity:Lcom/apportable/activity/VerdeActivity;
++
++    invoke-static {v0}, Lcom/apportable/utils/WindowState;->check(Lcom/apportable/activity/VerdeActivity;)V
++
++    return-void
++.end method
++
++.method public run()V
++    .locals 3
++
++    iget v0, p0, Lcom/apportable/utils/WindowState;->mW:I
++
++    const/4 v1, -0x1
++
++    if-ne v0, v1, :cond_0
++
++    iget-object v2, p0, Lcom/apportable/utils/WindowState;->mActivity:Lcom/apportable/activity/VerdeActivity;
++
++    invoke-static {v2}, Lcom/apportable/utils/WindowState;->check(Lcom/apportable/activity/VerdeActivity;)V
++
++    return-void
++
++    :cond_0
++    invoke-static {}, Lcom/apportable/utils/WindowState;->pushResync()V
++
++    iget v1, p0, Lcom/apportable/utils/WindowState;->mH:I
++
++    invoke-static {v0, v1}, Lcom/apportable/utils/WindowState;->pushWindowPx(II)V
++
++    return-void
++.end method
+diff --git a/smali_classes3/com/noodlecake/noodlenews/promotion/MoreGamesFragment$MoreGamesWebViewClient.smali b/smali_classes3/com/noodlecake/noodlenews/promotion/MoreGamesFragment$MoreGamesWebViewClient.smali
+index 4a143e9..1191da7 100644
+--- a/smali_classes3/com/noodlecake/noodlenews/promotion/MoreGamesFragment$MoreGamesWebViewClient.smali
++++ b/smali_classes3/com/noodlecake/noodlenews/promotion/MoreGamesFragment$MoreGamesWebViewClient.smali
+@@ -154,6 +154,27 @@
+     return-void
+ .end method
+ 
++.method public onRenderProcessGone(Landroid/webkit/WebView;Landroid/webkit/RenderProcessGoneDetail;)Z
++    .locals 2
++    .param p1, "view"    # Landroid/webkit/WebView;
++    .param p2, "detail"    # Landroid/webkit/RenderProcessGoneDetail;
++    .annotation build Landroid/annotation/TargetApi;
++        value = 0x1a
++    .end annotation
++
++    .prologue
++    iget-object v0, p0, Lcom/noodlecake/noodlenews/promotion/MoreGamesFragment$MoreGamesWebViewClient;->this$0:Lcom/noodlecake/noodlenews/promotion/MoreGamesFragment;
++
++    if-eqz v0, :cond_0
++
++    invoke-virtual {v0}, Lcom/noodlecake/noodlenews/promotion/MoreGamesFragment;->dismissAllowingStateLoss()V
++
++    :cond_0
++    const/4 v0, 0x1
++
++    return v0
++.end method
++
+ .method public shouldOverrideUrlLoading(Landroid/webkit/WebView;Landroid/webkit/WebResourceRequest;)Z
+     .locals 1
+     .param p1, "view"    # Landroid/webkit/WebView;
+diff --git a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$4.smali b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$4.smali
+index a933779..d577556 100644
+--- a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$4.smali
++++ b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$4.smali
+@@ -96,41 +96,21 @@
+     .line 157
+     iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView$4;->this$0:Lcom/noodlecake/noodlewebview/BlockheadsWebView;
+ 
+-    new-instance v1, Ljava/lang/StringBuilder;
+-
+-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+-
+-    const-string v2, "<div id=\"messageContent\">"
++    iget-object v1, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView$4;->this$0:Lcom/noodlecake/noodlewebview/BlockheadsWebView;
+ 
+-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    invoke-static {v1}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->access$600(Lcom/noodlecake/noodlewebview/BlockheadsWebView;)Landroid/widget/EditText;
+ 
+     move-result-object v1
+ 
+-    iget-object v2, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView$4;->this$0:Lcom/noodlecake/noodlewebview/BlockheadsWebView;
+-
+-    invoke-static {v2}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->access$600(Lcom/noodlecake/noodlewebview/BlockheadsWebView;)Landroid/widget/EditText;
+-
+-    move-result-object v2
+-
+-    invoke-virtual {v2}, Landroid/widget/EditText;->getText()Landroid/text/Editable;
+-
+-    move-result-object v2
+-
+-    invoke-virtual {v2}, Ljava/lang/Object;->toString()Ljava/lang/String;
+-
+-    move-result-object v2
+-
+-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    invoke-virtual {v1}, Landroid/widget/EditText;->getText()Landroid/text/Editable;
+ 
+     move-result-object v1
+ 
+-    const-string v2, "</div>"
+-
+-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++    invoke-virtual {v1}, Ljava/lang/Object;->toString()Ljava/lang/String;
+ 
+     move-result-object v1
+ 
+-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
++    invoke-static {v1}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->wmWrapForDisplay(Ljava/lang/String;)Ljava/lang/String;
+ 
+     move-result-object v1
+ 
+diff --git a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali
+index 220c656..313b147 100644
+--- a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali
++++ b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient.smali
+@@ -116,6 +116,27 @@
+     return-void
+ .end method
+ 
++.method public onRenderProcessGone(Landroid/webkit/WebView;Landroid/webkit/RenderProcessGoneDetail;)Z
++    .locals 2
++    .param p1, "view"    # Landroid/webkit/WebView;
++    .param p2, "detail"    # Landroid/webkit/RenderProcessGoneDetail;
++    .annotation build Landroid/annotation/TargetApi;
++        value = 0x1a
++    .end annotation
++
++    .prologue
++    iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView$BlockheadsWebViewClient;->this$0:Lcom/noodlecake/noodlewebview/BlockheadsWebView;
++
++    if-eqz v0, :cond_0
++
++    invoke-virtual {v0}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->finish()V
++
++    :cond_0
++    const/4 v0, 0x1
++
++    return v0
++.end method
++
+ .method public shouldOverrideUrlLoading(Landroid/webkit/WebView;Ljava/lang/String;)Z
+     .locals 3
+ 
+diff --git a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView.smali b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView.smali
+index 69e7672..1ccfe39 100644
+--- a/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView.smali
++++ b/smali_classes3/com/noodlecake/noodlewebview/BlockheadsWebView.smali
+@@ -177,6 +177,92 @@
+ .method public static native nativeSetWelcomeMessage(Ljava/lang/String;J)V
+ .end method
+ 
++.method public static wmExtractMessage(Ljava/lang/String;)Ljava/lang/String;
++    .locals 3
++
++    if-nez p0, :cond_0
++
++    const/4 v0, 0x0
++
++    return-object v0
++
++    :cond_0
++    invoke-virtual {p0}, Ljava/lang/String;->length()I
++
++    move-result v0
++
++    const/16 v1, 0x21
++
++    if-gt v0, v1, :cond_1
++
++    const/4 v0, 0x0
++
++    return-object v0
++
++    :cond_1
++    const/16 v1, 0x1a
++
++    add-int/lit8 v2, v0, -0x7
++
++    invoke-virtual {p0, v1, v2}, Ljava/lang/String;->substring(II)Ljava/lang/String;
++
++    move-result-object v0
++
++    return-object v0
++.end method
++
++.method public static wmWrapForDisplay(Ljava/lang/String;)Ljava/lang/String;
++    .locals 3
++
++    const-string v1, "<"
++
++    invoke-virtual {p0, v1}, Ljava/lang/String;->indexOf(Ljava/lang/String;)I
++
++    move-result v1
++
++    if-ltz v1, :cond_0
++
++    move-object v1, p0
++
++    goto :goto_0
++
++    :cond_0
++    const-string v1, "\n"
++
++    const-string v2, "<br/>"
++
++    invoke-virtual {p0, v1, v2}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
++
++    move-result-object v1
++
++    :goto_0
++    new-instance v0, Ljava/lang/StringBuilder;
++
++    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
++
++    const-string v2, "<div id=\"messageContent\">"
++
++    invoke-virtual {v0, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++
++    move-result-object v0
++
++    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++
++    move-result-object v0
++
++    const-string v2, "</div>"
++
++    invoke-virtual {v0, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
++
++    move-result-object v0
++
++    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
++
++    move-result-object v0
++
++    return-object v0
++.end method
++
+ 
+ # virtual methods
+ .method public onCreate(Landroid/os/Bundle;)V
+@@ -681,7 +767,26 @@
+ 
+     iput-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->footer:Ljava/lang/String;
+ 
++    iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
++
++    invoke-static {v0}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->wmExtractMessage(Ljava/lang/String;)Ljava/lang/String;
++
++    move-result-object v0
++
++    if-eqz v0, :cond_3
++
++    iget-object v1, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->editView:Landroid/widget/EditText;
++
++    invoke-virtual {v1, v0}, Landroid/widget/EditText;->setText(Ljava/lang/CharSequence;)V
++
++    invoke-static {v0}, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->wmWrapForDisplay(Ljava/lang/String;)Ljava/lang/String;
++
++    move-result-object v0
++
++    iput-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
++
+     .line 225
++    :cond_3
+     iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->webView:Landroid/webkit/WebView;
+ 
+     const-string v1, "file:///android_asset/GameResources/instructions/"
+@@ -720,40 +825,7 @@
+ 
+     invoke-virtual/range {v0 .. v5}, Landroid/webkit/WebView;->loadDataWithBaseURL(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ 
+-    .line 227
+-    iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
+-
+-    invoke-virtual {v0}, Ljava/lang/String;->length()I
+-
+-    move-result v0
+-
+-    const/16 v1, 0x21
+-
+-    if-le v0, v1, :cond_3
+-
+-    .line 228
+-    iget-object v0, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->editView:Landroid/widget/EditText;
+-
+-    iget-object v1, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
+-
+-    const/16 v2, 0x1a
+-
+-    iget-object v3, p0, Lcom/noodlecake/noodlewebview/BlockheadsWebView;->content:Ljava/lang/String;
+-
+-    invoke-virtual {v3}, Ljava/lang/String;->length()I
+-
+-    move-result v3
+-
+-    add-int/lit8 v3, v3, -0x7
+-
+-    invoke-virtual {v1, v2, v3}, Ljava/lang/String;->substring(II)Ljava/lang/String;
+-
+-    move-result-object v1
+-
+-    invoke-virtual {v0, v1}, Landroid/widget/EditText;->setText(Ljava/lang/CharSequence;)V
+-
+     .line 233
+-    :cond_3
+     :goto_2
+     return-void
+ 
