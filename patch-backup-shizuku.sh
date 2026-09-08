@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ORIG_SIGNATURE="3082027d308201e6a00302010202044e679a66300d06092a864886f70d0101050500308182310b3009060355040613024341310b300906035504081302534b31123010060355040713095361736b61746f6f6e311f301d060355040a13164e6f6f646c6563616b652053747564696f7320496e6331143012060355040b130b446576656c6f706d656e74311b3019060355040313124a6f7264616e2053636869646c6f77736b79301e170d3131303930373136323330325a170d3336303833313136323330325a308182310b3009060355040613024341310b300906035504081302534b31123010060355040713095361736b61746f6f6e311f301d060355040a13164e6f6f646c6563616b652053747564696f7320496e6331143012060355040b130b446576656c6f706d656e74311b3019060355040313124a6f7264616e2053636869646c6f77736b7930819f300d06092a864886f70d010101050003818d0030818902818100f2b09ea66152b7db2ec1d6f292bfd82229abd82507ee1f901768b4092ce28a4fa48463b3b4f867f8d23772a37a8572606a3b0ee8ba91c33ed61c140281fed2b67012c7d9a9ab9edc54920c62437b7d9228641b3cd2747d19cbdd88b698f088e1007f5636bb98f7a17fcc5819f10bd0b86ca569d316ed175c28f624674463ecc90203010001300d06092a864886f70d01010505000381810009452c1a60dfd26634333ea3c68275821fe2a6e29dbd165653b6359caa926776ffcfc5ce978a19d0ff69cf08dbb828d23c327bbd2a0a0881f1b27cb8ea565aad02ecbeb1d8469121c8094b514841143dec1bc5ff2437c69d62fa8ba30a302529d20c4e4e643379916ee1292bca7f469f572ea1ecdfc19402efa4c40637abf7f4"
+NEW_SIGNATURE="308204a830820390a003020102020900936eacbe07f201df300d06092a864886f70d0101050500308194310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e20566965773110300e060355040a1307416e64726f69643110300e060355040b1307416e64726f69643110300e06035504031307416e64726f69643122302006092a864886f70d0109011613616e64726f696440616e64726f69642e636f6d301e170d3038303232393031333334365a170d3335303731373031333334365a308194310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e20566965773110300e060355040a1307416e64726f69643110300e060355040b1307416e64726f69643110300e06035504031307416e64726f69643122302006092a864886f70d0109011613616e64726f696440616e64726f69642e636f6d30820120300d06092a864886f70d01010105000382010d00308201080282010100d6931904dec60b24b1edc762e0d9d8253e3ecd6ceb1de2ff068ca8e8bca8cd6bd3786ea70aa76ce60ebb0f993559ffd93e77a943e7e83d4b64b8e4fea2d3e656f1e267a81bbfb230b578c20443be4c7218b846f5211586f038a14e89c2be387f8ebecf8fcac3da1ee330c9ea93d0a7c3dc4af350220d50080732e0809717ee6a053359e6a694ec2cb3f284a0a466c87a94d83b31093a67372e2f6412c06e6d42f15818dffe0381cc0cd444da6cddc3b82458194801b32564134fbfde98c9287748dbf5676a540d8154c8bbca07b9e247553311c46b9af76fdeeccc8e69e7c8a2d08e782620943f99727d3c04fe72991d99df9bae38a0b2177fa31d5b6afee91f020103a381fc3081f9301d0603551d0e04160414485900563d272c46ae118605a47419ac09ca8c113081c90603551d230481c13081be8014485900563d272c46ae118605a47419ac09ca8c11a1819aa48197308194310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e20566965773110300e060355040a1307416e64726f69643110300e060355040b1307416e64726f69643110300e06035504031307416e64726f69643122302006092a864886f70d0109011613616e64726f696440616e64726f69642e636f6d820900936eacbe07f201df300c0603551d13040530030101ff300d06092a864886f70d010105050003820101007aaf968ceb50c441055118d0daabaf015b8a765a27a715a2c2b44f221415ffdace03095abfa42df70708726c2069e5c36eddae0400be29452c084bc27eb6a17eac9dbe182c204eb15311f455d824b656dbe4dc2240912d7586fe88951d01a8feb5ae5a4260535df83431052422468c36e22c2a5ef994d61dd7306ae4c9f6951ba3c12f1d1914ddc61f1a62da2df827f603fea5603b2c540dbd7c019c36bab29a4271c117df523cdbc5f3817a49e0efa60cbd7f74177e7a4f193d43f4220772666e4c4d83e1bd5a86087cf34f2dec21e245ca6c2bb016e683638050d2c430eea7c26a1c49d3760a58ab7f1a82cc938b4831384324bd0401fa12163a50570e684d"
+ABE_SHA256="abcc1d6e8614cc3cd975f5626537492f87460c0658980a3deb29ecb393f83f8a"
+
+export RISH_APPLICATION_ID="${RISH_APPLICATION_ID:-com.termux}"
+RISH="${RISH:-}"
+if [[ -z "${RISH}" ]]; then
+  for candidate in "./rish" "${HOME}/rish"; do
+    [[ -f "${candidate}" ]] && { RISH="${candidate}"; break; }
+  done
+fi
+if [[ -z "${RISH}" ]]; then
+  echo "Error: rish not found. Set RISH=/path/to/rish, or place it in the" >&2
+  echo "current directory or ${HOME}." >&2
+  exit 1
+fi
+RISH="$(cd -- "$(dirname -- "${RISH}")" && pwd)/$(basename -- "${RISH}")"
+
+for cmd in curl java python3 sha256sum; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "Error: $cmd not found. Install with: pkg install curl openjdk-25 python coreutils" >&2
+    exit 1
+  }
+done
+
+# Output goes to shared storage so it survives a Termux uninstall
+OUT_DIR="${OUT_DIR:-${HOME}/storage/shared/blockheads-backups}"
+if [[ ! -d "${HOME}/storage" ]]; then
+  echo "Error: shared storage not set up. Run: termux-setup-storage" >&2
+  exit 1
+fi
+mkdir -p "${OUT_DIR}"
+
+BACKUP_DIR="$(mktemp -d -t blockheads-backup-XXXXXXXX)"
+cleanup() { rm -rf -- "${BACKUP_DIR}"; }
+trap cleanup EXIT
+
+cd "${BACKUP_DIR}"
+echo "Downloading dependencies..."
+curl -fsSL -o abe.jar https://github.com/JarlPenguin/files/raw/refs/heads/master/abe/abe.jar
+echo "${ABE_SHA256}  abe.jar" | sha256sum -c --quiet - || {
+  echo "Error: abe.jar checksum mismatch - refusing to run it." >&2
+  exit 1
+}
+
+echo
+echo "Backing up the game data..."
+echo 'Please press "Back up my data" without entering a password!'
+sh "${RISH}" -c "bu backup -noapk com.noodlecake.blockheads" > backup.ab
+
+if [[ ! -s backup.ab ]] || (( $(stat -c %s backup.ab) < 1024 )); then
+  echo "Error: the backup is empty. Did you confirm the dialog on your device?" >&2
+  exit 1
+fi
+
+# .ab header is plain text: magic / version / compressed / encryption
+ENCRYPTION="$(head -n 4 backup.ab | tail -n 1 | tr -d '\r')"
+if [[ "${ENCRYPTION}" != "none" ]]; then
+  echo "Error: the backup is encrypted (${ENCRYPTION})." >&2
+  echo "A backup password is set on your device. Clear it under" >&2
+  echo "Developer options > Desktop backup password, then run this again." >&2
+  echo "You can set it back afterwards." >&2
+  exit 1
+fi
+java -jar abe.jar unpack backup.ab backup.tar
+tar tf backup.tar | grep -F "com.noodlecake.blockheads" > backup.list
+mkdir -p backup
+tar xvf backup.tar -C backup
+cd backup
+echo
+echo "Patching the backup..."
+python3 - "apps/com.noodlecake.blockheads/_manifest" "$ORIG_SIGNATURE" "$NEW_SIGNATURE" <<'EOF'
+import sys, pathlib
+
+path, orig, new = pathlib.Path(sys.argv[1]), sys.argv[2].encode(), sys.argv[3].encode()
+data = path.read_bytes()
+
+count = data.count(orig)
+if count != 1:
+    sys.exit(f"Error: expected exactly 1 signature match, found {count}.")
+
+path.write_bytes(data.replace(orig, new))
+EOF
+tar --format=ustar --hard-dereference --no-recursion -cvf ../patched-backup.tar -T ../backup.list
+cd ..
+java -jar abe.jar pack patched-backup.tar patched-backup.ab
+
+SUFFIX="$(date '+%Y%m%d-%H%M%S')"
+cp backup.ab "${OUT_DIR}/backup-${SUFFIX}.ab"
+cp patched-backup.ab "${OUT_DIR}/patched-backup-${SUFFIX}.ab"
+
+echo
+echo "Done!"
+echo "Original backup: ${OUT_DIR}/backup-${SUFFIX}.ab"
+echo "Patched backup:  ${OUT_DIR}/patched-backup-${SUFFIX}.ab"
+echo
+echo "After installing the patched version of the game, run:"
+echo "  RISH_APPLICATION_ID=${RISH_APPLICATION_ID} sh ${RISH} -c \"bu restore\" < ${OUT_DIR}/patched-backup-${SUFFIX}.ab"

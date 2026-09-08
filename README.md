@@ -51,7 +51,38 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 
 ## How to apply the patches
 
-> **This will delete your existing worlds.** The patched APK is signed with a different key than the Play Store/Noodlecake builds, so it can't be installed over an existing installation - you have to uninstall first, and the save data goes with it. Backing up and restoring saves is possible but is a complicated process and isn't covered here.
+### Backing up your worlds (if you want to)
+
+**Uninstalling deletes your worlds.** The patched APK is signed with a different key than the Play Store/Noodlecake builds, so it can't be installed over an existing installation - you have to uninstall first, and the save data goes with it.
+
+If you have worlds you want to keep and have access to a PC running Linux, run `./patch-backup.sh` before you uninstall anything. If you're using WSL, please [properly setup ADB on it](https://stackoverflow.com/questions/60166965/adb-device-list-empty-using-wsl2) before running the script. It pulls your saves off the device with `adb backup` and rewrites the signature inside so they can be restored onto the patched build. You'll need `adb` working, and no backup password set under Developer options. Restore with `adb restore` after installing the patched APK - the script prints the exact command when it finishes.
+
+If you don't have access to a computer, you can back up your data and patch the backup directly on the device. This needs [Shizuku](https://shizuku.rikka.app/) and [Termux](https://github.com/termux/termux-app/releases) - install Termux from GitHub or F-Droid, not the Play Store version, which is outdated and won't install the packages below.
+
+1. Install and start Shizuku. Follow [Shizuku's own setup guide](https://shizuku.rikka.app/guide/setup/). Note that on a non-rooted device Shizuku stops when you reboot and has to be started again.
+
+2. In Shizuku, open **Use Shizuku in terminal apps** → **Export files**, then in the hamburger menu pick **Termux** and tap **Use this folder**. This writes `rish` and `rish_shizuku.dex` into Termux's home directory.
+
+3. Open Termux, run `sh rish -c "echo"` and grant it access when Shizuku prompts, then install the dependencies:
+```sh
+   pkg install curl openjdk-25 python coreutils
+```
+
+4. Give Termux access to shared storage, so the backups land somewhere you can reach from a file manager:
+```sh
+   termux-setup-storage
+```
+
+5. Download and run the script:
+```sh
+   curl -fsSLO https://raw.githubusercontent.com/JarlPenguin/blockheads-android-patches/main/patch-backup-shizuku.sh
+   bash patch-backup-shizuku.sh
+```
+   Follow the instructions that the script provides. Install the patched APK first, then run the `bu restore` command it printed - restoring before installing does nothing.
+
+### Prebuilt APK
+
+Prebuilt patched APKs are available [here](https://github.com/JarlPenguin/blockheads-android-patches/releases).
 
 ### All-in-one script
 
