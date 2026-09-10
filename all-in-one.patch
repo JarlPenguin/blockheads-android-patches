@@ -1,5 +1,5 @@
 diff --git a/AndroidManifest.xml b/AndroidManifest.xml
-index 2e851ce..9296dd6 100644
+index 2e851ce..617bea7 100644
 --- a/AndroidManifest.xml
 +++ b/AndroidManifest.xml
 @@ -8,7 +8,7 @@
@@ -11,7 +11,13 @@ index 2e851ce..9296dd6 100644
          <meta-data android:name="android.max_aspect" android:value="2.1"/>
          <meta-data android:name="android.app.libs" android:value="v cxx System icu CoreFoundation xml2 CommonCrypto Security SystemConfiguration CFNetwork Foundation GraphicsServices CoreGraphics BridgeKit OpenAL gles_apportable pango CoreText CoreAudio AudioFile AudioUnit AudioToolbox NoodleFoundation NoodleCompatibility Application"/>
          <meta-data android:name="android.app.lib_name" android:value="Application"/>
-@@ -30,18 +30,19 @@
+@@ -25,23 +25,25 @@
+         <meta-data android:name="apportable.opengles.fast_color" android:value="true"/>
+         <meta-data android:name="apportable.abi_list" android:value="armv7a"/>
+         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
++        <activity android:excludeFromRecents="true" android:exported="false" android:name="com.apportable.activity.Trampoline" android:noHistory="true" android:taskAffinity="" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+         <activity android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" android:exported="false" android:name="com.google.android.gms.ads.AdActivity" android:theme="@android:style/Theme.Translucent"/>
+         <activity android:excludeFromRecents="true" android:exported="false" android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
          <service android:exported="true" android:name="com.google.android.gms.auth.api.signin.RevocationBoundService" android:permission="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION"/>
          <activity android:exported="false" android:name="com.google.android.gms.common.api.GoogleApiActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
          <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
@@ -34,7 +40,7 @@ index 2e851ce..9296dd6 100644
              </intent-filter>
              <intent-filter>
                  <action android:name="android.intent.action.MAIN"/>
-@@ -50,13 +51,6 @@
+@@ -50,13 +52,6 @@
              <intent-filter>
                  <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
              </intent-filter>
@@ -48,7 +54,7 @@ index 2e851ce..9296dd6 100644
          </activity>
          <service android:exported="false" android:name="com.apportable.media.AudioManagerService"/>
          <service android:name="com.apportable.iap.BillingService"/>
-@@ -114,6 +108,6 @@
+@@ -114,6 +109,6 @@
          </receiver>
          <activity android:name="com.apportable.ui.TextViewHaxActivity"/>
          <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id"/>
@@ -2043,20 +2049,53 @@ index 468f98c..bc28949 100644
      :try_end_0
      .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
  
+diff --git a/smali/com/apportable/activity/Trampoline.smali b/smali/com/apportable/activity/Trampoline.smali
+new file mode 100644
+index 0000000..32371c1
+--- /dev/null
++++ b/smali/com/apportable/activity/Trampoline.smali
+@@ -0,0 +1,25 @@
++.class public Lcom/apportable/activity/Trampoline;
++.super Landroid/app/Activity;
++.source "Trampoline.java"
++
++
++# direct methods
++.method public constructor <init>()V
++    .locals 0
++
++    invoke-direct {p0}, Landroid/app/Activity;-><init>()V
++
++    return-void
++.end method
++
++
++# virtual methods
++.method protected onCreate(Landroid/os/Bundle;)V
++    .locals 0
++
++    invoke-super {p0, p1}, Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V
++
++    invoke-virtual {p0}, Lcom/apportable/activity/Trampoline;->finish()V
++
++    return-void
++.end method
 diff --git a/smali/com/apportable/activity/VerdeActivity.smali b/smali/com/apportable/activity/VerdeActivity.smali
-index 7c1afc4..ebc5b0e 100644
+index 7c1afc4..bd4be0f 100644
 --- a/smali/com/apportable/activity/VerdeActivity.smali
 +++ b/smali/com/apportable/activity/VerdeActivity.smali
-@@ -18,6 +18,8 @@
+@@ -18,6 +18,10 @@
  
  .field private static mOnCreateRestartAttempted:Z
  
++.field public static sStopped:Z
++
 +.field private static sWasMultiWindow:Z
 +
  .field private static theVerdeActivity:Lcom/apportable/activity/VerdeActivity;
  
  
-@@ -34,6 +36,8 @@
+@@ -34,6 +38,8 @@
  
  .field private mPaused:Z
  
@@ -2065,7 +2104,7 @@ index 7c1afc4..ebc5b0e 100644
  .field private mRequestedOrientation:I
  
  .field private mScalingFactor:F
-@@ -1167,6 +1171,43 @@
+@@ -1167,6 +1173,43 @@
      return v0
  .end method
  
@@ -2109,7 +2148,7 @@ index 7c1afc4..ebc5b0e 100644
  .method protected onActivityResult(IILandroid/content/Intent;)V
      .locals 5
  
-@@ -1332,12 +1373,47 @@
+@@ -1332,12 +1375,47 @@
  .end method
  
  .method public onConfigurationChanged(Landroid/content/res/Configuration;)V
@@ -2158,7 +2197,7 @@ index 7c1afc4..ebc5b0e 100644
      .line 590
      iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
  
-@@ -1345,7 +1421,27 @@
+@@ -1345,7 +1423,27 @@
  
      move-result v0
  
@@ -2187,7 +2226,7 @@ index 7c1afc4..ebc5b0e 100644
  
      .line 591
      new-instance v0, Lcom/apportable/activity/VerdeActivity$12;
-@@ -1357,14 +1453,16 @@
+@@ -1357,14 +1455,16 @@
      invoke-virtual {p0, v0, v1}, Lcom/apportable/activity/VerdeActivity;->runOnThread(Ljava/lang/Runnable;I)V
  
      .line 598
@@ -2198,7 +2237,7 @@ index 7c1afc4..ebc5b0e 100644
  
  .method protected onCreate(Landroid/os/Bundle;)V
 -    .locals 3
-+    .locals 4
++    .locals 6
  
      .prologue
 +    invoke-static {}, Lcom/apportable/RotationCrashFilter;->install()V
@@ -2206,36 +2245,38 @@ index 7c1afc4..ebc5b0e 100644
      const/16 v1, 0x400
  
      const/4 v2, 0x1
-@@ -1438,6 +1536,28 @@
+@@ -1438,6 +1538,30 @@
  
      invoke-static {v0}, Lcom/apportable/app/SplashScreen;->show(Landroid/widget/FrameLayout;)V
  
 +    invoke-virtual {p0}, Lcom/apportable/activity/VerdeActivity;->getWindow()Landroid/view/Window;
 +
++    move-result-object v4
++
++    invoke-virtual {v4}, Landroid/view/Window;->getDecorView()Landroid/view/View;
++
++    move-result-object v4
++
++    new-instance v5, Lcom/apportable/utils/WindowState;
++
++    const/4 v0, -0x1
++
++    const/4 v1, 0x0
++
++    invoke-direct {v5, p0, v0, v1}, Lcom/apportable/utils/WindowState;-><init>(Lcom/apportable/activity/VerdeActivity;II)V
++
++    invoke-virtual {v4}, Landroid/view/View;->getViewTreeObserver()Landroid/view/ViewTreeObserver;
++
 +    move-result-object v0
 +
-+    invoke-virtual {v0}, Landroid/view/Window;->getDecorView()Landroid/view/View;
++    invoke-virtual {v0, v5}, Landroid/view/ViewTreeObserver;->addOnGlobalLayoutListener(Landroid/view/ViewTreeObserver$OnGlobalLayoutListener;)V
 +
-+    move-result-object v0
-+
-+    invoke-virtual {v0}, Landroid/view/View;->getViewTreeObserver()Landroid/view/ViewTreeObserver;
-+
-+    move-result-object v0
-+
-+    new-instance v1, Lcom/apportable/utils/WindowState;
-+
-+    const/4 v2, -0x1
-+
-+    const/4 v3, 0x0
-+
-+    invoke-direct {v1, p0, v2, v3}, Lcom/apportable/utils/WindowState;-><init>(Lcom/apportable/activity/VerdeActivity;II)V
-+
-+    invoke-virtual {v0, v1}, Landroid/view/ViewTreeObserver;->addOnGlobalLayoutListener(Landroid/view/ViewTreeObserver$OnGlobalLayoutListener;)V
++    invoke-virtual {v4, v5}, Landroid/view/View;->addOnLayoutChangeListener(Landroid/view/View$OnLayoutChangeListener;)V
 +
      .line 182
      invoke-static {p0}, Lcom/android/ViewServer;->get(Landroid/content/Context;)Lcom/android/ViewServer;
  
-@@ -1485,42 +1605,10 @@
+@@ -1485,42 +1609,10 @@
      :cond_1
      invoke-static {}, Lcom/apportable/MainThread;->start()V
  
@@ -2278,7 +2319,7 @@ index 7c1afc4..ebc5b0e 100644
      iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
  
      new-instance v1, Lcom/apportable/activity/VerdeActivity$3;
-@@ -1533,22 +1621,6 @@
+@@ -1533,22 +1625,6 @@
      invoke-direct {p0}, Lcom/apportable/activity/VerdeActivity;->hideSystemUI()V
  
      goto :goto_0
@@ -2301,7 +2342,7 @@ index 7c1afc4..ebc5b0e 100644
  .end method
  
  .method protected onDestroy()V
-@@ -1626,35 +1698,20 @@
+@@ -1626,35 +1702,20 @@
      .line 464
      invoke-super {p0}, Landroid/app/Activity;->onPause()V
  
@@ -2339,7 +2380,7 @@ index 7c1afc4..ebc5b0e 100644
  
      .line 483
      const/4 v0, 0x0
-@@ -1662,7 +1719,7 @@
+@@ -1662,7 +1723,7 @@
      invoke-static {v0}, Ljava/lang/System;->exit(I)V
  
      .line 486
@@ -2348,7 +2389,7 @@ index 7c1afc4..ebc5b0e 100644
      iget-object v0, p0, Lcom/apportable/activity/VerdeActivity;->mLibraryLoader:Lcom/apportable/activity/BackgroundLibraryLoader;
  
      new-instance v1, Lcom/apportable/activity/VerdeActivity$8;
-@@ -1703,10 +1760,6 @@
+@@ -1703,10 +1764,6 @@
      invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
  
      .line 355
@@ -2359,7 +2400,7 @@ index 7c1afc4..ebc5b0e 100644
      .line 369
      :goto_0
      return-void
-@@ -1733,10 +1786,6 @@
+@@ -1733,10 +1790,6 @@
      invoke-virtual {v0}, Landroid/widget/Toast;->show()V
  
      .line 363
@@ -2370,7 +2411,29 @@ index 7c1afc4..ebc5b0e 100644
      goto :goto_0
  
      .line 367
-@@ -1976,6 +2025,8 @@
+@@ -1921,6 +1974,10 @@
+     .locals 2
+ 
+     .prologue
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/activity/VerdeActivity;->sStopped:Z
++
+     .line 312
+     invoke-super {p0}, Landroid/app/Activity;->onStart()V
+ 
+@@ -1949,6 +2006,10 @@
+     .locals 2
+ 
+     .prologue
++    const/4 v0, 0x1
++
++    sput-boolean v0, Lcom/apportable/activity/VerdeActivity;->sStopped:Z
++
+     .line 510
+     invoke-super {p0}, Landroid/app/Activity;->onStop()V
+ 
+@@ -1976,6 +2037,8 @@
      invoke-direct {p0}, Lcom/apportable/activity/VerdeActivity;->hideSystemUI()V
  
      .line 965
@@ -2379,7 +2442,7 @@ index 7c1afc4..ebc5b0e 100644
      return-void
  .end method
  
-@@ -2281,6 +2332,23 @@
+@@ -2281,6 +2344,23 @@
      return-void
  .end method
  
@@ -3669,12 +3732,25 @@ index b6f1ed9..ccce1cf 100644
  
  # virtual methods
  .method public disable()V
+diff --git a/smali/com/apportable/ui/Window.smali b/smali/com/apportable/ui/Window.smali
+index c71c34d..8941fe3 100644
+--- a/smali/com/apportable/ui/Window.smali
++++ b/smali/com/apportable/ui/Window.smali
+@@ -17,7 +17,7 @@
+ 
+ .field private static final TAG:Ljava/lang/String; = "Window"
+ 
+-.field private static sKeyWindowDialog:Landroid/app/Dialog;
++.field public static sKeyWindowDialog:Landroid/app/Dialog;
+ 
+ 
+ # instance fields
 diff --git a/smali/com/apportable/utils/WindowState.smali b/smali/com/apportable/utils/WindowState.smali
 new file mode 100644
-index 0000000..0bc0c74
+index 0000000..69a4e0d
 --- /dev/null
 +++ b/smali/com/apportable/utils/WindowState.smali
-@@ -0,0 +1,688 @@
+@@ -0,0 +1,807 @@
 +.class public Lcom/apportable/utils/WindowState;
 +.super Ljava/lang/Object;
 +.source "WindowState.java"
@@ -3682,6 +3758,7 @@ index 0000000..0bc0c74
 +# interfaces
 +.implements Ljava/lang/Runnable;
 +.implements Landroid/view/ViewTreeObserver$OnGlobalLayoutListener;
++.implements Landroid/view/View$OnLayoutChangeListener;
 +
 +
 +# static fields
@@ -3692,6 +3769,8 @@ index 0000000..0bc0c74
 +.field private static sLastH:I
 +
 +.field private static sLastW:I
++
++.field private static sLastWmH:I
 +
 +.field private static sNaturalLandscape:I
 +
@@ -3721,6 +3800,8 @@ index 0000000..0bc0c74
 +    sput-boolean v1, Lcom/apportable/utils/WindowState;->sRotationFix:Z
 +
 +    sput-boolean v1, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    sput v0, Lcom/apportable/utils/WindowState;->sLastWmH:I
 +
 +    return-void
 +.end method
@@ -3844,12 +3925,18 @@ index 0000000..0bc0c74
 +
 +    sget v0, Lcom/apportable/utils/WindowState;->sLastH:I
 +
-+    if-eq v0, v4, :cond_4
++    if-eq v0, v4, :cond_5
 +
 +    :cond_3
 +    sput v3, Lcom/apportable/utils/WindowState;->sLastW:I
 +
 +    sput v4, Lcom/apportable/utils/WindowState;->sLastH:I
++
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->wmHeight(Landroid/app/Activity;)I
++
++    move-result v0
++
++    sput v0, Lcom/apportable/utils/WindowState;->sLastWmH:I
 +
 +    new-instance v5, Lcom/apportable/utils/WindowState;
 +
@@ -3860,6 +3947,35 @@ index 0000000..0bc0c74
 +    invoke-virtual {p0, v5, v0}, Lcom/apportable/activity/VerdeActivity;->runOnThread(Ljava/lang/Runnable;I)V
 +
 +    :cond_4
++    return-void
++
++    :cond_5
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->wmHeight(Landroid/app/Activity;)I
++
++    move-result v0
++
++    sget v1, Lcom/apportable/utils/WindowState;->sLastWmH:I
++
++    if-eq v0, v1, :cond_4
++
++    sput v0, Lcom/apportable/utils/WindowState;->sLastWmH:I
++
++    sget-object v0, Lcom/apportable/ui/Window;->sKeyWindowDialog:Landroid/app/Dialog;
++
++    if-eqz v0, :cond_4
++
++    invoke-virtual {v0}, Landroid/app/Dialog;->getWindow()Landroid/view/Window;
++
++    move-result-object v0
++
++    if-eqz v0, :cond_4
++
++    invoke-virtual {v0}, Landroid/view/Window;->getAttributes()Landroid/view/WindowManager$LayoutParams;
++
++    move-result-object v1
++
++    invoke-virtual {v0, v1}, Landroid/view/Window;->setAttributes(Landroid/view/WindowManager$LayoutParams;)V
++
 +    return-void
 +.end method
 +
@@ -4327,9 +4443,62 @@ index 0000000..0bc0c74
 +    return-void
 +.end method
 +
++.method private static wmHeight(Landroid/app/Activity;)I
++    .locals 2
++
++    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
++
++    const/16 v1, 0x1e
++
++    if-lt v0, v1, :cond_0
++
++    :try_start_0
++    invoke-virtual {p0}, Landroid/app/Activity;->getWindowManager()Landroid/view/WindowManager;
++
++    move-result-object v0
++
++    invoke-interface {v0}, Landroid/view/WindowManager;->getCurrentWindowMetrics()Landroid/view/WindowMetrics;
++
++    move-result-object v0
++
++    invoke-virtual {v0}, Landroid/view/WindowMetrics;->getBounds()Landroid/graphics/Rect;
++
++    move-result-object v0
++
++    invoke-virtual {v0}, Landroid/graphics/Rect;->height()I
++
++    move-result v0
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    return v0
++
++    :cond_0
++    const/4 v0, 0x0
++
++    return v0
++
++    :catch_0
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    return v0
++.end method
++
 +
 +# virtual methods
 +.method public onGlobalLayout()V
++    .locals 1
++
++    iget-object v0, p0, Lcom/apportable/utils/WindowState;->mActivity:Lcom/apportable/activity/VerdeActivity;
++
++    invoke-static {v0}, Lcom/apportable/utils/WindowState;->check(Lcom/apportable/activity/VerdeActivity;)V
++
++    return-void
++.end method
++
++.method public onLayoutChange(Landroid/view/View;IIIIIIII)V
 +    .locals 1
 +
 +    iget-object v0, p0, Lcom/apportable/utils/WindowState;->mActivity:Lcom/apportable/activity/VerdeActivity;
@@ -4346,15 +4515,41 @@ index 0000000..0bc0c74
 +
 +    const/4 v1, -0x1
 +
-+    if-ne v0, v1, :cond_0
++    if-ne v0, v1, :cond_1
 +
 +    iget-object v2, p0, Lcom/apportable/utils/WindowState;->mActivity:Lcom/apportable/activity/VerdeActivity;
 +
++    sget-boolean v0, Lcom/apportable/activity/VerdeActivity;->sStopped:Z
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    new-instance v0, Landroid/content/Intent;
++
++    const-class v1, Lcom/apportable/activity/Trampoline;
++
++    invoke-direct {v0, v2, v1}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
++
++    const/high16 v1, 0x10000000
++
++    invoke-virtual {v0, v1}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
++
++    invoke-virtual {v2, v0}, Lcom/apportable/activity/VerdeActivity;->startActivity(Landroid/content/Intent;)V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    goto :goto_0
++
++    :catch_0
++    move-exception v0
++
++    :cond_0
++    :goto_0
 +    invoke-static {v2}, Lcom/apportable/utils/WindowState;->check(Lcom/apportable/activity/VerdeActivity;)V
 +
 +    return-void
 +
-+    :cond_0
++    :cond_1
 +    invoke-static {}, Lcom/apportable/utils/WindowState;->pushResync()V
 +
 +    iget v1, p0, Lcom/apportable/utils/WindowState;->mH:I
