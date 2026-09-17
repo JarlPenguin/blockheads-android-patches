@@ -3400,14 +3400,17 @@ index 304affe..c93711f 100644
  
      goto/16 :goto_0
 diff --git a/smali/com/apportable/gl/GLSurfaceView.smali b/smali/com/apportable/gl/GLSurfaceView.smali
-index 38c0a15..e60a515 100644
+index 38c0a15..65e94d1 100644
 --- a/smali/com/apportable/gl/GLSurfaceView.smali
 +++ b/smali/com/apportable/gl/GLSurfaceView.smali
-@@ -289,6 +289,15 @@
+@@ -289,6 +289,18 @@
      return-object v0
  .end method
  
 +.method public static native dpifixMultiWindow(Z)V
++.end method
++
++.method public static native dpifixRetryKick()V
 +.end method
 +
 +.method public static native dpifixSetDisplayOrient(I)V
@@ -3419,7 +3422,7 @@ index 38c0a15..e60a515 100644
  .method private static native nativeInit()V
  .end method
  
-@@ -580,7 +589,7 @@
+@@ -580,7 +592,7 @@
  .end method
  
  .method public readySurface()V
@@ -3428,7 +3431,7 @@ index 38c0a15..e60a515 100644
  
      .prologue
      const/4 v3, 0x1
-@@ -593,6 +602,14 @@
+@@ -593,6 +605,14 @@
  
      monitor-enter v6
  
@@ -3443,7 +3446,7 @@ index 38c0a15..e60a515 100644
      move v0, v4
  
      move v1, v4
-@@ -720,7 +737,7 @@
+@@ -720,7 +740,7 @@
      .line 628
      iget-boolean v5, p0, Lcom/apportable/gl/GLSurfaceView;->mSizeChanged:Z
  
@@ -3452,7 +3455,7 @@ index 38c0a15..e60a515 100644
  
      .line 630
      iget v4, p0, Lcom/apportable/gl/GLSurfaceView;->mWidth:I
-@@ -749,7 +766,7 @@
+@@ -749,7 +769,7 @@
      .catchall {:try_start_2 .. :try_end_2} :catchall_0
  
      .line 653
@@ -3461,7 +3464,7 @@ index 38c0a15..e60a515 100644
  
      .line 657
      iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mEglHelper:Lcom/apportable/gl/GLSurfaceView$EglHelper;
-@@ -769,7 +786,7 @@
+@@ -769,7 +789,7 @@
      .line 658
      iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mGL:Ljavax/microedition/khronos/opengles/GL10;
  
@@ -3470,7 +3473,7 @@ index 38c0a15..e60a515 100644
  
      .line 680
      :cond_5
-@@ -797,15 +814,37 @@
+@@ -797,15 +817,37 @@
      .line 645
      :cond_6
      :try_start_4
@@ -3509,7 +3512,7 @@ index 38c0a15..e60a515 100644
      .line 647
      :catch_1
      move-exception v5
-@@ -813,8 +852,8 @@
+@@ -813,8 +855,8 @@
      goto/16 :goto_0
  
      .line 665
@@ -3520,7 +3523,7 @@ index 38c0a15..e60a515 100644
  
      .line 669
      iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mRenderer:Landroid/opengl/GLSurfaceView$Renderer;
-@@ -828,9 +867,13 @@
+@@ -828,9 +870,13 @@
      invoke-interface {v0, v1, v2}, Landroid/opengl/GLSurfaceView$Renderer;->onSurfaceCreated(Ljavax/microedition/khronos/opengles/GL10;Ljavax/microedition/khronos/egl/EGLConfig;)V
  
      .line 673
@@ -3535,7 +3538,7 @@ index 38c0a15..e60a515 100644
      .line 677
      iget-object v0, p0, Lcom/apportable/gl/GLSurfaceView;->mRenderer:Landroid/opengl/GLSurfaceView$Renderer;
  
-@@ -840,7 +883,7 @@
+@@ -840,7 +886,7 @@
  
      goto :goto_2
  
@@ -3544,7 +3547,7 @@ index 38c0a15..e60a515 100644
      move v3, v0
  
      move v5, v4
-@@ -922,7 +965,7 @@
+@@ -922,7 +968,7 @@
  .end method
  
  .method public surfaceCreated()V
@@ -3553,7 +3556,7 @@ index 38c0a15..e60a515 100644
  
      .prologue
      .line 683
-@@ -930,6 +973,14 @@
+@@ -930,6 +976,14 @@
  
      monitor-enter v1
  
@@ -3568,7 +3571,7 @@ index 38c0a15..e60a515 100644
      .line 687
      const/4 v0, 0x1
  
-@@ -955,9 +1006,19 @@
+@@ -955,9 +1009,19 @@
  
      .line 691
      :try_start_1
@@ -3589,7 +3592,7 @@ index 38c0a15..e60a515 100644
      :try_end_1
      .catch Ljava/lang/InterruptedException; {:try_start_1 .. :try_end_1} :catch_0
      .catchall {:try_start_1 .. :try_end_1} :catchall_0
-@@ -968,20 +1029,13 @@
+@@ -968,20 +1032,13 @@
      :catch_0
      move-exception v0
  
@@ -3612,7 +3615,7 @@ index 38c0a15..e60a515 100644
      monitor-exit v1
      :try_end_2
      .catchall {:try_start_2 .. :try_end_2} :catchall_0
-@@ -989,6 +1043,7 @@
+@@ -989,6 +1046,7 @@
      throw v0
  
      :cond_0
@@ -3620,7 +3623,7 @@ index 38c0a15..e60a515 100644
      :try_start_3
      monitor-exit v1
      :try_end_3
-@@ -1067,7 +1122,7 @@
+@@ -1067,7 +1125,7 @@
  .end method
  
  .method public surfaceDestroyed()V
@@ -3629,7 +3632,7 @@ index 38c0a15..e60a515 100644
  
      .prologue
      .line 700
-@@ -1075,6 +1130,14 @@
+@@ -1075,6 +1133,14 @@
  
      monitor-enter v1
  
@@ -3644,7 +3647,7 @@ index 38c0a15..e60a515 100644
      .line 704
      const/4 v0, 0x0
  
-@@ -1100,9 +1163,19 @@
+@@ -1100,9 +1166,19 @@
  
      .line 709
      :try_start_1
@@ -3665,7 +3668,7 @@ index 38c0a15..e60a515 100644
      :try_end_1
      .catch Ljava/lang/InterruptedException; {:try_start_1 .. :try_end_1} :catch_0
      .catchall {:try_start_1 .. :try_end_1} :catchall_0
-@@ -1113,20 +1186,13 @@
+@@ -1113,20 +1189,13 @@
      :catch_0
      move-exception v0
  
@@ -3688,7 +3691,7 @@ index 38c0a15..e60a515 100644
      monitor-exit v1
      :try_end_2
      .catchall {:try_start_2 .. :try_end_2} :catchall_0
-@@ -1134,6 +1200,7 @@
+@@ -1134,6 +1203,7 @@
      throw v0
  
      :cond_0
@@ -3747,10 +3750,10 @@ index c71c34d..8941fe3 100644
  # instance fields
 diff --git a/smali/com/apportable/utils/WindowState.smali b/smali/com/apportable/utils/WindowState.smali
 new file mode 100644
-index 0000000..efc9a87
+index 0000000..6e26d2a
 --- /dev/null
 +++ b/smali/com/apportable/utils/WindowState.smali
-@@ -0,0 +1,813 @@
+@@ -0,0 +1,881 @@
 +.class public Lcom/apportable/utils/WindowState;
 +.super Ljava/lang/Object;
 +.source "WindowState.java"
@@ -3765,6 +3768,8 @@ index 0000000..efc9a87
 +.field public static sDisplayOrient:I
 +
 +.field private static sDpiFix:Z
++
++.field private static sKickScheduled:Z
 +
 +.field private static sLastH:I
 +
@@ -3951,6 +3956,26 @@ index 0000000..efc9a87
 +    const/4 v0, 0x1
 +
 +    invoke-virtual {p0, v5, v0}, Lcom/apportable/activity/VerdeActivity;->runOnThread(Ljava/lang/Runnable;I)V
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sKickScheduled:Z
++
++    if-nez v0, :cond_4
++
++    const/4 v0, 0x1
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sKickScheduled:Z
++
++    new-instance v5, Lcom/apportable/utils/WindowState;
++
++    const/4 v0, -0x1
++
++    const/4 v1, 0x0
++
++    invoke-direct {v5, p0, v0, v1}, Lcom/apportable/utils/WindowState;-><init>(Lcom/apportable/activity/VerdeActivity;II)V
++
++    const-wide/16 v0, 0x3e8
++
++    invoke-virtual {v2, v5, v0, v1}, Landroid/view/View;->postDelayed(Ljava/lang/Runnable;J)Z
 +
 +    :cond_4
 +    return-void
@@ -4323,6 +4348,31 @@ index 0000000..efc9a87
 +    return-void
 +.end method
 +
++.method private static pushRetryKick()V
++    .locals 2
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    invoke-static {}, Lcom/apportable/gl/GLSurfaceView;->dpifixRetryKick()V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    :cond_0
++    return-void
++
++    :catch_0
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    return-void
++.end method
++
 +.method private static pushWindowPx(II)V
 +    .locals 2
 +
@@ -4515,19 +4565,28 @@ index 0000000..efc9a87
 +.end method
 +
 +.method public run()V
-+    .locals 3
++    .locals 4
 +
 +    iget v0, p0, Lcom/apportable/utils/WindowState;->mW:I
 +
++    const/4 v1, -0x2
++
++    if-ne v0, v1, :cond_0
++
++    invoke-static {}, Lcom/apportable/utils/WindowState;->pushRetryKick()V
++
++    return-void
++
++    :cond_0
 +    const/4 v1, -0x1
 +
-+    if-ne v0, v1, :cond_1
++    if-ne v0, v1, :cond_2
 +
 +    iget-object v2, p0, Lcom/apportable/utils/WindowState;->mActivity:Lcom/apportable/activity/VerdeActivity;
 +
 +    sget-boolean v0, Lcom/apportable/activity/VerdeActivity;->sStopped:Z
 +
-+    if-eqz v0, :cond_0
++    if-eqz v0, :cond_1
 +
 +    :try_start_0
 +    new-instance v0, Landroid/content/Intent;
@@ -4549,13 +4608,25 @@ index 0000000..efc9a87
 +    :catch_0
 +    move-exception v0
 +
-+    :cond_0
++    :cond_1
 +    :goto_0
++    new-instance v3, Lcom/apportable/utils/WindowState;
++
++    const/4 v0, -0x2
++
++    const/4 v1, 0x0
++
++    invoke-direct {v3, v2, v0, v1}, Lcom/apportable/utils/WindowState;-><init>(Lcom/apportable/activity/VerdeActivity;II)V
++
++    const/4 v0, 0x1
++
++    invoke-virtual {v2, v3, v0}, Lcom/apportable/activity/VerdeActivity;->runOnThread(Ljava/lang/Runnable;I)V
++
 +    invoke-static {v2}, Lcom/apportable/utils/WindowState;->check(Lcom/apportable/activity/VerdeActivity;)V
 +
 +    return-void
 +
-+    :cond_1
++    :cond_2
 +    invoke-static {}, Lcom/apportable/utils/WindowState;->pushResync()V
 +
 +    iget v1, p0, Lcom/apportable/utils/WindowState;->mH:I

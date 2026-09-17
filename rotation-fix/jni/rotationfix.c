@@ -466,6 +466,50 @@ Java_com_apportable_ui_Device_nativeRunPendingResync(JNIEnv *e, jclass c) {
     }
 }
 
+/* Not a JNI entry: called from libdpifix.so via dlsym, on thread 1. */
+/* Re-drive the engine's rotation once, after the window size is finally
+   known. The engine built its containers while the window was 0x0 and
+   sized them portrait-canonically; a real rotation is the only thing that
+   re-lays them out. _setOrientation:changed: early-outs when the value
+   matches UIDevice._orientation, so that ivar is first written to a
+   different value - sending the axis partner instead would work, but
+   performs a second visible rotation and a second spin loop inside
+   _platform_setOrientation:. Thread 1 only: the chain reaches _applyMode. */
+void rotationfixKickLayout(int orient)
+{
+    static uint32_t s_orientOff = 0;
+    static int s_resolved = 0;
+    Class dev;
+    id d;
+
+    if (orient < 1 || orient > 4 || !g_origSetOrientationChanged) return;
+
+    dev = getClass("UIDevice");
+    d = dev ? MSG_id((id)dev, selReg("currentDevice")) : NULL;
+    if (!d) return;
+
+    if (!s_resolved) {
+        const char *how;
+        s_resolved = 1;
+        resolve_ivar("UIDevice", "_orientation", &s_orientOff, 0xC, &how);
+        LOGI("UIDevice orientation ivar: off=0x%x via %s", s_orientOff, how);
+    }
+
+    if (s_orientOff) {
+        /* Defeat the same-value early-out in _setOrientation:changed: without
+           performing a visible intermediate rotation: pretend the cached
+           orientation is something else, then send the real one once. */
+        int *cached = (int *)((char *)d + s_orientOff);
+        LOGI("kick layout: cached=%d -> spoof, then %d", *cached, orient);
+        *cached = (orient == 1) ? 2 : 1;
+    } else {
+        LOGE("ivar unresolved - falling back to axis-partner rotation");
+    }
+
+    ((void (*)(id, SEL, int, char))g_origSetOrientationChanged)
+        (d, selReg("_setOrientation:changed:"), orient, 1);
+}
+
 static int install(void) {
     Class  world, app, device;
     Method mAccel, mStatus, mSetOri;

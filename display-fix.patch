@@ -1631,14 +1631,17 @@ index 304affe..c93711f 100644
  
      goto/16 :goto_0
 diff --git a/smali/com/apportable/gl/GLSurfaceView.smali b/smali/com/apportable/gl/GLSurfaceView.smali
-index 38c0a15..0fabcee 100644
+index 38c0a15..f86d64d 100644
 --- a/smali/com/apportable/gl/GLSurfaceView.smali
 +++ b/smali/com/apportable/gl/GLSurfaceView.smali
-@@ -289,6 +289,15 @@
+@@ -289,6 +289,18 @@
      return-object v0
  .end method
  
 +.method public static native dpifixMultiWindow(Z)V
++.end method
++
++.method public static native dpifixRetryKick()V
 +.end method
 +
 +.method public static native dpifixSetDisplayOrient(I)V
@@ -1688,10 +1691,10 @@ index c71c34d..8941fe3 100644
  # instance fields
 diff --git a/smali/com/apportable/utils/WindowState.smali b/smali/com/apportable/utils/WindowState.smali
 new file mode 100644
-index 0000000..efc9a87
+index 0000000..6e26d2a
 --- /dev/null
 +++ b/smali/com/apportable/utils/WindowState.smali
-@@ -0,0 +1,813 @@
+@@ -0,0 +1,881 @@
 +.class public Lcom/apportable/utils/WindowState;
 +.super Ljava/lang/Object;
 +.source "WindowState.java"
@@ -1706,6 +1709,8 @@ index 0000000..efc9a87
 +.field public static sDisplayOrient:I
 +
 +.field private static sDpiFix:Z
++
++.field private static sKickScheduled:Z
 +
 +.field private static sLastH:I
 +
@@ -1892,6 +1897,26 @@ index 0000000..efc9a87
 +    const/4 v0, 0x1
 +
 +    invoke-virtual {p0, v5, v0}, Lcom/apportable/activity/VerdeActivity;->runOnThread(Ljava/lang/Runnable;I)V
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sKickScheduled:Z
++
++    if-nez v0, :cond_4
++
++    const/4 v0, 0x1
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sKickScheduled:Z
++
++    new-instance v5, Lcom/apportable/utils/WindowState;
++
++    const/4 v0, -0x1
++
++    const/4 v1, 0x0
++
++    invoke-direct {v5, p0, v0, v1}, Lcom/apportable/utils/WindowState;-><init>(Lcom/apportable/activity/VerdeActivity;II)V
++
++    const-wide/16 v0, 0x3e8
++
++    invoke-virtual {v2, v5, v0, v1}, Landroid/view/View;->postDelayed(Ljava/lang/Runnable;J)Z
 +
 +    :cond_4
 +    return-void
@@ -2264,6 +2289,31 @@ index 0000000..efc9a87
 +    return-void
 +.end method
 +
++.method private static pushRetryKick()V
++    .locals 2
++
++    sget-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    if-eqz v0, :cond_0
++
++    :try_start_0
++    invoke-static {}, Lcom/apportable/gl/GLSurfaceView;->dpifixRetryKick()V
++    :try_end_0
++    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
++
++    :cond_0
++    return-void
++
++    :catch_0
++    move-exception v1
++
++    const/4 v0, 0x0
++
++    sput-boolean v0, Lcom/apportable/utils/WindowState;->sDpiFix:Z
++
++    return-void
++.end method
++
 +.method private static pushWindowPx(II)V
 +    .locals 2
 +
@@ -2456,19 +2506,28 @@ index 0000000..efc9a87
 +.end method
 +
 +.method public run()V
-+    .locals 3
++    .locals 4
 +
 +    iget v0, p0, Lcom/apportable/utils/WindowState;->mW:I
 +
++    const/4 v1, -0x2
++
++    if-ne v0, v1, :cond_0
++
++    invoke-static {}, Lcom/apportable/utils/WindowState;->pushRetryKick()V
++
++    return-void
++
++    :cond_0
 +    const/4 v1, -0x1
 +
-+    if-ne v0, v1, :cond_1
++    if-ne v0, v1, :cond_2
 +
 +    iget-object v2, p0, Lcom/apportable/utils/WindowState;->mActivity:Lcom/apportable/activity/VerdeActivity;
 +
 +    sget-boolean v0, Lcom/apportable/activity/VerdeActivity;->sStopped:Z
 +
-+    if-eqz v0, :cond_0
++    if-eqz v0, :cond_1
 +
 +    :try_start_0
 +    new-instance v0, Landroid/content/Intent;
@@ -2490,13 +2549,25 @@ index 0000000..efc9a87
 +    :catch_0
 +    move-exception v0
 +
-+    :cond_0
++    :cond_1
 +    :goto_0
++    new-instance v3, Lcom/apportable/utils/WindowState;
++
++    const/4 v0, -0x2
++
++    const/4 v1, 0x0
++
++    invoke-direct {v3, v2, v0, v1}, Lcom/apportable/utils/WindowState;-><init>(Lcom/apportable/activity/VerdeActivity;II)V
++
++    const/4 v0, 0x1
++
++    invoke-virtual {v2, v3, v0}, Lcom/apportable/activity/VerdeActivity;->runOnThread(Ljava/lang/Runnable;I)V
++
 +    invoke-static {v2}, Lcom/apportable/utils/WindowState;->check(Lcom/apportable/activity/VerdeActivity;)V
 +
 +    return-void
 +
-+    :cond_1
++    :cond_2
 +    invoke-static {}, Lcom/apportable/utils/WindowState;->pushResync()V
 +
 +    iget v1, p0, Lcom/apportable/utils/WindowState;->mH:I

@@ -378,25 +378,25 @@ static void apply_mode(void) {
     MSG_v(screen, selReg("_applyMode"));
 }
 
-static void relayout(void) {
+static int relayout(void) {
     Class scls, acls;
     id screen, app, win, rootvc, rootview;
     CGRect32 sb = {0,0,0,0};
     float fw, fh;
 
-    if (!g_msgSendStret) { LOGE("objc_msgSend_stret unavailable - no relayout"); return; }
+    if (!g_msgSendStret) { LOGE("objc_msgSend_stret unavailable - no relayout"); return 0; }
 
     scls = getClass("UIScreen");
     acls = getClass("UIApplication");
-    if (!scls || !acls) return;
+    if (!scls || !acls) return 0;
 
     screen = MSG_id((id)scls, selReg("mainScreen"));
-    if (!screen) return;
+    if (!screen) return 0;
     /* bounds is fetched only to confirm the screen has usable geometry before
        touching the hierarchy; the frame itself comes from g_winW/g_winH for the
        reason below. */
     MSG_rect(&sb, screen, selReg("bounds"));
-    if (sb.w <= 0.0f || sb.h <= 0.0f) return;
+    if (sb.w <= 0.0f || sb.h <= 0.0f) return 0;
 
     /* The window frame takes the window-shaped rect, not the portrait-canonical
        bounds: on iOS UIKit rotates the window above an orientation-invariant
@@ -407,7 +407,7 @@ static void relayout(void) {
 
     app = MSG_id((id)acls, selReg("sharedApplication"));
     win = app ? MSG_id(app, selReg("keyWindow")) : NULL;
-    if (!win) { LOGE("keyWindow nil - no relayout"); return; }
+    if (!win) { LOGE("keyWindow nil - no relayout"); return 0; }
 
     LOGV("relayout: keyWindow -> %.1fx%.1f", fw, fh);
 
@@ -426,6 +426,32 @@ static void relayout(void) {
         MSG_setFrame(rootview, selReg("setFrame:"), 0.0f, 0.0f, fw, fh);
         MSG_v(rootview, selReg("setNeedsLayout"));
     }
+    return 1;
+}
+
+/* The engine builds its UI while the window is still 0x0, so its containers
+   get portrait-canonical frames. Re-drive the rotation once, after the window
+   hierarchy exists, to force them to re-lay-out. Deferred until relayout()
+   succeeds: on some launches the first pin arrives before keyWindow exists. */
+static int g_needKick = 1;
+
+static void try_kick(void)
+{
+    void *h;
+    void (*kick)(int);
+
+    if (!g_needKick || g_displayOrient == 0) return;
+    if (!relayout()) { LOGV("kick deferred: no relayout yet"); return; }
+
+    h = dlopen("librotationfix.so", RTLD_NOW | RTLD_NOLOAD);
+    kick = h ? (void (*)(int))dlsym(h, "rotationfixKickLayout") : NULL;
+    if (kick) {
+        g_needKick = 0;
+        kick(g_displayOrient);
+    } else {
+        LOGI("kick: rotationfix not resolved (h=%p)", h);
+    }
+    if (h) dlclose(h);
 }
 
 static uint32_t my_mode_scale(id self, SEL _cmd) {
@@ -531,6 +557,18 @@ Java_com_apportable_gl_GLSurfaceView_dpifixWindowPx(JNIEnv *env, jclass cls,
 
     apply_mode();
     relayout();
+    try_kick();
+}
+
+/* Called on thread 1, from WindowState.run(). try_kick() reaches relayout()
+   and _setOrientation:changed:, both unsafe from the Android UI thread.
+   Retry path: on some launches the first dpifixWindowPx arrives before
+   keyWindow exists, and no later pin follows to try again. */
+JNIEXPORT void JNICALL
+Java_com_apportable_gl_GLSurfaceView_dpifixRetryKick(JNIEnv *e, jclass c) {
+    (void)e; (void)c;
+    if (!g_needKick || !g_winSet) return;
+    try_kick();
 }
 
 static int install(void) {
