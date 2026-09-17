@@ -3747,10 +3747,10 @@ index c71c34d..8941fe3 100644
  # instance fields
 diff --git a/smali/com/apportable/utils/WindowState.smali b/smali/com/apportable/utils/WindowState.smali
 new file mode 100644
-index 0000000..69a4e0d
+index 0000000..efc9a87
 --- /dev/null
 +++ b/smali/com/apportable/utils/WindowState.smali
-@@ -0,0 +1,807 @@
+@@ -0,0 +1,813 @@
 +.class public Lcom/apportable/utils/WindowState;
 +.super Ljava/lang/Object;
 +.source "WindowState.java"
@@ -3885,6 +3885,12 @@ index 0000000..69a4e0d
 +    const/16 v0, 0x1e
 +
 +    if-lt v5, v0, :cond_1
++
++    invoke-static {p0}, Lcom/apportable/utils/WindowState;->isMultiWindow(Landroid/app/Activity;)Z
++
++    move-result v5
++
++    if-eqz v5, :cond_2
 +
 +    invoke-static {v2}, Lcom/apportable/utils/WindowState;->insetWidth(Landroid/view/View;)I
 +
