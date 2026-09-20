@@ -437,21 +437,23 @@ static int g_needKick = 1;
 
 static void try_kick(void)
 {
+    static int s_inKick = 0;
     void *h;
-    void (*kick)(int);
+    int (*kick)(int);
 
-    if (!g_needKick || g_displayOrient == 0) return;
+    if (!g_needKick || g_displayOrient == 0 || s_inKick) return;
     if (!relayout()) { LOGV("kick deferred: no relayout yet"); return; }
 
+    s_inKick = 1;
     h = dlopen("librotationfix.so", RTLD_NOW | RTLD_NOLOAD);
-    kick = h ? (void (*)(int))dlsym(h, "rotationfixKickLayout") : NULL;
+    kick = h ? (int (*)(int))dlsym(h, "rotationfixKickLayout") : NULL;
     if (kick) {
-        g_needKick = 0;
-        kick(g_displayOrient);
+        if (kick(g_displayOrient)) g_needKick = 0;
     } else {
         LOGI("kick: rotationfix not resolved (h=%p)", h);
     }
     if (h) dlclose(h);
+    s_inKick = 0;
 }
 
 static uint32_t my_mode_scale(id self, SEL _cmd) {
@@ -520,9 +522,18 @@ static int my_device_orientation(id self, SEL _cmd) {
 JNIEXPORT void JNICALL
 Java_com_apportable_gl_GLSurfaceView_dpifixSetDisplayOrient(JNIEnv *e, jclass c, jint o) {
     (void)e; (void)c;
-    if (o >= 1 && o <= 4) g_displayOrient = o;
+    if (o >= 1 && o <= 4) {
+        /* A forced rotation in multi-window moves the window without the
+           engine agreeing to it, leaving its layout against a stale
+           orientation. Re-arm the kick so the next pin corrects it. */
+        if (g_multiWindow && g_displayOrient != 0 && o != g_displayOrient) {
+            LOGV("multi-window forced rotation %d -> %d, re-arming kick",
+                 g_displayOrient, o);
+            g_needKick = 1;
+        }
+        g_displayOrient = o;
+    }
 }
-
 JNIEXPORT void JNICALL
 Java_com_apportable_gl_GLSurfaceView_dpifixMultiWindow(JNIEnv *e, jclass c, jboolean mw) {
     (void)e; (void)c;

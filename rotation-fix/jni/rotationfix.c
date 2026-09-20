@@ -290,6 +290,10 @@ static int resolve_ivar(const char *clsname, const char *ivname,
    in the low byte of its own word. */
 #define ENC_SET_ORIENTATION_CHANGED "v16@0:4i8c12"
 
+/* (void)(id, SEL, int) - verify at install; a wrong arity on a direct
+   call corrupts the stack. */
+#define ENC_PLATFORM_SET_ORIENT "v12@0:4i8"
+
 static IMP g_origAcceleration          = 0;
 static IMP g_origStatusBarOri          = 0;
 static IMP g_origSetOrientationChanged = 0;
@@ -466,48 +470,95 @@ Java_com_apportable_ui_Device_nativeRunPendingResync(JNIEnv *e, jclass c) {
     }
 }
 
-/* Not a JNI entry: called from libdpifix.so via dlsym, on thread 1. */
-/* Re-drive the engine's rotation once, after the window size is finally
-   known. The engine built its containers while the window was 0x0 and
-   sized them portrait-canonically; a real rotation is the only thing that
-   re-lays them out. _setOrientation:changed: early-outs when the value
-   matches UIDevice._orientation, so that ivar is first written to a
-   different value - sending the axis partner instead would work, but
-   performs a second visible rotation and a second spin loop inside
-   _platform_setOrientation:. Thread 1 only: the chain reaches _applyMode. */
-void rotationfixKickLayout(int orient)
+/* Not a JNI entry: called from libdpifix.so via dlsym, on thread 1.
+   Returns 1 if the rotation was actually applied.
+
+   The engine builds its containers while the window is still 0x0 and sizes
+   them portrait-canonically; only a real rotation re-lays them out. The same
+   applies after a forced rotation in multi-window, which moves the window
+   without the engine agreeing to it. _setOrientation:changed: is not usable
+   for either: it gates on the supported-orientations mask and on
+   shouldAutorotateToInterfaceOrientation:, which is false whenever Android's
+   rotation lock is on, so the call is vetoed before reaching
+   _platform_setOrientation:. Calling the platform method directly skips that
+   gate and the same-value early-out both. */
+int rotationfixKickLayout(int orient)
 {
     static uint32_t s_orientOff = 0;
+    static IMP s_platformImp = 0;
     static int s_resolved = 0;
     Class dev;
     id d;
+    int *cached = NULL;
+#if ROTATIONFIX_VERBOSE
+    int before, after;
+#endif
 
-    if (orient < 1 || orient > 4 || !g_origSetOrientationChanged) return;
+    if (orient < 1 || orient > 4) return 0;
 
     dev = getClass("UIDevice");
     d = dev ? MSG_id((id)dev, selReg("currentDevice")) : NULL;
-    if (!d) return;
+    if (!d) { LOGE("kick: no UIDevice"); return 0; }
 
     if (!s_resolved) {
         const char *how;
+        Method m;
+
         s_resolved = 1;
+
         resolve_ivar("UIDevice", "_orientation", &s_orientOff, 0xC, &how);
-        LOGI("UIDevice orientation ivar: off=0x%x via %s", s_orientOff, how);
+        LOGI("UIDevice _orientation: off=0x%x via %s", s_orientOff, how);
+
+        m = getInstMethod(dev, selReg("_platform_setOrientation:"));
+        if (m && checkEncoding(m, "_platform_setOrientation:",
+                               ENC_PLATFORM_SET_ORIENT))
+            s_platformImp = getImp(m);
+        else
+            LOGE("kick: _platform_setOrientation: unusable - using wrapper");
     }
 
-    if (s_orientOff) {
-        /* Defeat the same-value early-out in _setOrientation:changed: without
-           performing a visible intermediate rotation: pretend the cached
-           orientation is something else, then send the real one once. */
-        int *cached = (int *)((char *)d + s_orientOff);
-        LOGI("kick layout: cached=%d -> spoof, then %d", *cached, orient);
+    if (s_orientOff) cached = (int *)((char *)d + s_orientOff);
+
+#if ROTATIONFIX_VERBOSE
+    before = g_origStatusBarOri
+        ? ((int (*)(id, SEL))g_origStatusBarOri)(
+              MSG_id((id)getClass("UIApplication"), selReg("sharedApplication")),
+              selReg("statusBarOrientation"))
+        : -1;
+#endif
+
+    if (s_platformImp) {
+        LOGV("kick: direct platform, cached=%d -> %d",
+             cached ? *cached : -1, orient);
+        if (cached) *cached = orient;
+        g_engineOrientation = orient;
+        ((void (*)(id, SEL, int))s_platformImp)
+            (d, selReg("_platform_setOrientation:"), orient);
+    } else if (g_origSetOrientationChanged && cached) {
+        int saved = *cached;
+        LOGI("kick: fallback wrapper, cached=%d -> spoof, then %d", saved, orient);
         *cached = (orient == 1) ? 2 : 1;
+        ((void (*)(id, SEL, int, char))g_origSetOrientationChanged)
+            (d, selReg("_setOrientation:changed:"), orient, 1);
+        if (*cached != orient) {
+            LOGE("kick: wrapper vetoed - restoring cached %d", saved);
+            *cached = saved;
+            return 0;
+        }
     } else {
-        LOGE("ivar unresolved - falling back to axis-partner rotation");
+        LOGE("kick: no usable path");
+        return 0;
     }
 
-    ((void (*)(id, SEL, int, char))g_origSetOrientationChanged)
-        (d, selReg("_setOrientation:changed:"), orient, 1);
+#if ROTATIONFIX_VERBOSE
+    after = g_origStatusBarOri
+        ? ((int (*)(id, SEL))g_origStatusBarOri)(
+              MSG_id((id)getClass("UIApplication"), selReg("sharedApplication")),
+              selReg("statusBarOrientation"))
+        : -1;
+    LOGV("kick: sbo %d -> %d", before, after);
+#endif
+    return 1;
 }
 
 static int install(void) {
