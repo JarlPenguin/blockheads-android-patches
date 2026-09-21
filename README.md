@@ -20,14 +20,16 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 * Fixes freezes when suspending and resuming the game, opening WebView pages and the photo picker
 
 ### `display-fix.patch`
-* Fixes UI scaling on tablets
+* Fixes UI scaling on tablets, which now use the iPad layout
 * Splash screen is now selected dynamically based on the device's type, resolution and orientation
 * Allows the game to natively launch in landscape mode
-* Fixes crashes on rotation on various devices
-* Fixes temporary rotation to right-landscape on startup when auto-rotation is enabled
+* Fixes crashes when rotating on some devices
+* Fixes a brief flip to right-landscape at startup when auto-rotation is enabled
 * Fixes tilt controls when auto-rotation is disabled
 * Fixes tilt controls when the device is lying flat at launch
-* Fixes multi-window mode breaking the UI
+* Fixes multi-window mode breaking the UI or leaving the game on a black screen
+* Fixes a black screen on Samsung devices when exiting split-screen into the other app or turning the game into a freeform window
+* Fixes various scenarios breaking the orientation of the game's native dialog boxes
 
 ### `join-link-fix.patch`
 * Fixes join links (`blockheads://` and `theblockheads.net/join.php`) not working
