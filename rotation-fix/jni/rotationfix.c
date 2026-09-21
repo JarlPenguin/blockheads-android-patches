@@ -13,19 +13,33 @@
  *
  * 2. Tilt frame desync: When Android's rotation lock is enabled
  *    (accelerometer_rotation = 0), -[EvolutionViewController shouldAutorotate]
- *    returns NO. This gates -[UIDevice _setOrientation:changed:], the sole caller
- *    of _platform_setOrientation:, which is the only writer of the global
- *    backing -[UIApplication statusBarOrientation]. Consequently,
- *    statusBarOrientation remains 0 for the entire session. -[World acceleration:]
- *    reads this global on every accelerometer sample (~30Hz) and only applies
- *    its coordinate frame transforms for orientations 2 (PortraitUpsideDown)
- *    and 4 (LandscapeRight); with 0, both transforms are skipped, leaving tilt
- *    controls locked in the LandscapeLeft frame regardless of display orientation.
+ *    returns NO. This gates -[UIDevice _setOrientation:changed:], the engine's
+ *    normal route to _platform_setOrientation:, through which every post-launch
+ *    write of the global backing -[UIApplication statusBarOrientation] passes.
+ *    Consequently, statusBarOrientation remains 0 for the entire session.
+ *    -[World acceleration:] reads this global on every accelerometer sample
+ *    (~30Hz) and only applies its coordinate frame transforms for orientations
+ *    2 (PortraitUpsideDown) and 4 (LandscapeRight); with 0, both transforms are
+ *    skipped, leaving tilt controls locked in the LandscapeLeft frame regardless
+ *    of display orientation.
  *
  * 3. Multi-window desync: in a split the pane's shape is set by the divider
  *    rather than by the sensor, so the engine can be driven into an orientation
  *    the display never entered. Leaving the split then strands it there, and
  *    every subsequent rotation is offset by the difference.
+ *
+ * 4. Foreground restore desync: -[UIApplication _lifecycleEvent:] saves
+ *    _platform_getOrientation on WillResignActive and replays it through
+ *    _platform_setOrientation: on WillEnterForeground, bypassing
+ *    _setOrientation:changed:. The replay assumes the orientation cannot change
+ *    while backgrounded, which the requested-orientation pin guarantees in
+ *    fullscreen. Entering split pauses and resumes the activity while Android
+ *    forces the pane into a new orientation (with rotation lock on, landscape
+ *    to portrait), so the replay rewrites statusBarOrientation to the stale
+ *    value after the layout kick has corrected it. Geometry survives, since
+ *    dpifix derives orientation from the window shape in multi-window;
+ *    BlockAlertView, built from statusBarOrientation, comes up in the old
+ *    orientation.
  *
  * THE FIX
  * -------
@@ -52,6 +66,17 @@
  *    orientation the display never entered. The resync runs on thread 1: the
  *    call chain reaches [UIScreen _applyMode], which is unsafe from the
  *    Android UI thread.
+ *
+ * 5. Swizzles -[UIApplication _lifecycleEvent:] with a thread-local depth
+ *    counter (g_lifecycleDepth) and -[UIDevice _platform_setOrientation:] to
+ *    substitute g_lockedOrientation for the replayed value in multi-window
+ *    when the two disagree on axis. The restore is the only
+ *    _platform_setOrientation: send inside _lifecycleEvent:, so the counter
+ *    scopes the substitution without matching notification names.
+ *    Substituting the argument rather than re-driving afterwards keeps a
+ *    single spin loop and makes the result independent of whether the
+ *    restore runs before or after the layout kick. Leaving a split needs no
+ *    substitution: the orientation already matches the display there.
  *
  * KNOWN LIMITATION
  * ----------------
@@ -290,13 +315,18 @@ static int resolve_ivar(const char *clsname, const char *ivname,
    in the low byte of its own word. */
 #define ENC_SET_ORIENTATION_CHANGED "v16@0:4i8c12"
 
-/* (void)(id, SEL, int) - verify at install; a wrong arity on a direct
-   call corrupts the stack. */
+/* (void)(id, SEL, int) - measured on the target build; a wrong arity on a
+   direct call corrupts the stack. */
 #define ENC_PLATFORM_SET_ORIENT "v12@0:4i8"
+
+/* Measured from the __objc_const method_t types string on the target build. */
+#define ENC_LIFECYCLE_EVENT "v12@0:4@8"
 
 static IMP g_origAcceleration          = 0;
 static IMP g_origStatusBarOri          = 0;
 static IMP g_origSetOrientationChanged = 0;
+static IMP g_origLifecycleEvent        = 0;
+static IMP g_origPlatformSetOrient     = 0;
 
 /* Locked orientation, pushed from Java. UIInterfaceOrientation:
    1=Portrait 2=PortraitUpsideDown 3=LandscapeLeft 4=LandscapeRight.
@@ -332,6 +362,12 @@ static volatile int g_resyncPending = 0;
    A counter rather than a flag so a nested call can't clear it early. */
 static __thread int g_accelDepth = 0;
 
+/* Depth counter, set only while inside -[UIApplication _lifecycleEvent:].
+   Its sole _platform_setOrientation: send is the WillEnterForeground restore,
+   so this scopes the substitution without matching notification names.
+   Thread-local and a counter for the same reasons as g_accelDepth. */
+static __thread int g_lifecycleDepth = 0;
+
 /* One-shot for the engine's hardcoded startup LandscapeRight. Process-wide,
    not thread-local: it marks a single event in the process lifetime, and a
    per-thread copy would let a second interception through. */
@@ -341,8 +377,9 @@ static int my_statusBarOrientation(id self, SEL _cmd) {
     int real = ((int (*)(id, SEL))g_origStatusBarOri)(self, _cmd);
     int out = real;
 
-    /* -[UIApplication statusBarOrientation] returns a global written only by
-       _platform_setOrientation:, which is gated on -[EvolutionViewController
+    /* -[UIApplication statusBarOrientation] returns a global that, after
+       launch, is written only through _platform_setOrientation:. Its normal
+       route, _setOrientation:changed:, is gated on -[EvolutionViewController
        shouldAutorotate] - false whenever Android's rotation lock is on. So the
        value is 0 for a locked session, and -[World acceleration:] applies
        neither of its axis transforms, leaving tilt in the LandscapeLeft frame.
@@ -387,14 +424,16 @@ static void my_acceleration(id self, SEL _cmd, void *a, void *b, void *c, void *
     g_accelDepth--;
 }
 
-/* -[UIDevice _setOrientation:changed:] is the sole caller of
-   _platform_setOrientation:, which sets statusBarOrientation, asks Android to
-   rotate, and then runs [UIScreen _applyMode]. The engine's app delegate calls
-   this with a hardcoded LandscapeRight at startup and normally corrects it from
-   the sensor path ~150ms later. With the device held flat that path never fires
-   (ORIENTATION_UNKNOWN), so the correction never arrives and the engine renders
-   landscape in a portrait window for the whole session. Substituting here — the
-   only point upstream of all three effects — keeps them consistent.
+/* -[UIDevice _setOrientation:changed:] is the engine's normal route to
+   _platform_setOrientation: (the foreground restore in _lifecycleEvent: is the
+   other; see my_platformSetOrientation), which sets statusBarOrientation, asks
+   Android to rotate, and then runs [UIScreen _applyMode]. The engine's app
+   delegate calls this with a hardcoded LandscapeRight at startup and normally
+   corrects it from the sensor path ~150ms later. With the device held flat that
+   path never fires (ORIENTATION_UNKNOWN), so the correction never arrives and
+   the engine renders landscape in a portrait window for the whole session.
+   Substituting here — the only point upstream of all three effects on the
+   startup path — keeps them consistent.
 
    One-shot: only the engine's startup request is intercepted, never a later
    user rotation. Fires unconditionally at startup; when Android's rotation lock
@@ -413,6 +452,127 @@ static void my_setOrientationChanged(id self, SEL _cmd, int orientation, char ch
     }
     ((void (*)(id, SEL, int, char))g_origSetOrientationChanged)
         (self, _cmd, orientation, changed);
+}
+
+/* _lifecycleEvent: saves _platform_getOrientation on WillResignActive and
+   restores it with _platform_setOrientation: on WillEnterForeground. The
+   restore assumes the orientation cannot change while backgrounded, which the
+   requested-orientation pin guarantees in fullscreen. In multi-window no pin
+   holds and Android can rotate the pane in between - entering split does
+   exactly that - so the restore rewrites statusBarOrientation to the stale
+   value. Geometry survives (dpifix derives orientation from window shape);
+   everything reading statusBarOrientation directly, such as BlockAlertView,
+   does not. Substitute on axis disagreement only, preserving the engine's
+   handedness where both agree, as my_statusBarOrientation does. */
+static void my_platformSetOrientation(id self, SEL _cmd, int o) {
+    if (g_lifecycleDepth > 0 && g_multiWindow && g_lockedOrientation != 0) {
+        int savedLand = (o == 3 || o == 4);
+        int lockLand  = (g_lockedOrientation == 3 || g_lockedOrientation == 4);
+        if (savedLand != lockLand) {
+            LOGV("foreground restore: substituting %d for saved %d",
+                 g_lockedOrientation, o);
+            o = g_lockedOrientation;
+        }
+    }
+    ((void (*)(id, SEL, int))g_origPlatformSetOrient)(self, _cmd, o);
+}
+
+static void my_lifecycleEvent(id self, SEL _cmd, id note) {
+    g_lifecycleDepth++;
+    ((void (*)(id, SEL, id))g_origLifecycleEvent)(self, _cmd, note);
+    g_lifecycleDepth--;
+}
+
+/* Not a JNI entry: called from libdpifix.so via dlsym, on thread 1.
+   Returns 1 if the rotation was actually applied.
+
+   The engine builds its containers while the window is still 0x0 and sizes
+   them portrait-canonically; only a real rotation re-lays them out. The same
+   applies after a forced rotation in multi-window, which moves the window
+   without the engine agreeing to it. _setOrientation:changed: is not usable
+   for either: it gates on the supported-orientations mask and on
+   shouldAutorotateToInterfaceOrientation:, which is false whenever Android's
+   rotation lock is on, so the call is vetoed before reaching
+   _platform_setOrientation:. Calling the platform method directly skips that
+   gate and the same-value early-out both. */
+int rotationfixKickLayout(int orient)
+{
+    static uint32_t s_orientOff = 0;
+    static IMP s_platformImp = 0;
+    static int s_resolved = 0;
+    Class dev;
+    id d;
+    int *cached = NULL;
+#if ROTATIONFIX_VERBOSE
+    int before, after;
+#endif
+
+    if (orient < 1 || orient > 4) return 0;
+
+    dev = getClass("UIDevice");
+    d = dev ? MSG_id((id)dev, selReg("currentDevice")) : NULL;
+    if (!d) { LOGE("kick: no UIDevice"); return 0; }
+
+    if (!s_resolved) {
+        const char *how;
+        Method m;
+
+        s_resolved = 1;
+
+        resolve_ivar("UIDevice", "_orientation", &s_orientOff, 0xC, &how);
+        LOGI("UIDevice _orientation: off=0x%x via %s", s_orientOff, how);
+
+        m = getInstMethod(dev, selReg("_platform_setOrientation:"));
+        if (m && checkEncoding(m, "_platform_setOrientation:",
+                               ENC_PLATFORM_SET_ORIENT))
+            s_platformImp = g_origPlatformSetOrient ? g_origPlatformSetOrient
+                                                    : getImp(m);
+        else
+            LOGE("kick: _platform_setOrientation: unusable - using wrapper");
+    }
+
+    if (s_orientOff) cached = (int *)((char *)d + s_orientOff);
+
+#if ROTATIONFIX_VERBOSE
+    before = g_origStatusBarOri
+        ? ((int (*)(id, SEL))g_origStatusBarOri)(
+              MSG_id((id)getClass("UIApplication"), selReg("sharedApplication")),
+              selReg("statusBarOrientation"))
+        : -1;
+#endif
+
+    if (s_platformImp) {
+        LOGV("kick: direct platform, cached=%d -> %d",
+             cached ? *cached : -1, orient);
+        if (cached) *cached = orient;
+        g_engineOrientation = orient;
+        ((void (*)(id, SEL, int))s_platformImp)
+            (d, selReg("_platform_setOrientation:"), orient);
+    } else if (g_origSetOrientationChanged && cached) {
+        int saved = *cached;
+        LOGI("kick: fallback wrapper, cached=%d -> spoof, then %d", saved, orient);
+        *cached = (orient == 1) ? 2 : 1;
+        ((void (*)(id, SEL, int, char))g_origSetOrientationChanged)
+            (d, selReg("_setOrientation:changed:"), orient, 1);
+        if (*cached != orient) {
+            LOGE("kick: wrapper vetoed - restoring cached %d", saved);
+            *cached = saved;
+            return 0;
+        }
+    } else {
+        LOGE("kick: no usable path");
+        return 0;
+    }
+
+#if ROTATIONFIX_VERBOSE
+    after = g_origStatusBarOri
+        ? ((int (*)(id, SEL))g_origStatusBarOri)(
+              MSG_id((id)getClass("UIApplication"), selReg("sharedApplication")),
+              selReg("statusBarOrientation"))
+        : -1;
+    LOGV("kick: sbo %d -> %d", before, after);
+#endif
+    return 1;
 }
 
 /* ---- JNI exports ---------------------------------------------------- */
@@ -470,100 +630,9 @@ Java_com_apportable_ui_Device_nativeRunPendingResync(JNIEnv *e, jclass c) {
     }
 }
 
-/* Not a JNI entry: called from libdpifix.so via dlsym, on thread 1.
-   Returns 1 if the rotation was actually applied.
-
-   The engine builds its containers while the window is still 0x0 and sizes
-   them portrait-canonically; only a real rotation re-lays them out. The same
-   applies after a forced rotation in multi-window, which moves the window
-   without the engine agreeing to it. _setOrientation:changed: is not usable
-   for either: it gates on the supported-orientations mask and on
-   shouldAutorotateToInterfaceOrientation:, which is false whenever Android's
-   rotation lock is on, so the call is vetoed before reaching
-   _platform_setOrientation:. Calling the platform method directly skips that
-   gate and the same-value early-out both. */
-int rotationfixKickLayout(int orient)
-{
-    static uint32_t s_orientOff = 0;
-    static IMP s_platformImp = 0;
-    static int s_resolved = 0;
-    Class dev;
-    id d;
-    int *cached = NULL;
-#if ROTATIONFIX_VERBOSE
-    int before, after;
-#endif
-
-    if (orient < 1 || orient > 4) return 0;
-
-    dev = getClass("UIDevice");
-    d = dev ? MSG_id((id)dev, selReg("currentDevice")) : NULL;
-    if (!d) { LOGE("kick: no UIDevice"); return 0; }
-
-    if (!s_resolved) {
-        const char *how;
-        Method m;
-
-        s_resolved = 1;
-
-        resolve_ivar("UIDevice", "_orientation", &s_orientOff, 0xC, &how);
-        LOGI("UIDevice _orientation: off=0x%x via %s", s_orientOff, how);
-
-        m = getInstMethod(dev, selReg("_platform_setOrientation:"));
-        if (m && checkEncoding(m, "_platform_setOrientation:",
-                               ENC_PLATFORM_SET_ORIENT))
-            s_platformImp = getImp(m);
-        else
-            LOGE("kick: _platform_setOrientation: unusable - using wrapper");
-    }
-
-    if (s_orientOff) cached = (int *)((char *)d + s_orientOff);
-
-#if ROTATIONFIX_VERBOSE
-    before = g_origStatusBarOri
-        ? ((int (*)(id, SEL))g_origStatusBarOri)(
-              MSG_id((id)getClass("UIApplication"), selReg("sharedApplication")),
-              selReg("statusBarOrientation"))
-        : -1;
-#endif
-
-    if (s_platformImp) {
-        LOGV("kick: direct platform, cached=%d -> %d",
-             cached ? *cached : -1, orient);
-        if (cached) *cached = orient;
-        g_engineOrientation = orient;
-        ((void (*)(id, SEL, int))s_platformImp)
-            (d, selReg("_platform_setOrientation:"), orient);
-    } else if (g_origSetOrientationChanged && cached) {
-        int saved = *cached;
-        LOGI("kick: fallback wrapper, cached=%d -> spoof, then %d", saved, orient);
-        *cached = (orient == 1) ? 2 : 1;
-        ((void (*)(id, SEL, int, char))g_origSetOrientationChanged)
-            (d, selReg("_setOrientation:changed:"), orient, 1);
-        if (*cached != orient) {
-            LOGE("kick: wrapper vetoed - restoring cached %d", saved);
-            *cached = saved;
-            return 0;
-        }
-    } else {
-        LOGE("kick: no usable path");
-        return 0;
-    }
-
-#if ROTATIONFIX_VERBOSE
-    after = g_origStatusBarOri
-        ? ((int (*)(id, SEL))g_origStatusBarOri)(
-              MSG_id((id)getClass("UIApplication"), selReg("sharedApplication")),
-              selReg("statusBarOrientation"))
-        : -1;
-    LOGV("kick: sbo %d -> %d", before, after);
-#endif
-    return 1;
-}
-
 static int install(void) {
     Class  world, app, device;
-    Method mAccel, mStatus, mSetOri;
+    Method mAccel, mStatus, mSetOri, mPlat, mLife;
 
     /* 1 */
     world  = getClass("World");
@@ -588,14 +657,22 @@ static int install(void) {
     mSetOri = getInstMethod(device, selReg("_setOrientation:changed:"));
     if (!mSetOri) { LOGE("_setOrientation:changed: not found"); return 0; }
 
+    mPlat = getInstMethod(device, selReg("_platform_setOrientation:"));
+    if (!mPlat) { LOGE("_platform_setOrientation: not found"); return 0; }
+
+    mLife = getInstMethod(app, selReg("_lifecycleEvent:"));
+    if (!mLife) { LOGE("_lifecycleEvent: not found"); return 0; }
+
     /* 4 - skipped: no ivars resolved */
 
     /* 5 - skipped: no runtime selectors or constants to cache */
 
     /* 6 - all encodings verified before any setImp */
-    if (!checkEncoding(mAccel,  "acceleration:",           ENC_ACCELERATION))            return 0;
-    if (!checkEncoding(mStatus, "statusBarOrientation",     ENC_STATUS_BAR_ORI))          return 0;
-    if (!checkEncoding(mSetOri, "_setOrientation:changed:", ENC_SET_ORIENTATION_CHANGED)) return 0;
+    if (!checkEncoding(mAccel,  "acceleration:",             ENC_ACCELERATION))            return 0;
+    if (!checkEncoding(mStatus, "statusBarOrientation",      ENC_STATUS_BAR_ORI))          return 0;
+    if (!checkEncoding(mSetOri, "_setOrientation:changed:",  ENC_SET_ORIENTATION_CHANGED)) return 0;
+    if (!checkEncoding(mPlat,   "_platform_setOrientation:", ENC_PLATFORM_SET_ORIENT))     return 0;
+    if (!checkEncoding(mLife,   "_lifecycleEvent:",          ENC_LIFECYCLE_EVENT))         return 0;
 
     /* 7 - commit, rolling back already-committed hooks if a later one fails */
     if (!hook(world, "acceleration:", ENC_ACCELERATION,
@@ -612,6 +689,23 @@ static int install(void) {
               (IMP)my_setOrientationChanged, &g_origSetOrientationChanged)) {
         setImp(mAccel,  g_origAcceleration);
         setImp(mStatus, g_origStatusBarOri);
+        return 0;
+    }
+
+    if (!hook(device, "_platform_setOrientation:", ENC_PLATFORM_SET_ORIENT,
+              (IMP)my_platformSetOrientation, &g_origPlatformSetOrient)) {
+        setImp(mAccel,  g_origAcceleration);
+        setImp(mStatus, g_origStatusBarOri);
+        setImp(mSetOri, g_origSetOrientationChanged);
+        return 0;
+    }
+
+    if (!hook(app, "_lifecycleEvent:", ENC_LIFECYCLE_EVENT,
+              (IMP)my_lifecycleEvent, &g_origLifecycleEvent)) {
+        setImp(mAccel,  g_origAcceleration);
+        setImp(mStatus, g_origStatusBarOri);
+        setImp(mSetOri, g_origSetOrientationChanged);
+        setImp(mPlat,   g_origPlatformSetOrient);
         return 0;
     }
 
