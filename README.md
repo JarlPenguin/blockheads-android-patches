@@ -19,6 +19,9 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 ### `background-freeze-fix.patch`
 * Fixes freezes when suspending and resuming the game, opening WebView pages and the photo picker
 
+### `bump-target-sdk.patch`
+* Removes warning about the game being built for an older version of Android
+
 ### `display-fix.patch`
 * Fixes UI scaling on tablets, which now use the iPad layout
 * Splash screen is now selected dynamically based on the device's type, resolution and orientation
@@ -232,6 +235,10 @@ Includes a native library (`libpaintmixfix.so`) that swizzles Apportable's Objec
 * `libpaintmixfix.so` swizzles `-[PaintMixUI render:translation:pinchScale:]` to repair any texture with a GL name of 0 once a context is current: file-backed textures are reloaded via `-[CPTexture2D updateForChangeToTexturePack]`, and the two painting textures, which have no `basePath`, are rebuilt via `-[PaintMixUI updateMix]`. `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` is also swizzled to clear the repair latch when a new photo is picked, so a second pick in the same session is covered.
 
 _Note: The texture repair happens after the fact rather than preventing creation in a contextless window; avoiding that would require changes beyond swizzling. The in-world easel (`Workbench.paintingTexture`) uses the same construction pattern but did not reproduce in testing and is left alone._
+
+### `bump-target-sdk.patch`
+* Bumps target SDK of the game to 28.
+* Sets `usesCleartextTraffic` to true.
 
 ### `display-fix.patch`
 Includes two native libraries (`libdpifix.so`, `librotationfix.so`) that swizzle Apportable's Objective-C runtime at startup and smali changes.

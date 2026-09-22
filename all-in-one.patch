@@ -1,5 +1,5 @@
 diff --git a/AndroidManifest.xml b/AndroidManifest.xml
-index 2e851ce..617bea7 100644
+index 2e851ce..e768558 100644
 --- a/AndroidManifest.xml
 +++ b/AndroidManifest.xml
 @@ -8,7 +8,7 @@
@@ -7,7 +7,7 @@ index 2e851ce..617bea7 100644
      <uses-permission android:name="com.android.vending.BILLING"/>
      <supports-screens android:largeScreens="true" android:normalScreens="true" android:resizeable="true" android:smallScreens="false"/>
 -    <application android:debuggable="false" android:hardwareAccelerated="false" android:hasCode="true" android:icon="@drawable/icon" android:isGame="true" android:label="@string/app_name" android:largeHeap="true" android:name="com.apportable.app.VerdeApplication" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-+    <application android:allowAudioPlaybackCapture="true" android:debuggable="false" android:hardwareAccelerated="false" android:hasCode="true" android:hasFragileUserData="true" android:icon="@drawable/icon" android:isGame="true" android:label="@string/app_name" android:largeHeap="true" android:name="com.apportable.app.VerdeApplication" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
++    <application android:allowAudioPlaybackCapture="true" android:debuggable="false" android:hardwareAccelerated="false" android:hasCode="true" android:hasFragileUserData="true" android:icon="@drawable/icon" android:isGame="true" android:label="@string/app_name" android:largeHeap="true" android:name="com.apportable.app.VerdeApplication" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:usesCleartextTraffic="true">
          <meta-data android:name="android.max_aspect" android:value="2.1"/>
          <meta-data android:name="android.app.libs" android:value="v cxx System icu CoreFoundation xml2 CommonCrypto Security SystemConfiguration CFNetwork Foundation GraphicsServices CoreGraphics BridgeKit OpenAL gles_apportable pango CoreText CoreAudio AudioFile AudioUnit AudioToolbox NoodleFoundation NoodleCompatibility Application"/>
          <meta-data android:name="android.app.lib_name" android:value="Application"/>
@@ -62,6 +62,19 @@ index 2e851ce..617bea7 100644
 +        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="com.noodlecake.noodlewebview.BlockheadsWebView" android:screenOrientation="behind" android:theme="@style/NoActionBar"/>
      </application>
  </manifest>
+diff --git a/apktool.yml b/apktool.yml
+index 82dc439..9318a48 100644
+--- a/apktool.yml
++++ b/apktool.yml
+@@ -5,7 +5,7 @@ usesFramework:
+   - 1
+ sdkInfo:
+   minSdkVersion: 12
+-  targetSdkVersion: 27
++  targetSdkVersion: 28
+ versionInfo:
+   versionCode: 1557164436
+   versionName: 1.7.5
 diff --git a/res/drawable/icon_adaptive.png b/res/drawable/icon_adaptive.png
 new file mode 100644
 index 0000000000000000000000000000000000000000..b77c81c239225ba6cf53f3c33a7d8c633d840fbb
