@@ -1,6 +1,11 @@
 # Patch The Blockheads APK for modern Android devices
 
-These patches were designed mostly with the help of LLMs for v1.7.5 and were tested on devices running Android 8.1 and 16.
+These patches were designed mostly with the help of LLMs for v1.7.5 and were tested on the following devices:
+
+* ~~Motorola Moto G5S Plus running Android 8.1 (32-bit, stock)~~
+* Samsung Galaxy S23+ running Android 16 (32+64-bit, stock)
+* Samsung Galaxy Tab S9 running Android 16 (32+64-bit, stock)
+* Xiaomi Poco X3 NFC running Android 16 (32+64-bit, custom ROM)
 
 ## List of patches and what they do
 
@@ -27,21 +32,29 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 * Splash screen is now selected dynamically based on the device's type, resolution and orientation
 * Allows the game to natively launch in landscape mode
 * Fixes crashes when rotating on some devices
-* Fixes a brief flip to right-landscape at startup when auto-rotation is enabled
+* Fixes a brief rotation to right-landscape at startup when auto-rotation is enabled
 * Fixes tilt controls when auto-rotation is disabled
 * Fixes tilt controls when the device is lying flat at launch
-* Fixes multi-window mode breaking the UI or leaving the game on a black screen
-* Fixes a black screen on Samsung devices when exiting split-screen into the other app or turning the game into a freeform window
+* Fixes multi-window mode breaking the UI
 * Fixes various scenarios breaking the orientation of the game's native dialog boxes
 
 ### `join-link-fix.patch`
 * Fixes join links (`blockheads://` and `theblockheads.net/join.php`) not working
+
+### `mail-invite-fix.patch`
+* Fixes join links being cut off when shared by e-mail
+* Fixes a typo in the resulting e-mail body
 
 ### `permissions-fix.patch`
 * Fixes the storage permission request never being shown on Android 7.1 and later
 
 ### `privacy-popup-cleanup.patch`
 * Prevents the "Privacy Setting Changed" dialog from appearing where uncalled for
+
+### `sign-fix.patch`
+* Allows lowercase text on signs
+* Centers text in the sign editor
+* Adjusts sign editor padding and line wrapping behavior to match iOS
 
 ### `webview-rescue.patch`
 * Prevents the game from crashing when the WebView crashes
@@ -303,6 +316,17 @@ Includes a native library (`libjoinlinkfix.so`) that hooks Apportable's URL deli
 
 _Note: the game no longer registers as a handler for general `theblockheads.net` / `blockheads.noodlecake.com` URLs - only `/join.php` links. The old catch-all behaviour was almost certainly unintentional._
 
+### `mail-invite-fix.patch`
+Includes a native library (`libmailinvitefix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
+
+> **Notes:**
+> The invite link itself is intact: **Copy** puts the full `join.php?ip=...&port=...` URL on the clipboard. In both `-[ShareUI alertView:didDismissWithButtonIndex:]` and `-[LoadWorldUI alertView:didDismissWithButtonIndex:]`, button index 2 reads that URL from the dialog text field. Each callback percent-escapes the dialog title for the email subject, then inserts the unescaped URL as the final `%@` in `mailto:?to=&subject=%@&body=...%@` and passes the result through `+[NSURL URLWithString:]` to `-[UIApplication openURL:]`. Logcat confirms an `ACTION_VIEW` launch with `mailto:` data; the Java mail methods inspected use `ACTION_SEND` and are not this path.
+>
+> The body’s fixed prose already contains `%20` and `%0D%0A` escapes, but the inserted invite URL contains raw `=` and `&`. Parsing those characters as mailto query delimiters explains why the composed message ends at `http://theblockheads.net/join.php?ip`: the first `=` begins another value, and subsequent `&` pairs are treated as separate fields.
+
+* Swizzles `+[NSURL URLWithString:]` and recognizes only this invite-mail format. Its body template ends with the URL, so the hook can identify the entire URL suffix without guessing which `&` belongs to the link. It percent-encodes that suffix as UTF-8, including any existing `%` escapes, so one mailto decode yields the original clickable URL. Other URLs and the **Copy** path are passed through unchanged.
+* Inserts `%20to` into the fixed body text, changing “from your mobile device join my world” to “from your mobile device to join my world.” The subject and the rest of the encoded prose are left intact.
+
 ### `permissions-fix.patch`
 Includes smali changes.
 
@@ -331,6 +355,19 @@ Includes a native library (`libprivacypopupfix.so`) that swizzles Apportable's O
 * Resolves the `gdprPrompt` offset through `class_getInstanceVariable` and `ivar_getOffset` rather than a constant, reading the post-fixup value in case libobjc2 rewrites the non-fragile ivar offset at load time. Falls back to the statically derived `0x204` only if runtime introspection is unavailable, rejects implausible offsets, and logs an error if the runtime value disagrees with static analysis, which would indicate the binary differs from the one analysed. `OBJC_IVAR_$_GameView.gdprPrompt` is present in `.symtab` but not `.dynsym`, so `dlsym` is not a usable source.
 
 _Note: Currently temporarily conflicts with other native patches._
+
+### `sign-fix.patch`
+
+Includes a native library (`libsignfix.so`) that swizzles Apportable’s Objective-C runtime at startup and smali changes.
+
+> **Notes:**
+> `-[UIManager displaySignUIForSign:]` constructs a `BlockTextPromptAlertView` containing a `UITextView`, not a `UITextField`. Its `-text` getter wraps the view’s contents with `[BitmapFont embossedFont]`, applies a three-line limit, then calls `uppercaseString`. `-textViewDidChange:` writes that result back with `setText:` and moves the cursor to the end. This explains why lowercase input is accepted briefly before becoming uppercase and why editing a previously lowercase sign capitalizes it. Saving also calls the same getter. The focused Android editor reported `inputType=0xa0001`, with no capitalization flag.
+
+* Marks the prompt created by `displaySignUIForSign:` with an Objective-C associated object. The sign-only replacement for `BlockTextPromptAlertView -text` keeps its bitmap-font wrapping, three-line limit, excess-character removal, and callback, but omits `uppercaseString`. Confirmation still passes the resulting text to the game’s sign setter.
+* Skips the `setText:` round trip in `-textViewDidChange:` when the normalized result already equals the view’s text. When wrapping or the line limit changes it, the original text replacement and cursor movement still occur. Ordinary lowercase keystrokes therefore no longer restart IME composition.
+* Changes the sign getter’s wrap width from 120 to 130 bitmap-font units. The wrapper tests `width` with a strict `<` comparison. On-device probes measured `l` at 4 units and `a` at 10: 32 `l`s and `a` followed by 29 `l`s fit at 130, while one additional `l` wraps. These match the observed iOS limits. The original width wrapped 32 `l`s too early; a 138-unit probe allowed text that exceeded the Android editor’s visible line.
+* Adjusts the Java editor while the sign prompt is constructed, before existing text appears. Apportable’s `TextView` embeds an Android `EditText`; the measured 360 px editor initially had 26 px of padding on each side. A native JNI query scopes the smali change to sign creation. The smali applies side padding scaled from 12 px at a 360 px frame and preserves the top and bottom padding. Applying it at setup also fixes an existing sign’s layout immediately upon opening.
+* Centers the editor text and adjusts font measurement. Although the native prompt requests centered alignment, Java initializes the inner `EditText` with left/top gravity (`0x33`); sign-only smali changes it to center-horizontal/top (`0x31`). It also enables linear and subpixel text. 32 `l`s and `lol my name is..` have equal nominal advances, but Android initially measured them at 320 and 331 px. With linear text, 32 `l`s measured 334 px and fit in the adjusted 336 px text area.
 
 ### `webview-rescue.patch`
 Includes smali changes.

@@ -2010,10 +2010,10 @@ index 0000000..65ec1f6
 +    goto :goto_0
 +.end method
 diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
-index 468f98c..bc28949 100644
+index 468f98c..e686e53 100644
 --- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
 +++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
-@@ -61,6 +61,48 @@
+@@ -61,6 +61,56 @@
      iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
  
      invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
@@ -2030,6 +2030,10 @@ index 468f98c..bc28949 100644
 +
 +    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 +
++    const-string v1, "mailinvitefix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
 +    const-string v1, "paintmixfix"
 +
 +    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
@@ -2039,6 +2043,10 @@ index 468f98c..bc28949 100644
 +    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 +
 +    const-string v1, "rotationfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "signfix"
 +
 +    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 +
@@ -3748,6 +3756,90 @@ index b6f1ed9..ccce1cf 100644
  
  # virtual methods
  .method public disable()V
+diff --git a/smali/com/apportable/ui/TextView.smali b/smali/com/apportable/ui/TextView.smali
+index 39a072b..e3c3327 100644
+--- a/smali/com/apportable/ui/TextView.smali
++++ b/smali/com/apportable/ui/TextView.smali
+@@ -329,6 +329,9 @@
+ .method private native selectionChange(III)V
+ .end method
+ 
++.method private static native signfixIsCreatingSign()Z
++.end method
++
+ .method private native textDidChange(ILjava/lang/String;)V
+ .end method
+ 
+@@ -341,7 +344,7 @@
+ 
+ # virtual methods
+ .method public _setBackgroundColor(I)V
+-    .locals 1
++    .locals 5
+ 
+     .prologue
+     .line 273
+@@ -352,7 +355,60 @@
+ 
+     invoke-virtual {v0, p1}, Lcom/apportable/ui/TextView$EditText;->setBackgroundColor(I)V
+ 
++    invoke-static {}, Lcom/apportable/ui/TextView;->signfixIsCreatingSign()Z
++
++    move-result v1
++
++    if-eqz v1, :cond_0
++
++    const/16 v1, 0x31
++
++    invoke-virtual {v0, v1}, Lcom/apportable/ui/TextView$EditText;->setGravity(I)V
++
++    invoke-virtual {v0}, Landroid/widget/TextView;->getPaint()Landroid/text/TextPaint;
++
++    move-result-object v1
++
++    const/4 v2, 0x1
++
++    invoke-virtual {v1, v2}, Landroid/graphics/Paint;->setLinearText(Z)V
++
++    invoke-virtual {v1, v2}, Landroid/graphics/Paint;->setSubpixelText(Z)V
++
++    invoke-virtual {p0}, Landroid/view/View;->getLayoutParams()Landroid/view/ViewGroup$LayoutParams;
++
++    move-result-object v2
++
++    if-eqz v2, :cond_0
++
++    iget v2, v2, Landroid/view/ViewGroup$LayoutParams;->width:I
++
++    if-lez v2, :cond_0
++
++    const/16 v3, 0xc
++
++    mul-int/2addr v2, v3
++
++    const/16 v3, 0xb4
++
++    add-int/2addr v2, v3
++
++    const/16 v3, 0x168
++
++    div-int/2addr v2, v3
++
++    invoke-virtual {v0}, Landroid/view/View;->getPaddingTop()I
++
++    move-result v3
++
++    invoke-virtual {v0}, Landroid/view/View;->getPaddingBottom()I
++
++    move-result v4
++
++    invoke-virtual {v0, v2, v3, v2, v4}, Landroid/view/View;->setPadding(IIII)V
++
+     .line 275
++    :cond_0
+     return-void
+ .end method
+ 
 diff --git a/smali/com/apportable/ui/Window.smali b/smali/com/apportable/ui/Window.smali
 index c71c34d..8941fe3 100644
 --- a/smali/com/apportable/ui/Window.smali
