@@ -51,6 +51,9 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 ### `privacy-popup-cleanup.patch`
 * Prevents the "Privacy Setting Changed" dialog from appearing where uncalled for
 
+### `sfx-exit-fix.patch`
+* Fixes rain, wind, jetpack, cricket, bird, and other sound effects continuing over the main menu after leaving a world
+
 ### `sign-fix.patch`
 * Allows lowercase text on signs
 * Centers text in the sign editor
@@ -210,11 +213,16 @@ Because applying these patches requires recompiling and signing the APK with a c
 
 ## Technical details
 
-### `adaptive-icon.patch`
+<details>
+<summary><code>adaptive-icon.patch</code></summary>
+
 * Adds a copy of `res/drawable/icon.png` with transparent padding, located at `res/drawable/icon_adaptive.png`.
 * Adds `res/drawable-anydpi-v26/icon.xml` to enable adaptive icon support.
+</details>
 
-### `audio-fix.patch`
+<details>
+<summary><code>audio-fix.patch</code></summary>
+
 Includes a native library (`libaudiofix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
@@ -228,11 +236,17 @@ Includes a native library (`libaudiofix.so`) that swizzles Apportable's Objectiv
 * Treats any nonzero loop count as infinite in `AudioPlayer.setNumberOfLoops`, which previously mapped only `-1` to `setLooping(true)`. The game requests 999 repetitions for looping tracks, so every looping track silently played once. `loadMP3IfSafe:withTimeOffset:` and `setLoopMP3s:` are the only senders of `setNumberOfLoops:` in the binary and pass only 999 or 0, so the mapping is complete for this app; a faithful finite count is not reachable through `MediaPlayer.setLooping(boolean)` anyway.
 
 **Known limitations:** see https://github.com/JarlPenguin/blockheads-android-patches/issues/1.
+</details>
 
-### `audio-record-keep-saves.patch`:
+<details>
+<summary><code>audio-record-keep-saves.patch</code></summary>
+
 * Sets `allowAudioPlaybackCapture` and `hasFragileUserData` to true.
+</details>
 
-### `background-freeze-fix.patch`
+<details>
+<summary><code>background-freeze-fix.patch</code></summary>
+
 Includes a native library (`libpaintmixfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
@@ -248,12 +262,18 @@ Includes a native library (`libpaintmixfix.so`) that swizzles Apportable's Objec
 * `libpaintmixfix.so` swizzles `-[PaintMixUI render:translation:pinchScale:]` to repair any texture with a GL name of 0 once a context is current: file-backed textures are reloaded via `-[CPTexture2D updateForChangeToTexturePack]`, and the two painting textures, which have no `basePath`, are rebuilt via `-[PaintMixUI updateMix]`. `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` is also swizzled to clear the repair latch when a new photo is picked, so a second pick in the same session is covered.
 
 _Note: The texture repair happens after the fact rather than preventing creation in a contextless window; avoiding that would require changes beyond swizzling. The in-world easel (`Workbench.paintingTexture`) uses the same construction pattern but did not reproduce in testing and is left alone._
+</details>
 
-### `bump-target-sdk.patch`
+<details>
+<summary><code>bump-target-sdk.patch</code></summary>
+
 * Bumps target SDK of the game to 28.
 * Sets `usesCleartextTraffic` to true.
+</details>
 
-### `display-fix.patch`
+<details>
+<summary><code>display-fix.patch</code></summary>
+
 Includes two native libraries (`libdpifix.so`, `librotationfix.so`) that swizzle Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
@@ -299,9 +319,12 @@ Includes two native libraries (`libdpifix.so`, `librotationfix.so`) that swizzle
 * Extends `Lifecycle.expectGainFocus`'s rescue to fire in multi-window. Entering a split stops and restarts the activity, throttling the `CADisplayLink` and invalidating its timer, while `...DidBecomeActive` never posts because `sWindowHasFocus` stays false with the other pane focused.
 * Substitutes the display's orientation for the value `-[UIApplication _lifecycleEvent:]` replays on `WillEnterForeground`, in multi-window and only on axis disagreement, preserving the engine's handedness otherwise. Scoped by a thread-local depth counter around `_lifecycleEvent:`, whose only `_platform_setOrientation:` send is the replay, so no notification names are matched. Substituting the argument rather than re-driving afterwards keeps a single spin loop and makes the result independent of whether the replay lands before or after the kick. Leaving a split needs nothing: the orientation already matches the display there.
 
-_Known limitations: in split-screen the in-game tilt-control orientation lock does not hold with auto-rotation enabled - Android does not honour a fixed orientation in multi-window, so the pin the engine's veto relies on cannot be kept; the tilt frame re-bases correctly and the controls stay usable. The pane-swap fix requires `getCurrentWindowMetrics` and is inert below API 30; whether the underlying One UI behaviour occurs on those releases is untested (#6)._
+**Known limitations:** in split-screen the in-game tilt-control orientation lock does not hold with auto-rotation enabled - Android does not honour a fixed orientation in multi-window, so the pin the engine's veto relies on cannot be kept; the tilt frame re-bases correctly and the controls stay usable. The pane-swap fix requires `getCurrentWindowMetrics` and is inert below API 30; whether the underlying One UI behaviour occurs on those releases is untested (see https://github.com/JarlPenguin/blockheads-android-patches/issues/6).
+</details>
 
-### `join-link-fix.patch`
+<details>
+<summary><code>join-link-fix.patch</code></summary>
+
 Includes a native library (`libjoinlinkfix.so`) that hooks Apportable's URL delivery path at startup and smali changes.
 
 > **Notes from Claude:**
@@ -315,8 +338,11 @@ Includes a native library (`libjoinlinkfix.so`) that hooks Apportable's URL deli
 * Also fixes links fired while the game is already in the foreground, and supports repeated links without a restart.
 
 _Note: the game no longer registers as a handler for general `theblockheads.net` / `blockheads.noodlecake.com` URLs - only `/join.php` links. The old catch-all behaviour was almost certainly unintentional._
+</details>
 
-### `mail-invite-fix.patch`
+<details>
+<summary><code>mail-invite-fix.patch</code></summary>
+
 Includes a native library (`libmailinvitefix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes:**
@@ -326,8 +352,11 @@ Includes a native library (`libmailinvitefix.so`) that swizzles Apportable's Obj
 
 * Swizzles `+[NSURL URLWithString:]` and recognizes only this invite-mail format. Its body template ends with the URL, so the hook can identify the entire URL suffix without guessing which `&` belongs to the link. It percent-encodes that suffix as UTF-8, including any existing `%` escapes, so one mailto decode yields the original clickable URL. Other URLs and the **Copy** path are passed through unchanged.
 * Inserts `%20to` into the fixed body text, changing “from your mobile device join my world” to “from your mobile device to join my world.” The subject and the rest of the encoded prose are left intact.
+</details>
 
-### `permissions-fix.patch`
+<details>
+<summary><code>permissions-fix.patch</code></summary>
+
 Includes smali changes.
 
 > **Notes from Claude:**
@@ -343,8 +372,11 @@ Includes smali changes.
 * Strips the `startGame` calls from both branches of `onRequestPermissionsResult`. Vanilla relies on them to resume a boot it deferred; with boot never deferred they would start the game a second time. The log lines and the deny-path toast are left intact.
 
 _Note: The deny-path `Toast` message is long enough to clip at the two-line limit Android has enforced on `Toast` since API 26._
+</details>
 
-### `privacy-popup-cleanup.patch`
+<details>
+<summary><code>privacy-popup-cleanup.patch</code></summary>
+
 Includes a native library (`libprivacypopupfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
@@ -352,10 +384,22 @@ Includes a native library (`libprivacypopupfix.so`) that swizzles Apportable's O
 
 * Swizzles `-[GameView alertView:clickedButtonAtIndex:]` to compare the incoming `alertView` against the `gdprPrompt` ivar and return early on a mismatch, restoring the guard the original code scopes too narrowly. Matching dismissals are forwarded to the original implementation unchanged, so both `gdprStatus` values and the restart notice behave exactly as intended on the real path.
 * Nils `gdprPrompt` after a matched dismissal. `showGDPRAlert` assigns an autoreleased alert and never clears the ivar, so it dangles once the alert deallocates and a later `UIAlertView` allocated at the same address would compare equal and re-trigger the popup. Every branch of `alertView:didDismissWithButtonIndex:` already does this; the GDPR path does not.
+</details>
 
-_Note: Currently temporarily conflicts with other native patches._
+<details>
+<summary><code>sfx-exit-fix.patch</code></summary>
 
-### `sign-fix.patch`
+Includes a native library (`libsfxexitfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
+
+> **Notes:** Sound effects use OpenAL sources cached by `MJSoundManager`; they are separate from the Java `MediaPlayer` used for music. `-[GameView actuallyDoExitWorldRightNowReallyNow]` releases the world but does not stop those sources. In the traced exit, an `NSURLConnection` retained `World` as its delegate, leaving it alive after the menu appeared. That delayed `Weather.dealloc` and its rain and wind pause calls. Other effects, including cricket sounds, have no equivalent teardown there. The connection explains the measured delayed deallocation; the underlying exit bug is that active sound sources are left playing when the world closes.
+
+* Hooks `-[GameView actuallyDoExitWorldRightNowReallyNow]` and runs cleanup after the original method, covering the normal leave-world route and other routes that call it.
+* Stops cached `MJSound` sources in `loadedSounds` and calls `stopAll` on multisounds in `loadedMultiSounds` and `externalMultiSounds`. It also stops a multisound’s separate `loopingSound` before releasing that reference. These calls use the game’s own sound methods.
+* Sets `setPaused:1` on the four cached Weather sounds after stopping them. A new world can then activate them through its existing `setPaused:0` path; stopping them alone had left rain and snow ambience silent after rejoining.
+</details>
+
+<details>
+<summary><code>sign-fix.patch</code></summary>
 
 Includes a native library (`libsignfix.so`) that swizzles Apportable’s Objective-C runtime at startup and smali changes.
 
@@ -367,13 +411,19 @@ Includes a native library (`libsignfix.so`) that swizzles Apportable’s Objecti
 * Changes the sign getter’s wrap width from 120 to 130 bitmap-font units. The wrapper tests `width` with a strict `<` comparison. On-device probes measured `l` at 4 units and `a` at 10: 32 `l`s and `a` followed by 29 `l`s fit at 130, while one additional `l` wraps. These match the observed iOS limits. The original width wrapped 32 `l`s too early; a 138-unit probe allowed text that exceeded the Android editor’s visible line.
 * Adjusts the Java editor while the sign prompt is constructed, before existing text appears. Apportable’s `TextView` embeds an Android `EditText`; the measured 360 px editor initially had 26 px of padding on each side. A native JNI query scopes the smali change to sign creation. The smali applies side padding scaled from 12 px at a 360 px frame and preserves the top and bottom padding. Applying it at setup also fixes an existing sign’s layout immediately upon opening.
 * Centers the editor text and adjusts font measurement. Although the native prompt requests centered alignment, Java initializes the inner `EditText` with left/top gravity (`0x33`); sign-only smali changes it to center-horizontal/top (`0x31`). It also enables linear and subpixel text. 32 `l`s and `lol my name is..` have equal nominal advances, but Android initially measured them at 320 and 331 px. With linear text, 32 `l`s measured 334 px and fit in the adjusted 336 px text area.
+</details>
 
-### `webview-rescue.patch`
+<details>
+<summary><code>webview-rescue.patch</code></summary>
+
 Includes smali changes.
 
 * Adds `onRenderProcessGone` callbacks to `BlockheadsWebView$BlockheadsWebViewClient` and `MoreGamesFragment$MoreGamesWebViewClient`.
+</details>
 
-### `welcome-fix.patch`
+<details>
+<summary><code>welcome-fix.patch</code></summary>
+
 Includes a native library (`libwelcomefix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
@@ -386,8 +436,11 @@ Includes a native library (`libwelcomefix.so`) that swizzles Apportable's Object
 * Applies the same wrapping in the DONE handler, whose second assignment to `content` previously rebuilt the `<div>` by hand without conversion. The raw editor text still reaches `nativeSetWelcomeMessage` unchanged - that is the send path and was never at fault - so only the post-save re-render is affected. The handler never re-seeds the `EditText`, so a second save transmits the same bytes as the first.
 * Keeps the game's own `"<"` gate on the conversion, applied in `wmWrapForDisplay` to the message alone. A message containing any tag is treated as hand-authored HTML where newlines are insignificant whitespace and `<br>` is the author's responsibility; without the gate, a message written with explicit `<br>` tags and newlines for source readability renders double-spaced on Android and single-spaced everywhere else. Rendering therefore matches vanilla; what the patch changes is what gets stored.
 * Restores non-ASCII to welcome messages as a consequence of removing the filter. Every character outside 32..126 was previously deleted from any Android-viewed message, so accented text could not survive a view, let alone an edit. Non-BMP characters (emoji) still appear as `\UD83D`-style escapes, but that is the server escaping them before any client sees them, and is identical on iOS.
+</details>
 
-### `world-selection-fix.patch`
+<details>
+<summary><code>world-selection-fix.patch</code></summary>
+
 Includes a native library (`libworldselectionfix.so`) that swizzles Apportable's Objective-C runtime at startup.
 
 > **Notes from Claude:**
@@ -395,3 +448,4 @@ Includes a native library (`libworldselectionfix.so`) that swizzles Apportable's
 
 * Suppresses `-[MainMenuUI selectMostRecentlyPlayedWorld]` outright. Despite the name it selects nothing: it writes `currentWorldIndex = -2`, `currentMainMenuSelection = 1`, `scrollTargetIndex = -3`, `activePreviewTextureIndex = -1`, and a `currentScroll` derived only from whether `gameSaves` is empty - byte for byte the same values `-[MainMenuUI initWithDelegate:windowInfo:cache:cloudInterface:]` already writes at construction. It is a reset-to-initial-state routine whose name reflects only that the default scroll position happens to land on the most recent world given the list ordering. Cold start therefore loses nothing, and `-[GameView didBecomeActive]` is its only sender in the binary.
 * Guards nothing on `currentWorldIndex`, deliberately. The ivar is not stored state: `-[MainMenuUI render:projectionMatrix:]` recomputes it from `currentScroll` every frame, clamps it to `[-2, count-1]`, and drives `currentMainMenuSelection` from it, where `-1` and `-2` are the virtual Join and Create World slots below index 0. `-2` is thus both "freshly constructed" and "Create World is selected", so an index-based guard cannot tell a cold start from a resume on that screen - an earlier revision of this patch broke exactly there. The durable state is `currentScroll`; protecting it lets the next frame re-derive the same index and selection.
+</details>
