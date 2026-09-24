@@ -2,7 +2,7 @@
 
 These patches were designed mostly with the help of LLMs for v1.7.5 and were tested on the following devices:
 
-* ~~Motorola Moto G5S Plus running Android 8.1 (32-bit, stock)~~
+* Motorola Moto G5S Plus running Android 8.1 (32-bit, stock)
 * Samsung Galaxy S23+ running Android 16 (32+64-bit, stock)
 * Samsung Galaxy Tab S9 running Android 16 (32+64-bit, stock)
 * Xiaomi Poco X3 NFC running Android 16 (32+64-bit, custom ROM)
