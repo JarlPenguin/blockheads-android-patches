@@ -2010,10 +2010,10 @@ index 0000000..65ec1f6
 +    goto :goto_0
 +.end method
 diff --git a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
-index 468f98c..e686e53 100644
+index 468f98c..3cda722 100644
 --- a/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
 +++ b/smali/com/apportable/activity/BackgroundLibraryLoader$1.smali
-@@ -61,6 +61,56 @@
+@@ -61,6 +61,60 @@
      iget-object v1, p0, Lcom/apportable/activity/BackgroundLibraryLoader$1;->val$activity:Landroid/app/Activity;
  
      invoke-static {v1}, Lcom/apportable/LibraryManager;->loadLibraries(Landroid/app/Activity;)V
@@ -2043,6 +2043,10 @@ index 468f98c..e686e53 100644
 +    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 +
 +    const-string v1, "rotationfix"
++
++    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
++
++    const-string v1, "sfxexitfix"
 +
 +    invoke-static {v1}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V
 +
