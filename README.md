@@ -17,7 +17,7 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 * Fixes main menu music not looping
 * Fixes music never starting when the game is launched while another app is playing audio
 
-### `audio-record-keep-saves.patch`:
+### `audio-record-keep-saves.patch`
 * Allows the game's audio to be captured when screen recording
 * Allows players to retain game data when uninstalling the game
 
