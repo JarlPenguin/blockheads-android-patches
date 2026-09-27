@@ -72,34 +72,51 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 
 ## How to apply the patches
 
-### Backing up your worlds (if you want to)
+### Keeping your existing worlds
 
-**Uninstalling deletes your worlds.** The patched APK is signed with a different key than the Play Store/Noodlecake builds, so it can't be installed over an existing installation - you have to uninstall first, and the save data goes with it.
+**If you're installing the game from scratch, skip this section.**
 
-If you have worlds you want to keep and have access to a PC running Linux, run `./patch-backup.sh` before you uninstall anything. If you're using WSL, please [properly setup ADB on it](https://stackoverflow.com/questions/60166965/adb-device-list-empty-using-wsl2) before running the script. It pulls your saves off the device with `adb backup` and rewrites the signature inside so they can be restored onto the patched build. You'll need `adb` working, and no backup password set under Developer options. Restore with `adb restore` after installing the patched APK - the script prints the exact command when it finishes.
+**Uninstalling the game deletes your worlds.** The patched APK is signed with a different key than the Play Store/Noodlecake builds, so it can't be installed over an existing installation. You'll need to uninstall the old version first, which also removes its save data.
 
-If you don't have access to a computer, you can back up your data and patch the backup directly on the device. This needs [Shizuku](https://shizuku.rikka.app/) and [Termux](https://github.com/termux/termux-app/releases) - install Termux from GitHub or F-Droid, not the Play Store version, which is outdated and won't install the packages below.
+The easiest way to keep your worlds is to back them up and patch the backup directly on your Android device. This requires [Shizuku](https://shizuku.rikka.app) and [Termux](https://termux.dev). If you've ever set a backup password under Developer options, unset it temporarily.
 
-1. Install and start Shizuku. Follow [Shizuku's own setup guide](https://shizuku.rikka.app/guide/setup/). Note that on a non-rooted device Shizuku stops when you reboot and has to be started again.
+1. Install Termux from [GitHub](https://github.com/termux/termux-app/releases/latest) or [F-Droid](https://f-droid.org/en/packages/com.termux), not the Play Store. The Play Store version may not work in this case.
 
-2. In Shizuku, open **Use Shizuku in terminal apps** → **Export files**, then in the hamburger menu pick **Termux** and tap **Use this folder**. This writes `rish` and `rish_shizuku.dex` into Termux's home directory.
+2. Open Termux once and let it finish installing its bootstrap packages.
 
-3. Open Termux, run `sh rish -c "echo"` and grant it access when Shizuku prompts, then install the dependencies:
+3. Exit Termux and install Shizuku.
+
+4. Follow [Shizuku's setup guide](https://shizuku.rikka.app/guide/setup).
+
+5. In Shizuku, open **Use Shizuku in terminal apps** → **Export files**. From the folder picker, open the hamburger menu, choose **Termux**, and tap **Use this folder**. This exports `rish` and `rish_shizuku.dex` into Termux's home directory.
+
+6. Open Termux and run:
+   ```sh
+   sh rish -c "echo"
+   ```
+   Grant access when Shizuku prompts you, then install the required packages:
    ```sh
    pkg install curl openjdk-25 python coreutils
    ```
 
-4. Give Termux access to shared storage, so the backups land somewhere you can reach from a file manager:
+7. Give Termux access to shared storage so the backup is saved somewhere accessible from a file manager:
    ```sh
    termux-setup-storage
    ```
 
-5. Download and run the script:
+8. Download and run the backup script:
    ```sh
    curl -fsSLO https://raw.githubusercontent.com/JarlPenguin/blockheads-android-patches/main/patch-backup-shizuku.sh
    bash patch-backup-shizuku.sh
    ```
-   Follow the instructions that the script provides. Install the patched APK first, then run the `bu restore` command it printed - restoring before installing does nothing.
+
+   Follow the instructions printed by the script. It will create a backup of your existing worlds and patch it so it can be restored onto the patched version of the game.
+
+   **Install the patched APK before restoring the backup.** The script will print the exact `bu restore` command to use. Restoring before the patched APK is installed won't work.
+
+#### Using a computer instead
+
+If you'd rather make the backup from a computer, there is also a PC method using ADB. On Linux or WSL (make sure to [properly set up ADB on it](https://stackoverflow.com/questions/60166965/adb-device-list-empty-using-wsl2)), you can use the repository's `patch-backup.sh` script instead of the Shizuku/Termux method above. Restore with `adb restore` after installing the patched APK - the script prints the exact command when it finishes.
 
 ### Prebuilt APK
 
