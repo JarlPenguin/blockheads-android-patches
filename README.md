@@ -85,20 +85,20 @@ If you don't have access to a computer, you can back up your data and patch the 
 2. In Shizuku, open **Use Shizuku in terminal apps** → **Export files**, then in the hamburger menu pick **Termux** and tap **Use this folder**. This writes `rish` and `rish_shizuku.dex` into Termux's home directory.
 
 3. Open Termux, run `sh rish -c "echo"` and grant it access when Shizuku prompts, then install the dependencies:
-```sh
+   ```sh
    pkg install curl openjdk-25 python coreutils
-```
+   ```
 
 4. Give Termux access to shared storage, so the backups land somewhere you can reach from a file manager:
-```sh
+   ```sh
    termux-setup-storage
-```
+   ```
 
 5. Download and run the script:
-```sh
+   ```sh
    curl -fsSLO https://raw.githubusercontent.com/JarlPenguin/blockheads-android-patches/main/patch-backup-shizuku.sh
    bash patch-backup-shizuku.sh
-```
+   ```
    Follow the instructions that the script provides. Install the patched APK first, then run the `bu restore` command it printed - restoring before installing does nothing.
 
 ### Prebuilt APK
