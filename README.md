@@ -134,6 +134,8 @@ Prebuilt patched APKs are available [here](https://github.com/JarlPenguin/blockh
    ./patch-apk.sh <path/to/1.7.5.apk>
    ```
 
+   The signed APK is written to `signed-patched-bh.apk` next to the script.
+
 3. Uninstall the existing copy and install the patched build. You can do this either by copying the APK over to your device and installing it there or by using ADB (don't forget to pair and connect if you're doing this wirelessly!):
    ```sh
    adb uninstall com.noodlecake.blockheads # skip if you don't have it installed
@@ -152,8 +154,6 @@ Prebuilt patched APKs are available [here](https://github.com/JarlPenguin/blockh
    ```sh
    apktool d <path/to/1.7.5.apk> -o blockheads
    ```
-
-   The signed APK is written to `signed-patched-bh.apk` next to the script.
 
 3. Download the patches you need and apply them from inside the decompiled tree:
    ```sh
@@ -218,6 +218,7 @@ Prebuilt patched APKs are available [here](https://github.com/JarlPenguin/blockh
    adb uninstall com.noodlecake.blockheads # skip if you don't have it installed
    adb install signed-patched-bh.apk
    ```
+
    Enjoy!
 
 ---
