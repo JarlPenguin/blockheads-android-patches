@@ -41,6 +41,10 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 ### `join-link-fix.patch`
 * Fixes join links (`blockheads://` and `theblockheads.net/join.php`) not working
 
+### `lan-host-fix.patch`
+* Enables LAN hosting on Android
+* Enables searching for and joining hosted LAN worlds
+
 ### `mail-invite-fix.patch`
 * Fixes join links being cut off when shared by e-mail
 * Fixes a typo in the resulting e-mail body
@@ -343,7 +347,7 @@ Includes two native libraries (`libdpifix.so`, `librotationfix.so`) that swizzle
 <details>
 <summary><code>join-link-fix.patch</code></summary>
 
-Includes a native library (`libjoinlinkfix.so`) that hooks Apportable's URL delivery path at startup and smali changes.
+Includes a native library (`libjoinlinkfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
 > Two independent faults. The manifest declared `android:scheme="theblockheads.net/join"`, which is not a valid scheme - schemes cannot contain `.` or `/` - so `blockheads://` links matched nothing, while web links fell through to a catch-all claiming every `http` URL on `theblockheads.net` and `blockheads.noodlecake.com`. Past that, `Java_..._nativeHandleUri` does not deliver anything: it calls `VerdeHandleURI`, which only stashes a retained copy of the `NSURL` in a native global. The handoff to the app delegate lives in a separate routine, latched by a one-shot flag, first run from inside `-[UIApplication run]`. At that point `UIApplication` has no delegate, so both `application:handleOpenURL:` and `application:openURL:sourceApplication:annotation:` are skipped - but the routine still executes `[stashedURL release]; stashedURL = nil;` unconditionally. The launch URL is destroyed and the latch closes. A resign-active event resets the latch and a become-active event re-runs the handoff, which is why the Join Server screen previously appeared only after the user triggered a focus change, such as pulling down and releasing the notification shade. Nothing else - surface changes, geometry callbacks, lifecycle transitions - had any effect, because nothing else touches that flag.
@@ -359,11 +363,31 @@ _Note: the game no longer registers as a handler for general `theblockheads.net`
 </details>
 
 <details>
+<summary><code>lan-host-fix.patch</code></summary>
+
+Includes a native library (`liblanhostfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
+
+> **Notes from Codex:**
+> The Android binary retains the game's LAN hosting, discovery, selection and ENet connection paths, but several pieces of the surrounding Apportable integration are missing or incorrect. Initial domain enumeration does not request the bundled mDNS daemon's startup, Foundation's browser callback receiver lacks the CFString/domain-delivery branch, and CFNetwork stores the DNS-SD service port without converting it from network byte order. Bionic hostname resolution also fails for the discovered `.local` names. Hosting introduces separate lifecycle problems: temporary Android activities reach the server-cleanup branch, and retained-host updates can reach GameView from the wrong thread. The patch repairs these boundaries while continuing to use the game's existing server, service registration, world selection and transport.
+
+* Restores `HOST MULTIPLAYER...` in `LoadWorldUI` and `LOCAL NETWORK...` in `JoinWorldUI` using their existing retained button ivars, `CPCache` textures and native actions. Hosting proceeds through the original nickname, picture, PvP and Host Now controls. Layout adjustments retain Android's button dimensions and account for resize events and the optional migration button.
+* Requests CFNetwork's existing `_CreateMDNSDaemonIfNeeded` routine before `-[BHNetClientMatch startSearchForServers]` performs domain enumeration. The bundled DNS-SD client connects to the daemon through TCP `127.0.0.1:5354`; without this ordering, enumeration can exhaust its connection retries before any service browse starts. The daemon's native dispatch-once routine still owns thread creation and lifetime.
+* Repairs Foundation's missing domain callback delivery through its `CFNetServiceBrowserCreate` import and `_dispatchCallBack:flags:error:` path. Actual enumerated domains reach the game's existing delegate on the main queue; no `local.` domain is inserted manually. Queued delivery retains the browser, delegate and domain, copies the error structure, preserves removal and more-coming flags, and drops stale events when the delegate has changed. Service callbacks retain their original handling.
+* Corrects the service port only while the original resolve callback constructs its discovered-host entry. The patch decodes the IPv4 sockaddr supplied by DNS-SD and accepts either an already-correct port or its exact byte swap—for example, the observed getter value 12091 versus the advertised port 15151. A scoped `NSNetService port` hook supplies the host-order value without rewriting CFNetwork's stored field or the selected hostname.
+* Caches copied DNS-SD hostname, IPv4 address and port values per searching match. During the original connection method, a `gethostbyname2` import hook first calls Bionic, then supplies a thread-local IPv4 `hostent` only when that lookup fails and the request matches the selected endpoint. Successful native lookups remain intact. The game still chooses the world and creates the ENet peer; cached discovery entries are discarded after connection startup.
+* Resolves saved `.local` entries without requiring a new LAN browse. If Bionic fails and no selected discovery address is available, the resolver queries the bundled daemon for an A record through `DNSServiceQueryRecord`, waits within a three-second monotonic deadline, processes the response and deallocates the query. Saved hostname metadata remains unchanged, so reconnects can follow an address change instead of persisting an old IP.
+* Uses Android's customizable device name as the daemon's base hostname, with a model fallback. JNI normalization applies NFKD, removes combining marks, normalizes separators and uses IDN ASCII conversion where needed; the final label must satisfy the 63-byte DNS label limit. Import hooks restrict `gethostname` substitution to the mDNS daemon thread. Native `.local` construction, probing, collision suffixes and service-target updates remain active. Android persists the base name; negotiated conflict suffixes remain in memory.
+* Suppresses automatic, noneditable LAN-host welcome display only during the matching `World` initializer. Manual welcome screens, editing and client display retain their original behavior. For an active retained host, off-main `GameView update:accurateDT:` calls are delivered through Foundation's native main-thread scheduling, with stale world/server checks before execution.
+* Extends the game's existing temporary-UI protection to LAN hosting. Welcome, chat, movie, Chartboost, IAP and picker predicates determine whether the owning GameView server reference is parked during the original background handler and restored afterward. The rest of that handler still runs, ordinary suspension retains native cleanup, and a replaced world or server is not overwritten. Picker protection follows the native one-shot reset behavior.
+* Repairs the LAN world-selection dialog using existing images, fonts and controls. Button fonts are applied to `_titleView`, the UILabel that Android's `UIButton setTitle:forState:` actually updates; the separate public `titleLabel` field is nil. The panel uses the same four 2-point cap insets as `BlockAlertView`, the table background uses table-local bounds, and row labels receive the accepted 15-point horizontal inset without accumulating margins during reuse.
+</details>
+
+<details>
 <summary><code>mail-invite-fix.patch</code></summary>
 
 Includes a native library (`libmailinvitefix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
-> **Notes:**
+> **Notes from Codex:**
 > The invite link itself is intact: **Copy** puts the full `join.php?ip=...&port=...` URL on the clipboard. In both `-[ShareUI alertView:didDismissWithButtonIndex:]` and `-[LoadWorldUI alertView:didDismissWithButtonIndex:]`, button index 2 reads that URL from the dialog text field. Each callback percent-escapes the dialog title for the email subject, then inserts the unescaped URL as the final `%@` in `mailto:?to=&subject=%@&body=...%@` and passes the result through `+[NSURL URLWithString:]` to `-[UIApplication openURL:]`. Logcat confirms an `ACTION_VIEW` launch with `mailto:` data; the Java mail methods inspected use `ACTION_SEND` and are not this path.
 >
 > The body’s fixed prose already contains `%20` and `%0D%0A` escapes, but the inserted invite URL contains raw `=` and `&`. Parsing those characters as mailto query delimiters explains why the composed message ends at `http://theblockheads.net/join.php?ip`: the first `=` begins another value, and subsequent `&` pairs are treated as separate fields.
@@ -409,7 +433,7 @@ Includes a native library (`libprivacypopupfix.so`) that swizzles Apportable's O
 
 Includes a native library (`libsfxexitfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
-> **Notes:** Sound effects use OpenAL sources cached by `MJSoundManager`; they are separate from the Java `MediaPlayer` used for music. `-[GameView actuallyDoExitWorldRightNowReallyNow]` releases the world but does not stop those sources. In the traced exit, an `NSURLConnection` retained `World` as its delegate, leaving it alive after the menu appeared. That delayed `Weather.dealloc` and its rain and wind pause calls. Other effects, including cricket sounds, have no equivalent teardown there. The connection explains the measured delayed deallocation; the underlying exit bug is that active sound sources are left playing when the world closes.
+> **Notes from Codex:** Sound effects use OpenAL sources cached by `MJSoundManager`; they are separate from the Java `MediaPlayer` used for music. `-[GameView actuallyDoExitWorldRightNowReallyNow]` releases the world but does not stop those sources. In the traced exit, an `NSURLConnection` retained `World` as its delegate, leaving it alive after the menu appeared. That delayed `Weather.dealloc` and its rain and wind pause calls. Other effects, including cricket sounds, have no equivalent teardown there. The connection explains the measured delayed deallocation; the underlying exit bug is that active sound sources are left playing when the world closes.
 
 * Hooks `-[GameView actuallyDoExitWorldRightNowReallyNow]` and runs cleanup after the original method, covering the normal leave-world route and other routes that call it.
 * Stops cached `MJSound` sources in `loadedSounds` and calls `stopAll` on multisounds in `loadedMultiSounds` and `externalMultiSounds`. It also stops a multisound’s separate `loopingSound` before releasing that reference. These calls use the game’s own sound methods.
@@ -421,7 +445,7 @@ Includes a native library (`libsfxexitfix.so`) that swizzles Apportable's Object
 
 Includes a native library (`libsignfix.so`) that swizzles Apportable’s Objective-C runtime at startup and smali changes.
 
-> **Notes:**
+> **Notes from Codex:**
 > `-[UIManager displaySignUIForSign:]` constructs a `BlockTextPromptAlertView` containing a `UITextView`, not a `UITextField`. Its `-text` getter wraps the view’s contents with `[BitmapFont embossedFont]`, applies a three-line limit, then calls `uppercaseString`. `-textViewDidChange:` writes that result back with `setText:` and moves the cursor to the end. This explains why lowercase input is accepted briefly before becoming uppercase and why editing a previously lowercase sign capitalizes it. Saving also calls the same getter. The focused Android editor reported `inputType=0xa0001`, with no capitalization flag.
 
 * Marks the prompt created by `displaySignUIForSign:` with an Objective-C associated object. The sign-only replacement for `BlockTextPromptAlertView -text` keeps its bitmap-font wrapping, three-line limit, excess-character removal, and callback, but omits `uppercaseString`. Confirmation still passes the resulting text to the game’s sign setter.
