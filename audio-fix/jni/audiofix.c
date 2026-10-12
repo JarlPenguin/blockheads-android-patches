@@ -3,6 +3,14 @@
  *
  * THE BUG
  * -------
+ * Additional, log-confirmed suspend defect: on a server-client suspend,
+ * Java's AudioPlayer.lifecycleSuspend completes before GameView's
+ * didEnterBackground exits the world. That world-exit sends
+ * playMP3IfSafe:withTimeOffset: for mountainKingLoop.mp4 and creates a new
+ * AVAudioPlayer after the one-shot Java pause sweep. It then plays while
+ * backgrounded. The measured case used one thread and no fade/pending
+ * restore. This does not establish the older transition-time defect.
+ *
  * Music never comes back after the game is backgrounded, and the volume
  * slider stops affecting it if you work around that from the Java side.
  *
@@ -32,13 +40,31 @@
  *     path that would (-attemptToReinitializeAudio) is unreachable.
  *     Launching while another app plays audio therefore muted game music
  *     for the whole session.
- *   - Nothing nils MJSoundManager.mp3Player after the player is
- *     deallocated. The only writer that nils it is -stopMP3Playback, which
- *     has no callers, so -setMusicVolume, -isPlayingMP3, -currentMP3time
- *     and -setLoopMP3s: all read freed memory after every suspend.
+ *   - Player teardown outside -stopMP3Playback can leave
+ *     MJSoundManager.mp3Player dangling. That normal nil-writing method
+ *     was believed to have no callers. The new trace reaches it during
+ *     a fade and on suspend, superseding that conclusion. Other teardown
+ *     paths can still leave the ivar dangling; the existing guard remains.
+ *     The affected readers include -setMusicVolume, -isPlayingMP3, -currentMP3time
+ *     and -setLoopMP3s, which can read freed memory after unguarded teardown.
  *
  * THE FIX
  * -------
+ * NEW ADDITION (clearly delimited below): set background state on entry
+ * to GameView.didEnterBackground; clear it before GameView.didBecomeActive.
+ * Defer game-originated playMP3IfSafe:withTimeOffset: and
+ * loadMP3IfSafe:withTimeOffset: while backgrounded. Retain only the latest
+ * requested path/offset and invalidate the stale position restore.
+ * Restart consumes that request before considering the old track snapshot,
+ * routing it through the game's own play/loader with g_restoreDepth.
+ * A newer foreground game request supersedes the deferred request.
+ * No new stop or fade cancellation is introduced: those need evidence for
+ * the remaining in-game/transition symptom, which is left open.
+ * Client, single-player, host, volume/mute and repeated-cycle checks passed
+ * on the user's device with this behavior in the candidate build.
+ * Production keeps these decisions and removes observation-only hooks.
+ *
+ * EXISTING FIX (playback decisions otherwise unchanged):
  * Fill in the empty -restartMusicAfterActiveEvent: with a call to the
  * game's own -playMP3IfSafe:withTimeOffset:, using the path retained from
  * -lastPlayedMP3Path and the position captured at teardown. Routing
@@ -90,6 +116,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <android/log.h>
+#include <pthread.h>
 
 
 #ifndef AUDIOFIX_VERBOSE
@@ -295,33 +322,42 @@ static int resolve_ivar(const char *clsname, const char *ivname,
    in the shared block so the shared block stays byte-identical. */
 #define MSG_v_id_d(o,s,a,b) (((void (*)(id,SEL,id,double))g_msgSend)((o),(s),(a),(b)))
 
-/* No encodings have been measured on-device for this file yet. Each hook
-   passes NULL, which logs the runtime encoding without checking it.
+/* Encodings measured in the supplied application.objc, not guessed.
+   Every hook checks its encoding in step 6 AND in hook(). The four
+   AVAudioPlayer encodings are now measured in the device log and filled in.
 
-   When filling these in: define each as an ENC_* constant, add its check
-   to step 6, AND replace the NULL in the corresponding hook() call. Both
-   sites, not one - a NULL left in hook() would silently disable
-   verification for that selector if step 6 were ever dropped or
-   reordered, and would look intentional.
-
-   Measure -[MJSoundManager loadMP3IfSafe:withTimeOffset:] and
-   -[MJSoundManager restartMusicAfterActiveEvent:] first: both take
-   non-object arguments (double, int) where wrong arity corrupts the
-   stack rather than merely passing a bad pointer.
-
-   TODO: measure -[AVAudioPlayer dealloc]
-   TODO: measure -[AVAudioPlayer play]
-   TODO: measure -[AVAudioPlayer pause]
-   TODO: measure -[AVAudioPlayer stop]
-   TODO: measure -[MJSoundManager restartMusicAfterActiveEvent:]
-   TODO: measure -[MJSoundManager loadMP3IfSafe:withTimeOffset:]
-   TODO: measure -[MJSoundManager safeToPlayMP3s] */
+   The original source warned that wrong arity for object/double/int arguments
+   corrupts the stack rather than merely passing a bad pointer. The measured
+   restart flag is char, so its wrapper now declares char (flag remains ignored
+   by the playback logic). All ten production hooks use measured encodings. */
+#define ENC_NOARGS       "v8@0:4"
+#define ENC_CHAR         "v12@0:4c8"
+#define ENC_PATH_OFFSET  "v20@0:4@8d12"
+#define ENC_SAFE         "c8@0:4"
+/* Measured in the supplied 2026-10-12 device log. */
+#define ENC_AV_VOID      "v8@0:4"
+#define ENC_AV_PLAY      "c8@0:4"
 
 static uint32_t g_ivarMp3Player  = 0;
 static uint32_t g_ivarFadingOut  = 0;
 static uint32_t g_ivarOtherAudio = 0;
 static SEL      g_selCurrentTime = 0;
 static SEL      g_selIsPlaying   = 0;
+
+/* ---- NEW FIX ADDITION: lifecycle/request hooks ---- */
+static IMP g_origGameBackground, g_origGameActive, g_origMusicPlay;
+static int g_backgrounded;
+/* ---- END NEW FIX HOOK STATE ---- */
+
+/* ---- NEW FIX ADDITION: deferred background request state ----
+   runFade was observed on a separate thread. Protect the retained request
+   independently of the existing thread-local load/restore depth counters.
+   Never hold this mutex while chaining a game method or releasing a path. */
+static pthread_mutex_t g_deferredLock = PTHREAD_MUTEX_INITIALIZER;
+static id g_deferredPath;
+static double g_deferredOffset;
+static int g_hasDeferredRequest;
+/* ---- END NEW FIX STATE ---- */
 
 static IMP g_origDealloc = 0;
 static IMP g_origLoad    = 0;
@@ -367,11 +403,65 @@ static id mp3Player(void) {
     return *(id *)((char *)mgr + g_ivarMp3Player);
 }
 
+
 static void clearPending(void) {
     if (g_savedPath) { MSG_v(g_savedPath, selReg("release")); g_savedPath = 0; }
     g_savedTime   = 0.0;
     g_needRestart = 0;
 }
+
+/* ---- NEW FIX ADDITION: background request ownership ---- */
+static int musicBackgrounded(void) {
+    return __atomic_load_n(&g_backgrounded, __ATOMIC_ACQUIRE);
+}
+
+static void discardDeferredRequest(void) {
+    id previous;
+    pthread_mutex_lock(&g_deferredLock);
+    previous = g_deferredPath;
+    g_deferredPath = 0;
+    g_deferredOffset = 0.0;
+    g_hasDeferredRequest = 0;
+    pthread_mutex_unlock(&g_deferredLock);
+    if (previous) MSG_v(previous, selReg("release"));
+}
+
+static int deferBackgroundRequest(id path, double offset) {
+    id retained, previous;
+    if (g_restoreDepth > 0 || !musicBackgrounded()) return 0;
+    retained = path ? MSG_id(path, selReg("retain")) : 0;
+    pthread_mutex_lock(&g_deferredLock);
+    /* Activity may have changed while retaining the path. */
+    if (!musicBackgrounded()) {
+        pthread_mutex_unlock(&g_deferredLock);
+        if (retained) MSG_v(retained, selReg("release"));
+        return 0;
+    }
+    previous = g_deferredPath;
+    g_deferredPath = retained;
+    g_deferredOffset = offset;
+    g_hasDeferredRequest = 1;  /* distinguishes a nil request from no request */
+    pthread_mutex_unlock(&g_deferredLock);
+    if (previous) MSG_v(previous, selReg("release"));
+    /* A game request supersedes the stale track snapshot even when deferred.
+       dealloc can clear that old snapshot later without erasing this request. */
+    clearPending();
+    return 1;
+}
+
+static int takeDeferredRequest(id *path, double *offset) {
+    int had;
+    pthread_mutex_lock(&g_deferredLock);
+    had = g_hasDeferredRequest;
+    *path = g_deferredPath;
+    *offset = g_deferredOffset;
+    g_deferredPath = 0;
+    g_deferredOffset = 0.0;
+    g_hasDeferredRequest = 0;
+    pthread_mutex_unlock(&g_deferredLock);
+    return had;  /* transfers our retained ownership to the caller */
+}
+/* ---- END NEW FIX HELPERS ---- */
 
 /* ---- position capture ----
    The only moment the position is readable: -[AVAudioPlayer currentTime]
@@ -422,7 +512,8 @@ static void my_dealloc(id self, SEL _cmd) {
                  path, g_lastTime, fading, g_loadDepth);
             clearPending();
         }
-        /* nothing else nils this ivar; readers would otherwise see freed memory */
+        /* Teardown outside -stopMP3Playback otherwise leaves this ivar
+           dangling. Preserve the original nil-before-dealloc guard. */
         *(id *)((char *)mgr + g_ivarMp3Player) = 0;
     }
     ((void (*)(id, SEL))g_origDealloc)(self, _cmd);
@@ -435,12 +526,32 @@ static void my_dealloc(id self, SEL _cmd) {
    Terminal hook: the displaced IMP is an empty stub, so there is nothing
    worth chaining to and orig is deliberately NULL. */
 
-static void my_restart(id self, SEL _cmd, int flag) {
+static void my_restart(id self, SEL _cmd, char flag) {
+    /* ---- NEW FIX ADDITION: latest deferred request takes precedence ---- */
+    id requestedPath;
+    double requestedOffset;
+    if (musicBackgrounded()) {
+        return;
+    }
+    if (takeDeferredRequest(&requestedPath, &requestedOffset)) {
+        g_restoreDepth++;
+        MSG_v_id_d(self, selReg("playMP3IfSafe:withTimeOffset:"), requestedPath, requestedOffset);
+        g_restoreDepth--;
+        if (requestedPath) MSG_v(requestedPath, selReg("release"));
+        clearPending();
+        return;
+    }
+    /* ---- END NEW FIX RESTART ADDITION ---- */
     id cur = g_ivarMp3Player ? *(id *)((char *)self + g_ivarMp3Player) : 0;
     (void)_cmd; (void)flag;
 
-    if (!g_needRestart || !g_savedPath) return;
-    if (cur) { LOGV("player already live, skipping"); clearPending(); return; }
+    if (!g_needRestart || !g_savedPath) {
+        return;
+    }
+    if (cur) {
+        LOGV("player already live, skipping"); clearPending();
+        return;
+    }
 
     double t = g_savedTime;
     g_restoreDepth++;
@@ -469,6 +580,12 @@ static char my_safeToPlayMP3s(id self, SEL _cmd) {
 /* A game-initiated load supersedes any pending restore, and marks the window
    in which a dealloc means "track change" rather than "suspend". */
 static void my_load(id self, SEL _cmd, id path, double offset) {
+    /* ---- NEW FIX ADDITION: prevent both loading AND the ensuing play ---- */
+    if (deferBackgroundRequest(path, offset)) {
+        return;
+    }
+    if (g_restoreDepth <= 0) discardDeferredRequest();
+    /* ---- END NEW FIX REQUEST GATE ---- */
     if (g_needRestart && g_restoreDepth <= 0) {
         LOGV("game load - dropping pending");
         clearPending();
@@ -478,83 +595,130 @@ static void my_load(id self, SEL _cmd, id path, double offset) {
     g_loadDepth--;
 }
 
+/* ---- NEW FIX ADDITION: lifecycle state and upstream play gate ---- */
+static void my_gameBackground(id self, SEL cmd) {
+    /* NEW FIX: set before the original callback can exit the world. */
+    __atomic_store_n(&g_backgrounded, 1, __ATOMIC_RELEASE);
+    ((void (*)(id,SEL))g_origGameBackground)(self, cmd);
+}
+
+static void my_gameActive(id self, SEL cmd) {
+    /* NEW FIX: clear before the original callback calls restart. */
+    __atomic_store_n(&g_backgrounded, 0, __ATOMIC_RELEASE);
+    ((void (*)(id,SEL))g_origGameActive)(self, cmd);
+}
+
+
+static void my_musicPlay(id self, SEL cmd, id path, double offset) {
+    /* ---- NEW FIX ADDITION: prevent both loading AND the ensuing play ---- */
+    if (deferBackgroundRequest(path, offset)) {
+        return;
+    }
+    if (g_restoreDepth <= 0) discardDeferredRequest();
+    /* ---- END NEW FIX REQUEST GATE ---- */
+    ((void (*)(id,SEL,id,double))g_origMusicPlay)(self, cmd, path, offset);
+}
+
+
+/* ---- END NEW FIX HOOKS ---- */
+
 static int install(void) {
-    Class      avp, snd;
-    Method     m;
+    Class avp, snd, game;
     const char *howMp3, *howFade, *howOther;
+    unsigned i, committed = 0;
+    struct HookSpec {
+        Class cls;
+        const char *selector, *encoding;
+        IMP replacement;
+        IMP *original;
+        Method method;
+        IMP rollback;
+    };
 
     /* 1 */
     avp = getClass("AVAudioPlayer");
-    if (!avp) { LOGE("AVAudioPlayer not present - load point too early"); return 0; }
     snd = getClass("MJSoundManager");
-    if (!snd) { LOGE("MJSoundManager not present - load point too early"); return 0; }
+    game = getClass("GameView");
+    if (!avp || !snd || !game) {
+        LOGE("required classes absent: AV=%p sound=%p GameView=%p",
+             avp, snd, game);
+        return 0;
+    }
 
     /* 2 - only in files that use MSG_*; the requirement is stated where it
        is actually used rather than in init(). */
     if (!g_msgSend) { LOGE("objc_msgSend missing"); return 0; }
 
-    /* 3 */
-    m = getInstMethod(avp, selReg("dealloc"));
-    if (!m) { LOGE("dealloc not found"); return 0; }
-    if (getImp(m) == (IMP)my_dealloc) { LOGI("already installed"); return 1; }
+    struct HookSpec specs[] = {
+        { avp, "dealloc", ENC_AV_VOID, (IMP)my_dealloc, &g_origDealloc, 0, 0 },
+        { snd, "restartMusicAfterActiveEvent:", ENC_CHAR, (IMP)my_restart, 0, 0, 0 },
+        { avp, "play", ENC_AV_PLAY, (IMP)my_play, &g_origPlay, 0, 0 },
+        { avp, "pause", ENC_AV_VOID, (IMP)my_pause, &g_origPause, 0, 0 },
+        { avp, "stop", ENC_AV_VOID, (IMP)my_stop, &g_origStop, 0, 0 },
+        { snd, "loadMP3IfSafe:withTimeOffset:", ENC_PATH_OFFSET, (IMP)my_load, &g_origLoad, 0, 0 },
+        { snd, "safeToPlayMP3s", ENC_SAFE, (IMP)my_safeToPlayMP3s, 0, 0, 0 },
+        { game, "didEnterBackground", ENC_NOARGS, (IMP)my_gameBackground, &g_origGameBackground, 0, 0 },
+        { game, "didBecomeActive", ENC_NOARGS, (IMP)my_gameActive, &g_origGameActive, 0, 0 },
+        { snd, "playMP3IfSafe:withTimeOffset:", ENC_PATH_OFFSET, (IMP)my_musicPlay, &g_origMusicPlay, 0, 0 },
+    };
+    const unsigned count = sizeof(specs) / sizeof(specs[0]);
 
-    /* 4 - mp3Player is required; the other two only disable a guard each */
-    if (!resolve_ivar("MJSoundManager", "mp3Player", &g_ivarMp3Player, 0, &howMp3))
-        return 0;
-    if (!resolve_ivar("MJSoundManager", "fadingOut", &g_ivarFadingOut, 0, &howFade))
-        LOGE("fadingOut unresolvable - fade guard disabled");
-    if (!resolve_ivar("MJSoundManager", "otherAudioWasPaying",
-                      &g_ivarOtherAudio, 0, &howOther))
+    /* 3 - resolve every Method the file will hook before any setImp */
+    for (i = 0; i < count; i++) {
+        specs[i].method = getInstMethod(specs[i].cls, selReg(specs[i].selector));
+        if (!specs[i].method) {
+            LOGE("method not found: %s", specs[i].selector);
+            return 0;
+        }
+        specs[i].rollback = getImp(specs[i].method);
+        if (specs[i].rollback == specs[i].replacement) {
+            if (i == 0) { LOGI("already installed"); return 1; }
+            LOGE("partial previous installation: %s", specs[i].selector);
+            return 0;
+        }
+    }
+
+    /* 4 - require the tested fade guard; no static offsets are hardcoded. */
+    if (!resolve_ivar("MJSoundManager", "mp3Player", &g_ivarMp3Player, 0, &howMp3)) return 0;
+    if (!resolve_ivar("MJSoundManager", "fadingOut", &g_ivarFadingOut, 0, &howFade)) return 0;
+    if (!resolve_ivar("MJSoundManager", "otherAudioWasPaying", &g_ivarOtherAudio, 0, &howOther))
         LOGE("otherAudioWasPaying unresolvable - ivar will not be cleared");
 
     /* 5 */
     g_selCurrentTime = selReg("currentTime");
-    g_selIsPlaying   = selReg("isPlaying");
+    g_selIsPlaying = selReg("isPlaying");
 
-    /* 6 - skipped: no ENC_* constants exist yet, so hook() logs each
-       encoding without checking. See the TODO block above for what to
-       change here and in step 7 when they are measured. */
+    /* 6 - all encoding checks before any setImp; same ENC_* in step 7 */
+    if (!getTypeEnc) {
+        LOGE("audiofix requires method_getTypeEncoding; no hooks committed");
+        return 0;
+    }
+    for (i = 0; i < count; i++) {
+        if (!checkEncoding(specs[i].method, specs[i].selector, specs[i].encoding)) return 0;
+    }
 
-    /* 7 - commit, undoing committed hooks if a later one fails */
-    if (!hook(avp, "dealloc", NULL, (IMP)my_dealloc, &g_origDealloc)) return 0;
+    /* 7 - commit, undoing committed hooks in reverse order on failure.
+       The two original terminal hooks still never chain and pass orig=NULL.
+       Their displaced IMPs are retained only in this install-time rollback
+       table; successful playback/restore behavior is unchanged. */
+    for (i = 0; i < count; i++) {
+        if (!hook(specs[i].cls, specs[i].selector, specs[i].encoding,
+                  specs[i].replacement, specs[i].original)) {
+            while (committed) {
+                committed--;
+                setImp(specs[committed].method, specs[committed].rollback);
+            }
+            LOGE("audiofix install failed; committed hooks rolled back");
+            return 0;
+        }
+        committed++;
+    }
 
-    if (!hook(snd, "restartMusicAfterActiveEvent:", NULL, (IMP)my_restart, 0))
-        goto rollback_dealloc;
-    if (!hook(avp, "play",  NULL, (IMP)my_play,  &g_origPlay))
-        goto rollback_restart;
-    if (!hook(avp, "pause", NULL, (IMP)my_pause, &g_origPause))
-        goto rollback_play;
-    if (!hook(avp, "stop",  NULL, (IMP)my_stop,  &g_origStop))
-        goto rollback_pause;
-    if (!hook(snd, "loadMP3IfSafe:withTimeOffset:", NULL, (IMP)my_load, &g_origLoad))
-        goto rollback_stop;
-    if (!hook(snd, "safeToPlayMP3s", NULL, (IMP)my_safeToPlayMP3s, 0))
-        goto rollback_load;
-
-    LOGI("installed (mp3Player=0x%x via %s, fadingOut=0x%x via %s,"
+    LOGI("installed (hooks=%u, mp3Player=0x%x via %s, fadingOut=0x%x via %s,"
          " otherAudio=0x%x via %s)",
-         g_ivarMp3Player, howMp3, g_ivarFadingOut, howFade,
+         count, g_ivarMp3Player, howMp3, g_ivarFadingOut, howFade,
          g_ivarOtherAudio, howOther);
     return 1;
-
-    /* Undo committed hooks in reverse order. The two terminal hooks cannot
-       be restored - their displaced IMPs were never captured - so any
-       failure after them leaves those two in place. That is accepted: the
-       restart replacement fills an empty stub and safeToPlayMP3s returns a
-       constant the original would also have returned once the ivar is
-       cleared, so neither is harmful on its own. */
-rollback_load:
-    setImp(getInstMethod(snd, selReg("loadMP3IfSafe:withTimeOffset:")), g_origLoad);
-rollback_stop:
-    setImp(getInstMethod(avp, selReg("stop")), g_origStop);
-rollback_pause:
-    setImp(getInstMethod(avp, selReg("pause")), g_origPause);
-rollback_play:
-    setImp(getInstMethod(avp, selReg("play")), g_origPlay);
-rollback_restart:
-rollback_dealloc:
-    setImp(getInstMethod(avp, selReg("dealloc")), g_origDealloc);
-    return 0;
 }
 
 
