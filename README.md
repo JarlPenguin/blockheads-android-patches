@@ -7,6 +7,8 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 * Samsung Galaxy Tab S9 running Android 16 (32+64-bit, stock)
 * Xiaomi Poco X3 NFC running Android 16 (32+64-bit, custom ROM)
 
+Keep in mind that The Blockheads is a 32-bit app. Some newer Android devices (such as Pixel 7 and newer, Galaxy S24 and newer, among others) no longer support 32-bit apps at all. On those devices, you may need either an Android emulator/virtual machine capable of running 32-bit apps (one known option is [VPhoneOS](https://play.google.com/store/apps/details?id=com.yoyo.snake.rush)) or a custom ROM that restores 32-bit app support. Use third-party ROMs and emulators at your own risk.
+
 ## List of patches and what they do
 
 ### `adaptive-icon.patch`
