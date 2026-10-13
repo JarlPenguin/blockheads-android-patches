@@ -16,17 +16,17 @@
  *    returns NO. This gates -[UIDevice _setOrientation:changed:], the engine's
  *    normal route to _platform_setOrientation:, through which every post-launch
  *    write of the global backing -[UIApplication statusBarOrientation] passes.
- *    Consequently, statusBarOrientation remains 0 for the entire session.
+ *    Consequently, statusBarOrientation can remain 0 for a locked session.
  *    -[World acceleration:] reads this global on every accelerometer sample
- *    (~30Hz) and only applies its coordinate frame transforms for orientations
- *    2 (PortraitUpsideDown) and 4 (LandscapeRight); with 0, both transforms are
- *    skipped, leaving tilt controls locked in the LandscapeLeft frame regardless
- *    of display orientation.
+ *    (~30Hz). It swaps X and Y for portrait orientations (1 and 2), then
+ *    applies orientation-dependent signs to the vertical and horizontal
+ *    controls. With 0, those transforms are skipped, leaving tilt controls
+ *    in the LandscapeLeft frame regardless of display orientation.
  *
  * 3. Multi-window desync: in a split the pane's shape is set by the divider
  *    rather than by the sensor, so the engine can be driven into an orientation
- *    the display never entered. Leaving the split then strands it there, and
- *    every subsequent rotation is offset by the difference.
+ *    the display never entered. Pane resizing and fullscreen transitions can
+ *    leave the interface orientation stale even after the geometry updates.
  *
  * 4. Foreground restore desync: -[UIApplication _lifecycleEvent:] saves
  *    _platform_getOrientation on WillResignActive and replays it through
@@ -40,6 +40,12 @@
  *    dpifix derives orientation from the window shape in multi-window;
  *    BlockAlertView, built from statusBarOrientation, comes up in the old
  *    orientation.
+ *
+ * 5. Sensor natural-orientation desync: BridgeKit classifies the hardware
+ *    from the activity configuration and display rotation on the first known
+ *    sensor event. A pane whose axis differs from the display inverts that
+ *    classification, causing a persistent erroneous 90-degree adjustment.
+ *    SplashScreen has an independent copy of the same classification defect.
  *
  * THE FIX
  * -------
@@ -61,22 +67,35 @@
  *    reconfiguring the render surface for an unrotated window.
  *
  * 4. Tracks multi-window state and the rotation-lock setting, pushed from Java.
- *    On leaving a split the engine's orientation is resynchronised via
- *    nativeRunPendingResync, since the pane's shape can have driven it into an
- *    orientation the display never entered. The resync runs on thread 1: the
- *    call chain reaches [UIScreen _applyMode], which is unsafe from the
- *    Android UI thread.
+ *    On leaving multi-window, dpifix arms its direct platform kick to restore
+ *    the display orientation after applying the fullscreen size on thread 1.
+ *    nativeRunPendingResync remains for JNI compatibility and only consumes
+ *    the legacy pending flag; it no longer sends a wrapper rotation, which
+ *    rotation lock can veto and which could add a second spin when permitted.
  *
- * 5. Swizzles -[UIApplication _lifecycleEvent:] with a thread-local depth
- *    counter (g_lifecycleDepth) and -[UIDevice _platform_setOrientation:] to
- *    substitute g_lockedOrientation for the replayed value in multi-window
- *    when the two disagree on axis. The restore is the only
- *    _platform_setOrientation: send inside _lifecycleEvent:, so the counter
- *    scopes the substitution without matching notification names.
- *    Substituting the argument rather than re-driving afterwards keeps a
- *    single spin loop and makes the result independent of whether the
- *    restore runs before or after the layout kick. Leaving a split needs no
- *    substitution: the orientation already matches the display there.
+ * 5. Swizzles -[UIApplication _lifecycleEvent:] and
+ *    -[UIDevice _platform_setOrientation:]. Once dpifix publishes the pane
+ *    interface orientation, sensor sends and foreground replay are clamped
+ *    to its axis in multi-window. The caller's handedness survives when the
+ *    axes agree. Before pane geometry is known, foreground replay retains
+ *    the earlier display-based substitution. Outside multi-window the
+ *    platform method remains pass-through.
+ *
+ * 6. dpifix re-arms its layout kick when the pane changes axis, even if the
+ *    display does not rotate, and selects the pane axis for that kick. The
+ *    separate window orientation never replaces g_lockedOrientation for tilt.
+ *    dpifix tracks requested and completed kick generations so a reentrant
+ *    layout update cannot be erased by completion of an older kick. Platform
+ *    calls remain serial on thread 1 and wait for valid geometry after a
+ *    multi-window transition.
+ *
+ * 7. Device.smali and SplashScreen.smali derive the hardware natural axis from
+ *    real display metrics and display rotation. The new JNI sensor callback
+ *    uses that flag with BridgeKit's original angle bands, then sends the same
+ *    _setOrientation: selector. Its exact method encoding is checked before
+ *    dispatch; Java retains the original callback as an unavailable-path
+ *    fallback. MotionManager.smali independently uses the same hardware-axis
+ *    calculation before choosing the accelerometer coordinate mapping.
  *
  * KNOWN LIMITATION
  * ----------------
@@ -333,6 +352,11 @@ static IMP g_origPlatformSetOrient     = 0;
    0 = not yet known. Written repeatedly - see nativeSetLockedOrientation. */
 static volatile int g_lockedOrientation = 0;
 
+/* Pane interface orientation, published by dpifix on thread 1 before
+   its layout kick. Independent of the physical display used for tilt.
+   Zero until a pane is known; cleared on every multi-window transition. */
+static volatile int g_windowOrientation = 0;
+
 /* The engine's own last-reported orientation, captured in
    my_setOrientationChanged. Diagnostic only, and retained for the same reason
    as g_autoRotate: the engine's value disagreeing with the display's is the
@@ -381,8 +405,9 @@ static int my_statusBarOrientation(id self, SEL _cmd) {
        launch, is written only through _platform_setOrientation:. Its normal
        route, _setOrientation:changed:, is gated on -[EvolutionViewController
        shouldAutorotate] - false whenever Android's rotation lock is on. So the
-       value is 0 for a locked session, and -[World acceleration:] applies
-       neither of its axis transforms, leaving tilt in the LandscapeLeft frame.
+       value can remain 0 in a locked session, and -[World acceleration:]
+       skips its portrait X/Y swap and orientation-dependent sign changes,
+       leaving tilt in the LandscapeLeft frame.
 
        It can also be STALE AND WRONG, which the original form of this patch
        assumed impossible: a forced rotation in split-screen moves the window
@@ -391,12 +416,13 @@ static int my_statusBarOrientation(id self, SEL _cmd) {
 
        The load-bearing assumption is now the axis test, not `real == 0`.
        g_lockedOrientation is derived from Display.getRotation() and describes
-       the window, so a disagreement on axis means `real` cannot be describing
-       the same window and is discarded. Agreement on axis leaves `real` alone,
+       the physical display. In multi-window `real` can legitimately describe
+       a pane on a different axis; tilt still needs the physical display
+       frame. Agreement on axis leaves `real` alone,
        preserving the engine's own handedness - the two conventions disagree on
        which landscape is which, and the tilt transforms were written against
-       the engine's. If getRotation() ever stops describing the window the
-       engine renders into, this breaks. */
+       the engine's. This substitution remains confined to acceleration;
+       dialog/layout callers read the actual pane-oriented global. */
     if (g_accelDepth > 0 && g_lockedOrientation != 0) {
         int realLand = (real == 3 || real == 4);
         int lockLand = (g_lockedOrientation == 3 || g_lockedOrientation == 4);
@@ -454,26 +480,25 @@ static void my_setOrientationChanged(id self, SEL _cmd, int orientation, char ch
         (self, _cmd, orientation, changed);
 }
 
-/* _lifecycleEvent: saves _platform_getOrientation on WillResignActive and
-   restores it with _platform_setOrientation: on WillEnterForeground. The
-   restore assumes the orientation cannot change while backgrounded, which the
-   requested-orientation pin guarantees in fullscreen. In multi-window no pin
-   holds and Android can rotate the pane in between - entering split does
-   exactly that - so the restore rewrites statusBarOrientation to the stale
-   value. Geometry survives (dpifix derives orientation from window shape);
-   everything reading statusBarOrientation directly, such as BlockAlertView,
-   does not. Substitute on axis disagreement only, preserving the engine's
-   handedness where both agree, as my_statusBarOrientation does. */
+/* All post-launch writes of statusBarOrientation pass through the platform
+   method. In multi-window both sensor sends and foreground replay can carry
+   the display axis while dpifix correctly renders a differently shaped pane.
+   Keep the known pane axis authoritative for every such send, preserving the
+   caller's handedness when it agrees. Until dpifix publishes the pane, retain
+   the validated display-based guard for foreground replay only. */
 static void my_platformSetOrientation(id self, SEL _cmd, int o) {
-    if (g_lifecycleDepth > 0 && g_multiWindow && g_lockedOrientation != 0) {
-        int savedLand = (o == 3 || o == 4);
-        int lockLand  = (g_lockedOrientation == 3 || g_lockedOrientation == 4);
-        if (savedLand != lockLand) {
-            LOGV("foreground restore: substituting %d for saved %d",
-                 g_lockedOrientation, o);
-            o = g_lockedOrientation;
-        }
+    int target = g_windowOrientation;
+    int incoming = o;
+    if (target == 0 && g_lifecycleDepth > 0) target = g_lockedOrientation;
+    if (g_multiWindow && target >= 1 && target <= 4 && o >= 0 && o <= 4) {
+        int incomingLand = (o == 3 || o == 4);
+        int targetLand = (target == 3 || target == 4);
+        if (o == 0 || incomingLand != targetLand) o = target;
     }
+    LOGV("platform orientation: in=%d out=%d window=%d locked=%d mw=%d life=%d",
+         incoming, o, g_windowOrientation, g_lockedOrientation,
+         g_multiWindow, g_lifecycleDepth);
+    (void)incoming;
     ((void (*)(id, SEL, int))g_origPlatformSetOrient)(self, _cmd, o);
 }
 
@@ -481,6 +506,16 @@ static void my_lifecycleEvent(id self, SEL _cmd, id note) {
     g_lifecycleDepth++;
     ((void (*)(id, SEL, id))g_origLifecycleEvent)(self, _cmd, note);
     g_lifecycleDepth--;
+}
+
+/* C export, called from dpifix on thread 1. Zero clears the hint.
+   No UIKit work, orientation request, or spin loop is performed here. */
+void rotationfixSetWindowOrientation(int orient) {
+    if (orient >= 0 && orient <= 4) {
+        g_windowOrientation = orient;
+        LOGV("window orientation = %d (locked display = %d)",
+             orient, g_lockedOrientation);
+    }
 }
 
 /* Not a JNI entry: called from libdpifix.so via dlsym, on thread 1.
@@ -575,6 +610,65 @@ int rotationfixKickLayout(int orient)
     return 1;
 }
 
+/* The BridgeKit sensor callback caches natural orientation from the activity
+   Configuration and can therefore subtract an erroneous 90 degrees forever.
+   Device.smali supplies the real-display hardware flag instead. Returning false
+   asks Java to retain the original callback when this path is unavailable. */
+#define ENC_DEVICE_SET_ORIENT "v12@0:4i8"
+static int g_fixedOrientationChecked = 0;
+static int g_fixedOrientationUsable = 0;
+static SEL g_fixedOrientationSelector = 0;
+
+static int orientation_from_degrees(int degrees, int naturalLandscape) {
+    int64_t a;
+    if (degrees == -1) return 0;
+    a = (int64_t)degrees - (naturalLandscape ? 90 : 0);
+    a %= 360;
+    if (a < 0) a += 360;
+    /* Exactly the original BridgeKit bands, including boundary ties. */
+    if (a >= 315 || a <= 45) return 1;
+    if (a < 135) return 4;
+    if (a > 225) return 3;
+    return 2;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_apportable_ui_Device_nativeOnOrientationChangedFixed(
+        JNIEnv *env, jobject self, jint nativeObject, jint degrees, jint naturalLandscape) {
+    Class dev;
+    id d;
+    int o;
+    (void)env; (void)self;
+    /* BridgeKit also ignores this argument and obtains currentDevice. */
+    (void)nativeObject;
+    if (naturalLandscape < 0 || naturalLandscape > 1) return JNI_FALSE;
+    if (!g_msgSend || !getClass || !selReg || !getInstMethod || !getTypeEnc) return JNI_FALSE;
+    dev = getClass("UIDevice");
+    if (!dev) return JNI_FALSE;
+    if (!g_fixedOrientationChecked) {
+        Method m;
+        const char *enc;
+        g_fixedOrientationChecked = 1;
+        g_fixedOrientationSelector = selReg("_setOrientation:");
+        m = getInstMethod(dev, g_fixedOrientationSelector);
+        enc = m ? getTypeEnc(m) : NULL;
+        LOGV("fixed sensor _setOrientation: encoding=%s expected=%s",
+             enc ? enc : "(null)", ENC_DEVICE_SET_ORIENT);
+        /* Never weaken this call-site ABI guard, even if the base hook helper
+           is compiled with strictness disabled. No method is replaced here. */
+        g_fixedOrientationUsable = strEq(enc, ENC_DEVICE_SET_ORIENT);
+        if (!g_fixedOrientationUsable) LOGE("fixed sensor callback refused: encoding mismatch or method missing");
+    }
+    if (!g_fixedOrientationUsable) return JNI_FALSE;
+    d = MSG_id((id)dev, selReg("currentDevice"));
+    if (!d) return JNI_FALSE;
+    o = orientation_from_degrees(degrees, naturalLandscape);
+    /* Same selector as BridgeKit: preserve the existing event queue, masks,
+       controller vetoes, notifications, and cache updates downstream. */
+    ((void (*)(id, SEL, int))g_msgSend)(d, g_fixedOrientationSelector, o);
+    return JNI_TRUE;
+}
+
 /* ---- JNI exports ---------------------------------------------------- */
 
 /* Pushed from VerdeActivity.onWindowFocusChanged and from
@@ -608,26 +702,23 @@ Java_com_apportable_ui_Device_nativeSetMultiWindow(JNIEnv *e, jclass c, jboolean
     int was = g_multiWindow;
     (void)e; (void)c;
     g_multiWindow = mw ? 1 : 0;
+    if (was != g_multiWindow) g_windowOrientation = 0;
     LOGV("multiWindow = %d", g_multiWindow);
     if (was && !g_multiWindow) g_resyncPending = 1;
 }
 
-/* Called on thread 1. The call chain reaches _applyMode, which is unsafe
-   from the Android UI thread - calling it there does not return. */
+/* Legacy JNI entry retained for the existing WindowState.run() smali, which
+   calls it BEFORE dpifixWindowPx. dpifix now arms a kick on multi-window exit
+   and performs the direct platform resync AFTER applying the fullscreen size.
+   Do not send _setOrientation:changed: here: rotation lock vetoes it, and when
+   permitted it would rotate against the old geometry and add a second spin. */
 JNIEXPORT void JNICALL
 Java_com_apportable_ui_Device_nativeRunPendingResync(JNIEnv *e, jclass c) {
     (void)e; (void)c;
-    if (!g_resyncPending || g_lockedOrientation == 0 || !g_origSetOrientationChanged) return;
+    if (!g_resyncPending) return;
     g_resyncPending = 0;
-    {
-        Class dev = getClass("UIDevice");
-        id d = dev ? MSG_id((id)dev, selReg("currentDevice")) : NULL;
-        if (!d) return;
-        LOGV("resync orientation to %d", g_lockedOrientation);
-        ((void (*)(id, SEL, int, char))g_origSetOrientationChanged)
-            (d, selReg("_setOrientation:changed:"), g_lockedOrientation, 1);
-        LOGV("resync returned");
-    }
+    LOGV("exit resync deferred to dpifix direct kick after fullscreen pin (locked=%d)",
+         g_lockedOrientation);
 }
 
 static int install(void) {
@@ -643,7 +734,7 @@ static int install(void) {
         return 0;
     }
 
-    /* 2 - nativeRunPendingResync uses MSG_id */
+    /* 2 - the direct kick uses MSG_id */
     if (!g_msgSend) { LOGE("objc_msgSend missing"); return 0; }
 
     /* 3 - resolve every Method this file will hook: step 6 needs them all in hand */

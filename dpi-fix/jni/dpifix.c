@@ -433,24 +433,85 @@ static int relayout(void) {
    get portrait-canonical frames. Re-drive the rotation once, after the window
    hierarchy exists, to force them to re-lay-out. Deferred until relayout()
    succeeds: on some launches the first pin arrives before keyWindow exists. */
-static int g_needKick = 1;
+/* The platform call pumps engine runnables while waiting for geometry. A
+   nested window pin can request a newer kick before the older one returns.
+   A boolean cleared on return loses that request. Acknowledge only the
+   revision captured at dispatch; request/ack counters also avoid a UI-thread
+   request being erased by an engine-thread completion. */
+static volatile unsigned g_kickRequested = 1;
+static volatile unsigned g_kickCompleted = 0;
+static volatile int g_waitForWindowPin = 0;
+
+static unsigned kick_requested(void) {
+    return __sync_fetch_and_add(&g_kickRequested, 0);
+}
+
+static int kick_pending(void) {
+    return kick_requested() != __sync_fetch_and_add(&g_kickCompleted, 0);
+}
+
+static void request_kick(void) {
+    __sync_add_and_fetch(&g_kickRequested, 1);
+}
+
+/* Fullscreen follows the display; only multi-window follows pane shape.
+   Keep display handedness when it agrees with that shape. Otherwise use the
+   same canonical axis value as my_device_orientation (1 or 3). */
+static int layout_orientation(void) {
+    int o = g_displayOrient;
+    if (g_multiWindow && g_winSet) {
+        int land = g_winW > g_winH;
+        if ((land && (o == 3 || o == 4)) ||
+            (!land && (o == 1 || o == 2))) return o;
+        return land ? 3 : 1;
+    }
+    return o;
+}
 
 static void try_kick(void)
 {
     static int s_inKick = 0;
     void *h;
     int (*kick)(int);
+    void (*setWindowOrient)(int);
+    int orient, applied;
+    unsigned revision;
 
-    if (!g_needKick || g_displayOrient == 0 || s_inKick) return;
-    if (!relayout()) { LOGV("kick deferred: no relayout yet"); return; }
-
+    if (!kick_pending() || s_inKick) return;
+    if (g_waitForWindowPin) {
+        LOGV("kick deferred: waiting for a post-transition window pin");
+        return;
+    }
+    if (g_multiWindow && !g_winSet) return;
+    /* Set the guard before any UIKit send: even relayout may re-enter us. */
     s_inKick = 1;
     h = dlopen("librotationfix.so", RTLD_NOW | RTLD_NOLOAD);
     kick = h ? (int (*)(int))dlsym(h, "rotationfixKickLayout") : NULL;
-    if (kick) {
-        if (kick(g_displayOrient)) g_needKick = 0;
+    setWindowOrient = h ? (void (*)(int))dlsym(h, "rotationfixSetWindowOrientation") : NULL;
+    if (kick && setWindowOrient) {
+        do {
+            if (g_waitForWindowPin) break;
+            revision = kick_requested();
+            orient = layout_orientation();
+            if (orient < 1 || orient > 4) break;
+            if (!relayout()) { LOGV("kick deferred: no relayout yet"); break; }
+
+            /* Publish before the direct original-platform call. Later sensor
+               and foreground sends use the same axis; tilt stays separate. */
+            setWindowOrient(g_multiWindow ? orient : 0);
+            LOGV("kick dispatch: revision=%u layout=%d disp=%d mw=%d win=%dx%d",
+                 revision, orient, g_displayOrient, g_multiWindow, g_winW, g_winH);
+            applied = kick(orient);
+            if (applied) __sync_lock_test_and_set(&g_kickCompleted, revision);
+            LOGV("kick returned: revision=%u applied=%d requested=%u pending=%d waitPin=%d",
+                 revision, applied, kick_requested(), kick_pending(), g_waitForWindowPin);
+            if (!applied) break;
+            /* Drain a request made by a nested pin only AFTER the platform
+               method returns. This adds no nested platform spin or busy wait;
+               same-axis pins without a new request produce no second call. */
+        } while (kick_pending());
     } else {
-        LOGI("kick: rotationfix not resolved (h=%p)", h);
+        LOGE("kick: rotationfix exports unavailable (h=%p); rebuild both libraries", h);
     }
     if (h) dlclose(h);
     s_inKick = 0;
@@ -529,7 +590,7 @@ Java_com_apportable_gl_GLSurfaceView_dpifixSetDisplayOrient(JNIEnv *e, jclass c,
         if (g_multiWindow && g_displayOrient != 0 && o != g_displayOrient) {
             LOGV("multi-window forced rotation %d -> %d, re-arming kick",
                  g_displayOrient, o);
-            g_needKick = 1;
+            request_kick();
         }
         g_displayOrient = o;
     }
@@ -537,6 +598,15 @@ Java_com_apportable_gl_GLSurfaceView_dpifixSetDisplayOrient(JNIEnv *e, jclass c,
 JNIEXPORT void JNICALL
 Java_com_apportable_gl_GLSurfaceView_dpifixMultiWindow(JNIEnv *e, jclass c, jboolean mw) {
     (void)e; (void)c;
+    /* Entry publishes the pane axis; exit restores the display axis through
+       the direct platform path even when rotation lock vetoes the wrapper.
+       Only arm here; thread 1 applies the new size before running the kick. */
+    if (g_multiWindow != (mw ? 1 : 0)) {
+        LOGV("multi-window transition %d -> %d, re-arming kick",
+             g_multiWindow, mw ? 1 : 0);
+        g_waitForWindowPin = 1;
+        request_kick();
+    }
     g_multiWindow = mw ? 1 : 0;
 }
 
@@ -552,11 +622,22 @@ Java_com_apportable_gl_GLSurfaceView_dpifixWindowPx(JNIEnv *env, jclass cls,
     if (w <= 0 || h <= 0) return;
     if (!ensure_geometry()) { LOGV("window update before geometry - deferred"); return; }
 
+    /* Pane-axis changes can occur without any display rotation. */
+    if (g_multiWindow && (!g_winSet || ((g_winW > g_winH) != (w > h)))) {
+        LOGV("multi-window pane axis %dx%d -> %dx%d, re-arming kick",
+             g_winW, g_winH, w, h);
+        request_kick();
+    }
+
     nw = (w < h) ? w : h;
     nh = (w < h) ? h : w;
 
     if (nw == g_pxW && nh == g_pxH && g_winSet && ((g_winW > g_winH) == (w > h))) {
         LOGV("window unchanged: %dx%dpx", w, h);
+        /* Display changes or multi-window entry can arm a kick even
+           when this pin carries unchanged dimensions. */
+        g_waitForWindowPin = 0;
+        try_kick();
         return;
     }
 
@@ -565,6 +646,7 @@ Java_com_apportable_gl_GLSurfaceView_dpifixWindowPx(JNIEnv *env, jclass cls,
 
     g_winW = w; g_winH = h; g_winSet = 1;
     g_pxW  = nw; g_pxH  = nh;
+    g_waitForWindowPin = 0;
 
     apply_mode();
     relayout();
@@ -572,13 +654,13 @@ Java_com_apportable_gl_GLSurfaceView_dpifixWindowPx(JNIEnv *env, jclass cls,
 }
 
 /* Called on thread 1, from WindowState.run(). try_kick() reaches relayout()
-   and _setOrientation:changed:, both unsafe from the Android UI thread.
+   and the direct _platform_setOrientation: call, both unsafe from the Android UI thread.
    Retry path: on some launches the first dpifixWindowPx arrives before
    keyWindow exists, and no later pin follows to try again. */
 JNIEXPORT void JNICALL
 Java_com_apportable_gl_GLSurfaceView_dpifixRetryKick(JNIEnv *e, jclass c) {
     (void)e; (void)c;
-    if (!g_needKick || !g_winSet) return;
+    if (!kick_pending() || !g_winSet) return;
     try_kick();
 }
 

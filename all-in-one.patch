@@ -2625,7 +2625,7 @@ index 754e6f3..d3b26b2 100644
  
      goto :goto_0
 diff --git a/smali/com/apportable/app/SplashScreen.smali b/smali/com/apportable/app/SplashScreen.smali
-index 304affe..c93711f 100644
+index 304affe..bb74aa3 100644
 --- a/smali/com/apportable/app/SplashScreen.smali
 +++ b/smali/com/apportable/app/SplashScreen.smali
 @@ -12,6 +12,10 @@
@@ -2771,10 +2771,10 @@ index 304affe..c93711f 100644
 -    .line 63
 -    const-string v0, "Default-568h@2x.png"
 +    invoke-static {}, Lcom/apportable/app/VerdeApplication;->getApplication()Lcom/apportable/app/VerdeApplication;
-+
-+    move-result-object v0
  
 -    invoke-static {v0}, Lcom/apportable/app/SplashScreen;->getAsset(Ljava/lang/String;)Ljava/io/InputStream;
++    move-result-object v0
++
 +    invoke-virtual {v0}, Lcom/apportable/app/VerdeApplication;->getResources()Landroid/content/res/Resources;
  
      move-result-object v0
@@ -3131,54 +3131,152 @@ index 304affe..c93711f 100644
  
      .line 106
 -    if-nez v1, :cond_1e
-+    if-nez v1, :cond_1c
++    if-nez v1, :cond_1d
  
      .line 107
      const-string v1, "UISupportedInterfaceOrientations~iphone"
-@@ -653,7 +1007,7 @@
+@@ -603,29 +957,38 @@
+ 
+     .line 152
+     :cond_d
++    invoke-static {v3}, Lcom/apportable/ui/Device;->naturalLandscape(Landroid/content/Context;)I
++
++    move-result v0
++
++    if-ltz v0, :cond_e
++
++    sput-boolean v0, Lcom/apportable/app/SplashScreen;->isLandscapeDevice:Z
++
++    :cond_e
+     sget v0, Lcom/apportable/app/SplashScreen;->orientations:I
+ 
+     const/4 v1, 0x1
+ 
+-    if-eq v0, v1, :cond_e
++    if-eq v0, v1, :cond_f
+ 
+     sget v0, Lcom/apportable/app/SplashScreen;->orientations:I
+ 
+     const/4 v1, 0x2
+ 
+-    if-eq v0, v1, :cond_e
++    if-eq v0, v1, :cond_f
+ 
+     sget v0, Lcom/apportable/app/SplashScreen;->orientations:I
+ 
+     const/4 v1, 0x4
+ 
+-    if-eq v0, v1, :cond_e
++    if-eq v0, v1, :cond_f
+ 
+     sget v0, Lcom/apportable/app/SplashScreen;->orientations:I
+ 
+     const/16 v1, 0x8
+ 
+-    if-eq v0, v1, :cond_e
++    if-eq v0, v1, :cond_f
+ 
+     .line 157
+     new-instance v0, Lcom/apportable/app/SplashScreen$1;
+@@ -640,7 +1003,7 @@
+     invoke-virtual {v0}, Lcom/apportable/ApportableOrientationEventListener;->enable()V
+ 
+     .line 215
+-    :cond_e
++    :cond_f
+     new-instance v0, Landroid/widget/FrameLayout;
+ 
+     invoke-direct {v0, v3}, Landroid/widget/FrameLayout;-><init>(Landroid/content/Context;)V
+@@ -653,7 +1016,7 @@
      move-result-object v0
  
      .line 219
 -    if-eqz v0, :cond_1d
-+    if-eqz v0, :cond_1b
++    if-eqz v0, :cond_1c
  
      .line 220
      invoke-static {v0}, Landroid/graphics/BitmapFactory;->decodeStream(Ljava/io/InputStream;)Landroid/graphics/Bitmap;
-@@ -661,7 +1015,7 @@
+@@ -661,7 +1024,7 @@
      move-result-object v0
  
      .line 221
 -    if-eqz v0, :cond_15
-+    if-eqz v0, :cond_13
++    if-eqz v0, :cond_14
  
      .line 222
      invoke-static {}, Lcom/apportable/utils/MetaData;->getMetaData()Landroid/os/Bundle;
-@@ -696,7 +1050,7 @@
+@@ -685,7 +1048,7 @@
+     const-string v2, "landscape"
+ 
+     .line 228
+-    if-eqz v4, :cond_f
++    if-eqz v4, :cond_10
+ 
+     .line 229
+     const-string v2, "apportable.orientation"
+@@ -695,8 +1058,8 @@
+     move-result-object v2
  
      .line 230
-     :cond_f
+-    :cond_f
 -    if-nez v2, :cond_16
-+    if-nez v2, :cond_14
++    :cond_10
++    if-nez v2, :cond_15
  
      const/4 v2, 0x0
  
-@@ -803,7 +1157,7 @@
+@@ -770,7 +1133,7 @@
+     invoke-virtual {v3, v10}, Landroid/graphics/Paint;->setDither(Z)V
+ 
+     .line 244
+-    if-eqz v4, :cond_10
++    if-eqz v4, :cond_11
+ 
+     .line 245
+     const-string v1, "apportable.splash_screen_type"
+@@ -780,14 +1143,14 @@
+     move-result-object v1
+ 
+     .line 247
+-    :cond_10
++    :cond_11
+     invoke-virtual {p0}, Landroid/widget/FrameLayout;->getMeasuredWidth()I
+ 
+     .line 248
+     invoke-virtual {p0}, Landroid/widget/FrameLayout;->getMeasuredHeight()I
+ 
+     .line 250
+-    if-eqz v1, :cond_11
++    if-eqz v1, :cond_12
+ 
+     const-string v4, ""
+ 
+@@ -795,7 +1158,7 @@
+ 
+     move-result v4
+ 
+-    if-nez v4, :cond_11
++    if-nez v4, :cond_12
+ 
+     const-string v4, "letterbox"
+ 
+@@ -803,136 +1166,31 @@
  
      move-result v4
  
 -    if-eqz v4, :cond_18
-+    if-eqz v4, :cond_16
++    if-eqz v4, :cond_17
  
      .line 251
-     :cond_11
-@@ -811,128 +1165,23 @@
+-    :cond_11
++    :cond_12
+     sget-object v1, Landroid/widget/ImageView$ScaleType;->CENTER_CROP:Landroid/widget/ImageView$ScaleType;
  
      invoke-virtual {v9, v1}, Landroid/widget/ImageView;->setScaleType(Landroid/widget/ImageView$ScaleType;)V
  
 -    .line 252
 -    if-eqz v2, :cond_17
-+    if-eqz v2, :cond_15
- 
+-
 -    .line 253
 -    float-to-int v1, v8
 -
@@ -3248,19 +3346,19 @@ index 304affe..c93711f 100644
 -    const/4 v13, 0x0
 -
 -    invoke-direct {v11, v12, v13, v5, v6}, Landroid/graphics/Rect;-><init>(IIII)V
-+    sput-object v9, Lcom/apportable/app/SplashScreen;->sImageView:Landroid/widget/ImageView;
- 
+-
 -    new-instance v12, Landroid/graphics/RectF;
-+    invoke-static {v9, v0, v3, v8, v7}, Lcom/apportable/app/SplashScreen;->applyLetterbox(Landroid/widget/ImageView;Landroid/graphics/Bitmap;Landroid/graphics/Paint;FF)V
- 
+-
 -    const/4 v13, 0x0
 -
 -    add-float/2addr v4, v10
 -
 -    invoke-direct {v12, v13, v10, v8, v4}, Landroid/graphics/RectF;-><init>(FFFF)V
--
++    if-eqz v2, :cond_16
+ 
 -    invoke-virtual {v2, v0, v11, v12, v3}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;Landroid/graphics/Rect;Landroid/graphics/RectF;Landroid/graphics/Paint;)V
--
++    sput-object v9, Lcom/apportable/app/SplashScreen;->sImageView:Landroid/widget/ImageView;
+ 
 -    .line 262
 -    const/4 v4, 0x0
 -
@@ -3272,7 +3370,8 @@ index 304affe..c93711f 100644
 -    new-instance v4, Landroid/graphics/Rect;
 -
 -    const/4 v11, 0x0
--
++    invoke-static {v9, v0, v3, v8, v7}, Lcom/apportable/app/SplashScreen;->applyLetterbox(Landroid/widget/ImageView;Landroid/graphics/Bitmap;Landroid/graphics/Paint;FF)V
+ 
 -    add-int/lit8 v12, v6, -0x1
 -
 -    invoke-direct {v4, v11, v12, v5, v6}, Landroid/graphics/Rect;-><init>(IIII)V
@@ -3294,7 +3393,7 @@ index 304affe..c93711f 100644
  
      .line 326
 -    :cond_14
-+    :cond_12
++    :cond_13
      :goto_5
      sget-object v0, Lcom/apportable/app/SplashScreen;->sSplashLayout:Landroid/widget/FrameLayout;
  
@@ -3302,34 +3401,34 @@ index 304affe..c93711f 100644
  
      .line 332
 -    :cond_15
-+    :cond_13
++    :cond_14
      :goto_6
      sget-object v0, Lcom/apportable/app/SplashScreen;->sSplashLayout:Landroid/widget/FrameLayout;
  
-@@ -949,7 +1198,7 @@
+@@ -949,7 +1207,7 @@
      goto/16 :goto_3
  
      .line 230
 -    :cond_16
-+    :cond_14
++    :cond_15
      const-string v7, "portrait"
  
      invoke-virtual {v2, v7}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-@@ -959,7 +1208,7 @@
+@@ -959,7 +1217,7 @@
      goto/16 :goto_4
  
      .line 277
 -    :cond_17
-+    :cond_15
++    :cond_16
      new-instance v1, Landroid/graphics/Matrix;
  
      invoke-direct {v1}, Landroid/graphics/Matrix;-><init>()V
-@@ -1052,14 +1301,14 @@
+@@ -1052,14 +1310,14 @@
      goto :goto_5
  
      .line 297
 -    :cond_18
-+    :cond_16
++    :cond_17
      const-string v4, "aspect_fit"
  
      invoke-virtual {v1, v4}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
@@ -3337,16 +3436,16 @@ index 304affe..c93711f 100644
      move-result v4
  
 -    if-eqz v4, :cond_19
-+    if-eqz v4, :cond_17
++    if-eqz v4, :cond_18
  
      .line 298
      sget-object v1, Landroid/widget/ImageView$ScaleType;->CENTER_CROP:Landroid/widget/ImageView$ScaleType;
-@@ -1136,14 +1385,14 @@
+@@ -1136,14 +1394,14 @@
      goto/16 :goto_5
  
      .line 306
 -    :cond_19
-+    :cond_17
++    :cond_18
      const-string v3, "stretch"
  
      invoke-virtual {v1, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
@@ -3354,34 +3453,34 @@ index 304affe..c93711f 100644
      move-result v3
  
 -    if-eqz v3, :cond_1b
-+    if-eqz v3, :cond_19
++    if-eqz v3, :cond_1a
  
      .line 307
      sget-object v1, Landroid/widget/ImageView$ScaleType;->FIT_XY:Landroid/widget/ImageView$ScaleType;
-@@ -1156,7 +1405,7 @@
+@@ -1156,7 +1414,7 @@
      invoke-direct {v5}, Landroid/graphics/Matrix;-><init>()V
  
      .line 309
 -    if-nez v2, :cond_1a
-+    if-nez v2, :cond_18
++    if-nez v2, :cond_19
  
      .line 310
      const/high16 v1, -0x3d4c0000    # -90.0f
-@@ -1164,7 +1413,7 @@
+@@ -1164,7 +1422,7 @@
      invoke-virtual {v5, v1}, Landroid/graphics/Matrix;->postRotate(F)Z
  
      .line 312
 -    :cond_1a
-+    :cond_18
++    :cond_19
      const/4 v1, 0x0
  
      const/4 v2, 0x0
-@@ -1191,14 +1440,14 @@
+@@ -1191,14 +1449,14 @@
      goto/16 :goto_5
  
      .line 315
 -    :cond_1b
-+    :cond_19
++    :cond_1a
      const-string v2, "aspect_fill"
  
      invoke-virtual {v1, v2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
@@ -3389,16 +3488,16 @@ index 304affe..c93711f 100644
      move-result v2
  
 -    if-eqz v2, :cond_1c
-+    if-eqz v2, :cond_1a
++    if-eqz v2, :cond_1b
  
      .line 316
      sget-object v1, Landroid/widget/ImageView$ScaleType;->CENTER_CROP:Landroid/widget/ImageView$ScaleType;
-@@ -1242,14 +1491,14 @@
+@@ -1242,14 +1500,14 @@
      goto/16 :goto_5
  
      .line 322
 -    :cond_1c
-+    :cond_1a
++    :cond_1b
      const-string v2, "native"
  
      invoke-virtual {v1, v2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
@@ -3406,28 +3505,117 @@ index 304affe..c93711f 100644
      move-result v1
  
 -    if-eqz v1, :cond_14
-+    if-eqz v1, :cond_12
++    if-eqz v1, :cond_13
  
      .line 323
      sget-object v1, Landroid/widget/ImageView$ScaleType;->CENTER:Landroid/widget/ImageView$ScaleType;
-@@ -1262,7 +1511,7 @@
+@@ -1262,7 +1520,7 @@
      goto/16 :goto_5
  
      .line 329
 -    :cond_1d
-+    :cond_1b
++    :cond_1c
      const-string v0, "VerdeDebug"
  
      const-string v1, "Default.png not found for splash screen"
-@@ -1273,7 +1522,7 @@
+@@ -1273,7 +1531,7 @@
  
      goto/16 :goto_6
  
 -    :cond_1e
-+    :cond_1c
++    :cond_1d
      move-object v2, v1
  
      goto/16 :goto_0
+diff --git a/smali/com/apportable/cm/MotionManager.smali b/smali/com/apportable/cm/MotionManager.smali
+index ec442bd..1eac945 100644
+--- a/smali/com/apportable/cm/MotionManager.smali
++++ b/smali/com/apportable/cm/MotionManager.smali
+@@ -268,11 +268,11 @@
+ 
+     .line 238
+     :cond_2
++    invoke-direct {p0, v1}, Lcom/apportable/cm/MotionManager;->fixNaturalOrientation(Landroid/content/Context;)V
++
+     return-void
+ 
+     .line 41
+-    nop
+-
+     :array_0
+     .array-data 4
+         0x3f800000    # 1.0f
+@@ -488,6 +488,70 @@
+     return v0
+ .end method
+ 
++.method private fixNaturalOrientation(Landroid/content/Context;)V
++    .locals 6
++
++    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
++
++    const/16 v1, 0x11
++
++    if-lt v0, v1, :cond_1
++
++    const-string v0, "window"
++
++    invoke-virtual {p1, v0}, Landroid/content/Context;->getSystemService(Ljava/lang/String;)Ljava/lang/Object;
++
++    move-result-object v0
++
++    check-cast v0, Landroid/view/WindowManager;
++
++    invoke-interface {v0}, Landroid/view/WindowManager;->getDefaultDisplay()Landroid/view/Display;
++
++    move-result-object v0
++
++    invoke-virtual {v0}, Landroid/view/Display;->getOrientation()I
++
++    move-result v2
++
++    if-ltz v2, :cond_1
++
++    const/4 v5, 0x3
++
++    if-gt v2, v5, :cond_1
++
++    new-instance v1, Landroid/util/DisplayMetrics;
++
++    invoke-direct {v1}, Landroid/util/DisplayMetrics;-><init>()V
++
++    invoke-virtual {v0, v1}, Landroid/view/Display;->getRealMetrics(Landroid/util/DisplayMetrics;)V
++
++    iget v3, v1, Landroid/util/DisplayMetrics;->widthPixels:I
++
++    iget v4, v1, Landroid/util/DisplayMetrics;->heightPixels:I
++
++    if-lez v3, :cond_1
++
++    if-lez v4, :cond_1
++
++    if-eq v3, v4, :cond_1
++
++    const/4 v5, 0x0
++
++    if-le v3, v4, :cond_0
++
++    const/4 v5, 0x1
++
++    :cond_0
++    and-int/lit8 v2, v2, 0x1
++
++    xor-int v5, v5, v2
++
++    iput-boolean v5, p0, Lcom/apportable/cm/MotionManager;->isLandscapeDevice:Z
++
++    :cond_1
++    return-void
++.end method
++
+ .method private native gravity(IIFFF)V
+ .end method
+ 
 diff --git a/smali/com/apportable/gl/GLSurfaceView.smali b/smali/com/apportable/gl/GLSurfaceView.smali
 index 38c0a15..65e94d1 100644
 --- a/smali/com/apportable/gl/GLSurfaceView.smali
@@ -3742,13 +3930,74 @@ index 433a381..1076342 100644
      const/4 v0, 0x1
  
 diff --git a/smali/com/apportable/ui/Device.smali b/smali/com/apportable/ui/Device.smali
-index b6f1ed9..ccce1cf 100644
+index b6f1ed9..5e1b8a3 100644
 --- a/smali/com/apportable/ui/Device.smali
 +++ b/smali/com/apportable/ui/Device.smali
-@@ -393,6 +393,18 @@
+@@ -40,6 +40,8 @@
+ 
+ .field private mEnabled:Z
+ 
++.field private mNaturalLandscape:I
++
+ .field private mObject:I
+ 
+ 
+@@ -64,6 +66,12 @@
+     .line 48
+     iput p2, p0, Lcom/apportable/ui/Device;->mObject:I
+ 
++    invoke-static {p1}, Lcom/apportable/ui/Device;->naturalLandscape(Landroid/content/Context;)I
++
++    move-result v0
++
++    iput v0, p0, Lcom/apportable/ui/Device;->mNaturalLandscape:I
++
+     .line 49
+     new-instance v0, Lcom/apportable/ui/Device$1;
+ 
+@@ -151,13 +159,32 @@
+ .end method
+ 
+ .method static synthetic access$100(Lcom/apportable/ui/Device;II)V
+-    .locals 0
++    .locals 2
+ 
+-    .prologue
+-    .line 19
++    iget v0, p0, Lcom/apportable/ui/Device;->mNaturalLandscape:I
++
++    if-ltz v0, :cond_0
++
++    :try_start_0
++    invoke-direct {p0, p1, p2, v0}, Lcom/apportable/ui/Device;->nativeOnOrientationChangedFixed(III)Z
++
++    move-result v1
++    :try_end_0
++    .catch Ljava/lang/UnsatisfiedLinkError; {:try_start_0 .. :try_end_0} :catch_0
++
++    if-nez v1, :cond_1
++
++    :cond_0
++    :goto_0
+     invoke-direct {p0, p1, p2}, Lcom/apportable/ui/Device;->nativeOnOrientationChanged(II)V
+ 
++    :cond_1
+     return-void
++
++    :catch_0
++    move-exception v1
++
++    goto :goto_0
+ .end method
+ 
+ .method static synthetic access$200(Lcom/apportable/ui/Device;)Lcom/apportable/ApportableOrientationEventListener;
+@@ -393,6 +420,93 @@
  .method private native nativeOnOrientationChanged(II)V
  .end method
  
++.method private native nativeOnOrientationChangedFixed(III)Z
++.end method
++
 +.method public static native nativeRunPendingResync()V
 +.end method
 +
@@ -3759,6 +4008,78 @@ index b6f1ed9..ccce1cf 100644
 +.end method
 +
 +.method public static native nativeSetMultiWindow(Z)V
++.end method
++
++.method public static naturalLandscape(Landroid/content/Context;)I
++    .locals 6
++
++    sget v0, Landroid/os/Build$VERSION;->SDK_INT:I
++
++    const/16 v1, 0x11
++
++    if-lt v0, v1, :cond_1
++
++    if-eqz p0, :cond_1
++
++    const-string v0, "window"
++
++    invoke-virtual {p0, v0}, Landroid/content/Context;->getSystemService(Ljava/lang/String;)Ljava/lang/Object;
++
++    move-result-object v0
++
++    if-eqz v0, :cond_1
++
++    check-cast v0, Landroid/view/WindowManager;
++
++    invoke-interface {v0}, Landroid/view/WindowManager;->getDefaultDisplay()Landroid/view/Display;
++
++    move-result-object v0
++
++    if-eqz v0, :cond_1
++
++    invoke-virtual {v0}, Landroid/view/Display;->getOrientation()I
++
++    move-result v2
++
++    if-ltz v2, :cond_1
++
++    const/4 v5, 0x3
++
++    if-gt v2, v5, :cond_1
++
++    new-instance v1, Landroid/util/DisplayMetrics;
++
++    invoke-direct {v1}, Landroid/util/DisplayMetrics;-><init>()V
++
++    invoke-virtual {v0, v1}, Landroid/view/Display;->getRealMetrics(Landroid/util/DisplayMetrics;)V
++
++    iget v3, v1, Landroid/util/DisplayMetrics;->widthPixels:I
++
++    iget v4, v1, Landroid/util/DisplayMetrics;->heightPixels:I
++
++    if-lez v3, :cond_1
++
++    if-lez v4, :cond_1
++
++    if-eq v3, v4, :cond_1
++
++    const/4 v5, 0x0
++
++    if-le v3, v4, :cond_0
++
++    const/4 v5, 0x1
++
++    :cond_0
++    and-int/lit8 v2, v2, 0x1
++
++    xor-int v5, v5, v2
++
++    return v5
++
++    :cond_1
++    const/4 v5, -0x1
++
++    return v5
 +.end method
 +
  
