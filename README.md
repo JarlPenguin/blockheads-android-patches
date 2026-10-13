@@ -45,6 +45,8 @@ These patches were designed mostly with the help of LLMs for v1.7.5 and were tes
 * Enables LAN hosting on Android
 * Enables searching for and joining hosted LAN worlds
 
+If LAN hosting or discovery stops working, fully close and reopen the game.
+
 ### `mail-invite-fix.patch`
 * Fixes join links being cut off when shared by e-mail
 * Fixes a typo in the resulting e-mail body
@@ -126,6 +128,8 @@ If you'd rather make the backup from a computer, there is also a PC method using
 
 Prebuilt patched APKs are available [here](https://github.com/JarlPenguin/blockheads-android-patches/releases).
 
+After installing, follow the [post-install step](#after-installing).
+
 ### All-in-one script
 
 **Requirements:** Linux (x86-64, WSL is recommended for Windows users), Java 8 or newer, `git`, and `curl`. Everything else is downloaded into a temporary directory and removed afterwards.
@@ -146,7 +150,7 @@ Prebuilt patched APKs are available [here](https://github.com/JarlPenguin/blockh
    adb install signed-patched-bh.apk
    ```
 
-   Enjoy!
+   After installing, follow the [post-install step](#after-installing).
 
 ### Patch the APK manually
 
@@ -223,7 +227,15 @@ Prebuilt patched APKs are available [here](https://github.com/JarlPenguin/blockh
    adb install signed-patched-bh.apk
    ```
 
-   Enjoy!
+   After installing, follow the [post-install step](#after-installing).
+
+### After installing
+
+Open **Settings** → **Apps** → **The Blockheads** → **Battery** and set background battery usage to **Unrestricted**. The exact menu names vary by device.
+
+This allows the game loop to continue running in the background in certain cases, such as when using the photo picker. The game loop is responsible for keeping the player connected to a server.
+
+Enjoy!
 
 ---
 
@@ -276,7 +288,7 @@ Includes a native library (`libaudiofix.so`) that swizzles Apportable's Objectiv
 Includes a native library (`libpaintmixfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
-> Apportable runs the Objective-C main runloop on a dedicated `MainThread` and creates its views there, so that thread's Looper is the one `ViewRootImpl` posts to. On pause, `MainThread` blocks in `GLSurfaceView.readySurface()` waiting on `mLock` for a surface change only the UI thread can deliver, while the UI thread blocks in `Activity.performStop()` -> `WindowManagerGlobal.setStoppedState()` -> `Handler.runWithScissors()` waiting for `MainThread`'s Looper to dispatch. Neither can proceed and Android raises an ANR after 5 seconds.
+> Apportable runs the Objective-C main runloop on a dedicated `MainThread` and creates its views there, so that thread's Looper is the one `ViewRootImpl` posts to. On pause, `MainThread` blocks in `GLSurfaceView.readySurface()` waiting on `mLock` for a surface change only the UI thread can deliver, while the UI thread blocks in `Activity.performStop()` → `WindowManagerGlobal.setStoppedState()` → `Handler.runWithScissors()` waiting for `MainThread`'s Looper to dispatch. Neither can proceed and Android raises an ANR after 5 seconds.
 >
 > The same transition causes a second, unrelated failure. Tearing down the EGL surface unbinds the context (`eglMakeCurrent` with `EGL_NO_SURFACE`), and the game constructs `PaintMixUI` in response to the picked image, so `-[PaintMixUI setWorkbench:blockhead:craftableItemObject:]` runs `loadResources` and `updateMix` while `eglGetCurrentContext()` is `EGL_NO_CONTEXT`. `glGenTextures` silently yields 0, and neither `CPTexture2D` initialiser checks it, so the panel keeps texture objects with dead GL names for the rest of the session. The context recovers on its own about half a second later, but nothing rebuilds the textures. `itemsTexture` is unaffected because `Items.png` is a cache hit from world load.
 
@@ -438,7 +450,7 @@ _Note: The deny-path `Toast` message is long enough to clip at the two-line limi
 Includes a native library (`libprivacypopupfix.so`) that swizzles Apportable's Objective-C runtime at startup and smali changes.
 
 > **Notes from Claude:**
-> `-[GameView alertView:clickedButtonAtIndex:]` guards its `gdprStatus` write with `if (alertView == self->gdprPrompt)`, but the guard's closing brace falls before the alert construction, so `[[UIAlertView alloc] initWithTitle:@"Privacy Setting Changed" ...]` and `show` run unconditionally on every invocation. `UIAlertView` calls both `alertView:clickedButtonAtIndex:` and `alertView:didDismissWithButtonIndex:` on dismissal, and `GameView` is the delegate for roughly fifteen other alerts - disconnect, join-world, searching, tutorial, death confirmation, Game Center, server rejection - all of which are serviced by `didDismissWithButtonIndex:` and all of which fall through the mis-scoped guard in `clickedButtonAtIndex:`. The sibling handler disambiguates senders correctly for every alert it owns, comparing against a dedicated per-alert ivar and nilling it afterwards, so the GDPR addition breaks a convention the rest of the class follows. `-[EvolutionAppDelegate alertView:clickedButtonAtIndex:]` handles the first-launch consent prompt, writes the same `gdprStatus` key and calls `startThirdPartySDKs:`; it constructs no alert and needs no change.
+> `-[GameView alertView:clickedButtonAtIndex:]` guards its `gdprStatus` write with `if (alertView == self→gdprPrompt)`, but the guard's closing brace falls before the alert construction, so `[[UIAlertView alloc] initWithTitle:@"Privacy Setting Changed" ...]` and `show` run unconditionally on every invocation. `UIAlertView` calls both `alertView:clickedButtonAtIndex:` and `alertView:didDismissWithButtonIndex:` on dismissal, and `GameView` is the delegate for roughly fifteen other alerts - disconnect, join-world, searching, tutorial, death confirmation, Game Center, server rejection - all of which are serviced by `didDismissWithButtonIndex:` and all of which fall through the mis-scoped guard in `clickedButtonAtIndex:`. The sibling handler disambiguates senders correctly for every alert it owns, comparing against a dedicated per-alert ivar and nilling it afterwards, so the GDPR addition breaks a convention the rest of the class follows. `-[EvolutionAppDelegate alertView:clickedButtonAtIndex:]` handles the first-launch consent prompt, writes the same `gdprStatus` key and calls `startThirdPartySDKs:`; it constructs no alert and needs no change.
 
 * Swizzles `-[GameView alertView:clickedButtonAtIndex:]` to compare the incoming `alertView` against the `gdprPrompt` ivar and return early on a mismatch, restoring the guard the original code scopes too narrowly. Matching dismissals are forwarded to the original implementation unchanged, so both `gdprStatus` values and the restart notice behave exactly as intended on the real path.
 * Nils `gdprPrompt` after a matched dismissal. `showGDPRAlert` assigns an autoreleased alert and never clears the ivar, so it dangles once the alert deallocates and a later `UIAlertView` allocated at the same address would compare equal and re-trigger the popup. Every branch of `alertView:didDismissWithButtonIndex:` already does this; the GDPR path does not.
