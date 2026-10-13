@@ -3930,7 +3930,7 @@ index 433a381..1076342 100644
      const/4 v0, 0x1
  
 diff --git a/smali/com/apportable/ui/Device.smali b/smali/com/apportable/ui/Device.smali
-index b6f1ed9..5e1b8a3 100644
+index b6f1ed9..b78edec 100644
 --- a/smali/com/apportable/ui/Device.smali
 +++ b/smali/com/apportable/ui/Device.smali
 @@ -40,6 +40,8 @@
@@ -3991,14 +3991,11 @@ index b6f1ed9..5e1b8a3 100644
  .end method
  
  .method static synthetic access$200(Lcom/apportable/ui/Device;)Lcom/apportable/ApportableOrientationEventListener;
-@@ -393,6 +420,93 @@
+@@ -393,6 +420,90 @@
  .method private native nativeOnOrientationChanged(II)V
  .end method
  
 +.method private native nativeOnOrientationChangedFixed(III)Z
-+.end method
-+
-+.method public static native nativeRunPendingResync()V
 +.end method
 +
 +.method public static native nativeSetAutoRotate(I)V
@@ -4184,10 +4181,10 @@ index c71c34d..8941fe3 100644
  # instance fields
 diff --git a/smali/com/apportable/utils/WindowState.smali b/smali/com/apportable/utils/WindowState.smali
 new file mode 100644
-index 0000000..5cfd81a
+index 0000000..aac9e6a
 --- /dev/null
 +++ b/smali/com/apportable/utils/WindowState.smali
-@@ -0,0 +1,1003 @@
+@@ -0,0 +1,976 @@
 +.class public Lcom/apportable/utils/WindowState;
 +.super Ljava/lang/Object;
 +.source "WindowState.java"
@@ -4769,31 +4766,6 @@ index 0000000..5cfd81a
 +    return-void
 +.end method
 +
-+.method private static pushResync()V
-+    .locals 2
-+
-+    sget-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
-+
-+    if-eqz v0, :cond_0
-+
-+    :try_start_0
-+    invoke-static {}, Lcom/apportable/ui/Device;->nativeRunPendingResync()V
-+    :try_end_0
-+    .catch Ljava/lang/Throwable; {:try_start_0 .. :try_end_0} :catch_0
-+
-+    :cond_0
-+    return-void
-+
-+    :catch_0
-+    move-exception v1
-+
-+    const/4 v0, 0x0
-+
-+    sput-boolean v0, Lcom/apportable/utils/WindowState;->sRotationFix:Z
-+
-+    return-void
-+.end method
-+
 +.method private static pushRetryKick()V
 +    .locals 2
 +
@@ -5183,8 +5155,6 @@ index 0000000..5cfd81a
 +    return-void
 +
 +    :cond_2
-+    invoke-static {}, Lcom/apportable/utils/WindowState;->pushResync()V
-+
 +    iget v1, p0, Lcom/apportable/utils/WindowState;->mH:I
 +
 +    invoke-static {v0, v1}, Lcom/apportable/utils/WindowState;->pushWindowPx(II)V

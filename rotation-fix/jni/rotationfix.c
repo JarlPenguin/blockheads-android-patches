@@ -69,9 +69,6 @@
  * 4. Tracks multi-window state and the rotation-lock setting, pushed from Java.
  *    On leaving multi-window, dpifix arms its direct platform kick to restore
  *    the display orientation after applying the fullscreen size on thread 1.
- *    nativeRunPendingResync remains for JNI compatibility and only consumes
- *    the legacy pending flag; it no longer sends a wrapper rotation, which
- *    rotation lock can veto and which could add a second spin when permitted.
  *
  * 5. Swizzles -[UIApplication _lifecycleEvent:] and
  *    -[UIDevice _platform_setOrientation:]. Once dpifix publishes the pane
@@ -374,9 +371,6 @@ static volatile int g_autoRotate = 0;
 
 /* Multi-window state, pushed from Java on every configuration change. */
 static volatile int g_multiWindow = 0;
-
-/* Set when g_multiWindow falls from 1 to 0; consumed on thread 1. */
-static volatile int g_resyncPending = 0;
 
 /* Depth counter, set only while inside -[World acceleration:]. Confines the
    substitution to the tilt path so the layout path still sees the real
@@ -704,21 +698,6 @@ Java_com_apportable_ui_Device_nativeSetMultiWindow(JNIEnv *e, jclass c, jboolean
     g_multiWindow = mw ? 1 : 0;
     if (was != g_multiWindow) g_windowOrientation = 0;
     LOGV("multiWindow = %d", g_multiWindow);
-    if (was && !g_multiWindow) g_resyncPending = 1;
-}
-
-/* Legacy JNI entry retained for the existing WindowState.run() smali, which
-   calls it BEFORE dpifixWindowPx. dpifix now arms a kick on multi-window exit
-   and performs the direct platform resync AFTER applying the fullscreen size.
-   Do not send _setOrientation:changed: here: rotation lock vetoes it, and when
-   permitted it would rotate against the old geometry and add a second spin. */
-JNIEXPORT void JNICALL
-Java_com_apportable_ui_Device_nativeRunPendingResync(JNIEnv *e, jclass c) {
-    (void)e; (void)c;
-    if (!g_resyncPending) return;
-    g_resyncPending = 0;
-    LOGV("exit resync deferred to dpifix direct kick after fullscreen pin (locked=%d)",
-         g_lockedOrientation);
 }
 
 static int install(void) {
